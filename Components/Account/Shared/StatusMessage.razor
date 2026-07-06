@@ -1,0 +1,33 @@
+﻿@if (!string.IsNullOrEmpty(DisplayMessage))
+{
+    var isError = DisplayMessage.StartsWith("Error", StringComparison.OrdinalIgnoreCase);
+    var borderClass = isError ? "border-l-danger" : "border-l-success";
+    var iconClass = isError ? "fa-circle-xmark text-danger" : "fa-circle-check text-success";
+
+    <div class="@($"bg-bg-card border border-white/5 border-l-4 {borderClass} text-text-primary px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-3.5 mb-4")" role="alert">
+        <i class="@($"fa-solid {iconClass} text-base flex-shrink-0")"></i>
+        <div class="text-xs font-bold">@DisplayMessage</div>
+    </div>
+}
+
+@code {
+    private string? messageFromCookie;
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private string? DisplayMessage => Message ?? messageFromCookie;
+
+    protected override void OnInitialized()
+    {
+        messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+
+        if (messageFromCookie is not null)
+        {
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+        }
+    }
+}

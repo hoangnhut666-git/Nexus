@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS Admin // Quản lý Sản phẩm</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-base': '#08070b',
+                        'bg-surface': '#0f0e15',
+                        'bg-card': '#171520',
+                        'bg-card-hover': '#1f1d2b',
+                        'accent': '#6366f1',
+                        'cyber-cyan': '#00f2fe',
+                        'success': '#10b981',
+                        'success-bg': 'rgba(16, 185, 129, 0.1)',
+                        'warning': '#f59e0b',
+                        'warning-bg': 'rgba(245, 158, 11, 0.1)',
+                        'danger': '#ef4444',
+                        'danger-bg': 'rgba(239, 68, 68, 0.1)',
+                        'text-primary': '#f8fafc',
+                        'text-secondary': '#94a3b8',
+                        'text-muted': '#64748b',
+                    },
+                    backgroundImage: {
+                        'accent-gradient': 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* Tùy biến thanh cuộn */
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: #08070b; }
+            ::-webkit-scrollbar-thumb { background: #272533; border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+            /* Checkbox style */
+            .custom-checkbox {
+                appearance: none;
+                width: 16px; height: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+                background: #171520;
+                cursor: pointer;
+                position: relative;
+            }
+            .custom-checkbox:checked {
+                background: #6366f1;
+                border-color: #6366f1;
+            }
+            .custom-checkbox:checked::after {
+                content: '\f00c';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                font-size: 10px;
+                color: #fff;
+                position: absolute;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            /* Dynamic state hooks for JS */
+            .drawer-backdrop {
+                transition: opacity 0.3s ease;
+            }
+            .drawer-backdrop.active {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+
+            .drawer {
+                transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .drawer.active {
+                right: 0 !important;
+            }
+
+            .image-upload-area.dragover {
+                border-color: #6366f1 !important;
+                background-color: rgba(99, 102, 241, 0.15) !important;
+            }
+
+            .status-radio-card.active[data-status="active"] {
+                border-color: #10b981 !important;
+                background-color: rgba(16, 185, 129, 0.06) !important;
+            }
+            .status-radio-card.active[data-status="active"] .status-dot {
+                background-color: #10b981 !important;
+                box-shadow: 0 0 8px #10b981 !important;
+            }
+
+            .status-radio-card.active[data-status="draft"] {
+                border-color: #94a3b8 !important;
+                background-color: rgba(255, 255, 255, 0.03) !important;
+            }
+            .status-radio-card.active[data-status="draft"] .status-dot {
+                background-color: #94a3b8 !important;
+            }
+
+            .status-radio-card.active[data-status="out"] {
+                border-color: #ef4444 !important;
+                background-color: rgba(239, 68, 68, 0.06) !important;
+            }
+            .status-radio-card.active[data-status="out"] .status-dot {
+                background-color: #ef4444 !important;
+                box-shadow: 0 0 8px #ef4444 !important;
+            }
+
+            .toast.show {
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+            }
+
+            .invalid {
+                border-color: #ef4444 !important;
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.15) !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-bg-base text-text-primary flex h-screen overflow-hidden antialiased font-sans">
+
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-bg-surface border-r border-white/5 flex flex-col transition-all duration-300 z-10 flex-shrink-0">
+        <div class="h-20 flex items-center px-6 border-b border-white/5">
+            <a href="#" class="text-[22px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+            </a>
+        </div>
+        
+        <div class="p-6 px-4 flex-1 overflow-y-auto">
+            <div class="text-[11px] uppercase text-text-muted tracking-wider mb-3 pl-3 font-semibold">Main Menu</div>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-chart-pie text-base w-5 text-center"></i> Tổng quan
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-400 bg-indigo-500/10 border-r-[3px] border-indigo-500 text-sm font-semibold mb-1 transition-all duration-300">
+                <i class="fa-solid fa-box-open text-base w-5 text-center"></i> Sản phẩm
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-cart-shopping text-base w-5 text-center"></i> Đơn hàng
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-users text-base w-5 text-center"></i> Khách hàng
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-tag text-base w-5 text-center"></i> Khuyến mãi
+            </a>
+            
+            <div class="text-[11px] uppercase text-text-muted tracking-wider mb-3 pl-3 font-semibold mt-6">Hệ thống</div>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-chart-line text-base w-5 text-center"></i> Báo cáo
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-gear text-base w-5 text-center"></i> Cài đặt
+            </a>
+        </div>
+
+        <div class="p-5 border-t border-white/5 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-sm">A</div>
+            <div class="user-info">
+                <h4 class="text-sm font-semibold mb-0.5">Adminstrator</h4>
+                <p class="text-xs text-text-muted">admin@nexus.io</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+        <!-- Radial Glow Background -->
+        <div class="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(99,102,241,0.08)_0%,rgba(0,0,0,0)_70%)] z-[-1] pointer-events-none"></div>
+        
+        <!-- Topbar -->
+        <header class="h-20 flex items-center justify-between px-8 border-b border-white/5 bg-bg-base/80 backdrop-blur-md">
+            <div class="page-title">
+                <h1 class="text-xl font-bold">Quản lý Sản phẩm</h1>
+            </div>
+            <div class="flex items-center gap-5">
+                <button class="bg-transparent border-none text-text-secondary text-lg cursor-pointer transition-all duration-300 hover:text-text-primary"><i class="fa-solid fa-moon"></i></button>
+                <button class="bg-transparent border-none text-text-secondary text-lg cursor-pointer relative transition-all duration-300 hover:text-text-primary">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute -top-1 -right-1 bg-danger w-2 h-2 rounded-full"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Body -->
+        <div class="p-8 overflow-y-auto flex-1">
+            
+            <!-- Tools -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex gap-4">
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
+                        <input type="text" placeholder="Tìm kiếm tên, SKU sản phẩm..." id="searchInput" class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[280px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]">
+                    </div>
+                    <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40" id="categoryFilter">
+                        <option value="">Tất cả danh mục</option>
+                        <option value="Phím cơ & Gaming">Phím cơ & Gaming</option>
+                        <option value="Âm thanh Cao cấp">Âm thanh Cao cấp</option>
+                        <option value="Phụ kiện Thông minh">Phụ kiện Thông minh</option>
+                    </select>
+                    <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40" id="statusFilter">
+                        <option value="">Trạng thái</option>
+                        <option value="active">Đang bán</option>
+                        <option value="draft">Bản nháp</option>
+                        <option value="out">Hết hàng</option>
+                    </select>
+                </div>
+                
+                <button class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-[0_4px_15px_rgba(99,102,241,0.2)] flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)]" id="btnAddNew">
+                    <i class="fa-solid fa-plus"></i> Thêm Sản phẩm mới
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="w-10 py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold"><input type="checkbox" class="custom-checkbox" id="masterCheckbox"></th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Sản phẩm</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Danh mục</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Giá bán</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Tồn kho</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Trạng thái</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                        <!-- Dynamic items will be rendered here -->
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center py-5 px-8 border-t border-white/5 text-sm text-text-muted">
+                    <div id="paginationText">Hiển thị 0 đến 0 của 0 sản phẩm</div>
+                    <div class="flex gap-2" id="paginationButtons">
+                        <!-- Dynamic page buttons -->
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Backdrop -->
+    <div class="drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none" id="drawerBackdrop"></div>
+
+    <!-- Product Form Drawer -->
+    <div class="drawer fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col" id="productDrawer">
+        <div class="h-20 px-8 flex items-center justify-between border-b border-white/5">
+            <h3 id="drawerTitle" class="text-lg font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Thêm Sản phẩm mới</h3>
+            <button class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-white/5 hover:rotate-90" id="btnCloseDrawer" title="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="productForm" novalidate class="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div class="drawer-body p-8 overflow-y-auto flex-1 flex flex-col gap-6">
+                <!-- ID Hidden Field for Edit -->
+                <input type="hidden" id="prodId">
+
+                <!-- Product Name -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="prodName">Tên sản phẩm *</label>
+                    <input type="text" id="prodName" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full" placeholder="Ví dụ: Bàn Phím Cơ Không Dây CyberType S87" required>
+                </div>
+
+                <!-- Product Category & SKU -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="prodCategory">Danh mục *</label>
+                        <select id="prodCategory" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] w-full" required>
+                            <option value="">Chọn danh mục</option>
+                            <option value="Phím cơ & Gaming">Phím cơ & Gaming</option>
+                            <option value="Âm thanh Cao cấp">Âm thanh Cao cấp</option>
+                            <option value="Phụ kiện Thông minh">Phụ kiện Thông minh</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="prodSku">Mã sản phẩm (SKU) *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="prodSku" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted flex-1" placeholder="NX-KB-XXXX" required>
+                            <button type="button" class="bg-bg-card border border-white/5 text-text-secondary w-[46px] h-[46px] rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10" id="btnGenSku" title="Tự động tạo SKU">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price & Stock -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="prodPrice">Giá bán (VND) *</label>
+                        <input type="number" id="prodPrice" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full" placeholder="2450000" min="0" required>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="prodStock">Số lượng tồn kho</label>
+                        <input type="number" id="prodStock" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full" placeholder="100 (Để trống nếu là bản nháp)" min="0">
+                    </div>
+                </div>
+
+                <!-- Product Status -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Trạng thái *</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="status-radio-card active border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover" data-status="active">
+                            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+                            <span class="text-xs font-semibold">Đang bán</span>
+                        </label>
+                        <label class="status-radio-card border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover" data-status="draft">
+                            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+                            <span class="text-xs font-semibold">Bản nháp</span>
+                        </label>
+                        <label class="status-radio-card border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover" data-status="out">
+                            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+                            <span class="text-xs font-semibold">Hết hàng</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Image Upload (Drag and Drop / File select) -->
+                <div class="flex flex-col gap-2.5">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Hình ảnh sản phẩm</label>
+                    
+                    <div class="border-2 border-dashed border-white/5 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-white/[0.01] relative overflow-hidden min-h-[140px] flex flex-col justify-center items-center gap-2 hover:border-accent hover:bg-accent/10 group" id="imageUploadArea">
+                        <i class="fa-regular fa-image text-3xl text-text-muted transition-all duration-300 group-hover:text-accent group-hover:-translate-y-0.5"></i>
+                        <p class="text-sm text-text-secondary">Kéo thả ảnh vào đây hoặc click để tải lên</p>
+                        <span class="text-[11px] text-text-muted">Hỗ trợ JPG, PNG, WEBP (Tối đa 2MB)</span>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        
+                        <div class="absolute inset-0 bg-bg-card hidden items-center justify-center z-[5]" id="imagePreviewOverlay">
+                            <button type="button" class="absolute top-2 right-2 bg-red-600/85 text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 text-[10px] hover:bg-red-600 hover:scale-110 z-[6]" id="btnRemovePreview" title="Xóa hình ảnh">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <img src="" alt="Preview" id="imgPreview" class="max-w-full max-h-full object-contain">
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 mt-1">
+                        <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider text-center">Hoặc dùng URL hình ảnh</span>
+                        <input type="url" id="prodImageUrl" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full" placeholder="https://images.unsplash.com/...">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="prodDescription">Mô tả sản phẩm</label>
+                    <textarea id="prodDescription" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full resize-y min-h-[90px] font-sans" placeholder="Nhập mô tả ngắn gọn về sản phẩm..."></textarea>
+                </div>
+            </div>
+            
+            <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
+                <button type="button" class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary" id="btnCancelDrawer">Hủy</button>
+                <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu sản phẩm
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container fixed bottom-6 right-6 flex flex-col gap-3 z-[9999] pointer-events-none" id="toastContainer"></div>
+
+    <!-- CRUD Engine & UI Logic -->
+    <script>
+        // State Management
+        let products = [
+            {
+                id: 1,
+                name: "Bàn Phím Cơ Không Dây CyberType S87",
+                sku: "NX-KB-8701",
+                category: "Phím cơ & Gaming",
+                price: 2450000,
+                stock: 124,
+                status: "active",
+                image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=100&auto=format&fit=crop&q=80",
+                description: "Bàn phím cơ không dây layout 87 phím với switch cơ cao cấp, keycap PBT doubleshot và đèn nền RGB rực rỡ."
+            },
+            {
+                id: 2,
+                name: "Tai nghe Bluetooth Nexus Sound Pro X",
+                sku: "NX-HP-PROX",
+                category: "Âm thanh Cao cấp",
+                price: 3200000,
+                stock: 0,
+                status: "out",
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&auto=format&fit=crop&q=80",
+                description: "Tai nghe chống ồn chủ động ANC với âm thanh độ phân giải cao Hi-Res, thời lượng pin 40 giờ."
+            },
+            {
+                id: 3,
+                name: "Đồng Hồ Thông Minh Chrono Shield V2",
+                sku: "NX-SW-V2",
+                category: "Phụ kiện Thông minh",
+                price: 4200000,
+                stock: 85,
+                status: "active",
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&auto=format&fit=crop&q=80",
+                description: "Đồng hồ thông minh theo dõi sức khỏe chuyên sâu, màn hình AMOLED độ sáng cao, GPS độc lập."
+            },
+            {
+                id: 4,
+                name: "Loa Bluetooth Ambient Sound Sphere",
+                sku: "NX-SP-AMB",
+                category: "Âm thanh Cao cấp",
+                price: 1590000,
+                stock: 0,
+                status: "draft",
+                image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=100&auto=format&fit=crop&q=80",
+                description: "Loa Bluetooth di động phát âm thanh vòm 360 độ với hiệu ứng đèn LED Ambient Light đổi màu theo điệu nhạc."
+            },
+            {
+                id: 5,
+                name: "Tai Nghe TWS Khử Tiếng Ồn AuraPods Pro",
+                sku: "NX-TWS-PRO",
+                category: "Âm thanh Cao cấp",
+                price: 2635000,
+                stock: 42,
+                status: "active",
+                image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=100&auto=format&fit=crop&q=80",
+                description: "Tai nghe True Wireless nhỏ gọn tích hợp micro khử tiếng ồn ENC đàm thoại rõ nét."
+            }
+        ];
+
+        // Add dummy products to populate pagination (total 23 items for 5 pages of size 5)
+        for (let i = 6; i <= 23; i++) {
+            const isEven = i % 2 === 0;
+            const isThird = i % 3 === 0;
+            const cat = isEven ? "Phím cơ & Gaming" : (isThird ? "Phụ kiện Thông minh" : "Âm thanh Cao cấp");
+            const status = isEven ? "active" : (isThird ? "draft" : "out");
+            const price = 900000 + (i * 125000);
+            const stock = status === 'active' ? 12 + i * 2 : 0;
+            const image = isEven 
+                ? "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=100&auto=format&fit=crop&q=80"
+                : (isThird ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&auto=format&fit=crop&q=80");
+            products.push({
+                id: i,
+                name: `Demo Product ${i} - ${cat}`,
+                sku: `NX-DEMO-${i}00`,
+                category: cat,
+                price: price,
+                stock: stock,
+                status: status,
+                image: image,
+                description: `Mô tả demo cho sản phẩm số ${i}. Đây là sản phẩm mẫu nhằm kiểm tra chức năng phân trang và tìm kiếm.`
+            });
+        }
+
+        const ITEMS_PER_PAGE = 5;
+        let currentPage = 1;
+        let filteredProducts = [...products];
+
+        // DOM Elements Selectors
+        const productTableBody = document.getElementById('productTableBody');
+        const paginationText = document.getElementById('paginationText');
+        const paginationButtons = document.getElementById('paginationButtons');
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const masterCheckbox = document.getElementById('masterCheckbox');
+        
+        const productDrawer = document.getElementById('productDrawer');
+        const drawerBackdrop = document.getElementById('drawerBackdrop');
+        const productForm = document.getElementById('productForm');
+        const drawerTitle = document.getElementById('drawerTitle');
+        const toastContainer = document.getElementById('toastContainer');
+        
+        // Form Controls
+        const prodId = document.getElementById('prodId');
+        const prodName = document.getElementById('prodName');
+        const prodCategory = document.getElementById('prodCategory');
+        const prodSku = document.getElementById('prodSku');
+        const prodPrice = document.getElementById('prodPrice');
+        const prodStock = document.getElementById('prodStock');
+        const prodImageUrl = document.getElementById('prodImageUrl');
+        const prodDescription = document.getElementById('prodDescription');
+        
+        // Image Upload elements
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
+        const imgPreview = document.getElementById('imgPreview');
+        const btnRemovePreview = document.getElementById('btnRemovePreview');
+
+        // Helpers
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, "&amp;")
+                             .replace(/</g, "&lt;")
+                             .replace(/>/g, "&gt;")
+                             .replace(/"/g, "&quot;")
+                             .replace(/'/g, "&#039;");
+        }
+
+        // --- Render UI Table ---
+        function renderTable() {
+            productTableBody.innerHTML = '';
+            
+            // Calculate pagination slice
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length);
+            const paginatedItems = filteredProducts.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                productTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-12 text-text-muted">
+                            <i class="fa-regular fa-folder-open text-[36px] mb-3 block opacity-60"></i>
+                            Không tìm thấy sản phẩm nào phù hợp.
+                        </td>
+                    </tr>
+                `;
+                paginationText.textContent = 'Hiển thị 0 đến 0 của 0 sản phẩm';
+                renderPaginationControls(0);
+                if(masterCheckbox) masterCheckbox.checked = false;
+                return;
+            }
+            
+            paginatedItems.forEach(prod => {
+                let statusClass = 'bg-white/5 text-text-secondary border-white/5';
+                let statusText = 'Bản nháp';
+                if (prod.status === 'active') {
+                    statusClass = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+                    statusText = 'Đang bán';
+                } else if (prod.status === 'out') {
+                    statusClass = 'bg-rose-500/10 text-rose-500 border-rose-500/20';
+                    statusText = 'Hết hàng';
+                }
+                
+                const stockText = prod.status === 'draft' ? '-' : prod.stock;
+                
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/[0.01] hover:text-text-primary transition-colors duration-300';
+                tr.innerHTML = `
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle"><input type="checkbox" class="custom-checkbox row-checkbox"></td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">
+                        <div class="flex items-center gap-4">
+                            <img src="${prod.image || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=100&auto=format&fit=crop&q=80'}" alt="${prod.name}" class="w-12 h-12 rounded-lg object-cover bg-bg-base border border-white/5" onerror="this.src='https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=100&auto=format&fit=crop&q=80'">
+                            <div>
+                                <div class="font-semibold text-text-primary mb-1">${escapeHtml(prod.name)}</div>
+                                <div class="text-xs text-text-muted">SKU: ${escapeHtml(prod.sku)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">${escapeHtml(prod.category)}</td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">${formatCurrency(prod.price)}</td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">${stockText}</td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle"><span class="inline-block px-3 py-1.5 rounded-full text-xs font-semibold border ${statusClass}">${statusText}</span></td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">
+                        <div class="flex gap-2">
+                            <button class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 btn-edit" data-id="${prod.id}" title="Chỉnh sửa"><i class="fa-regular fa-pen-to-square"></i></button>
+                            <button class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-rose-500 hover:text-white hover:border-rose-500 delete btn-delete" data-id="${prod.id}" title="Xóa"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                productTableBody.appendChild(tr);
+            });
+            
+            // Check row checkbox event listener setup
+            const rowCheckboxes = productTableBody.querySelectorAll('.row-checkbox');
+            rowCheckboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
+                    if(masterCheckbox) masterCheckbox.checked = allChecked;
+                });
+            });
+            
+            if(masterCheckbox) masterCheckbox.checked = false; // Reset master checkbox
+            
+            paginationText.textContent = `Hiển thị ${startIndex + 1} đến ${endIndex} của ${filteredProducts.length} sản phẩm`;
+            renderPaginationControls(filteredProducts.length);
+        }
+
+        // --- Render Pagination ---
+        function renderPaginationControls(totalItems) {
+            paginationButtons.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            if (totalPages <= 1) {
+                paginationButtons.style.display = 'none';
+                return;
+            }
+            paginationButtons.style.display = 'flex';
+            
+            // Prev button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer font-medium transition-all duration-300 hover:bg-white/5 hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed';
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.style.opacity = currentPage === 1 ? '0.4' : '1';
+            prevBtn.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            paginationButtons.appendChild(prevBtn);
+            
+            // Page buttons
+            const range = 2; // how many pages to show around current page
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `w-8 h-8 rounded-md flex items-center justify-center cursor-pointer font-medium transition-all duration-300 ${currentPage === i ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none' : 'bg-bg-card border border-white/5 text-text-secondary hover:bg-white/5 hover:text-text-primary'}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', () => {
+                        currentPage = i;
+                        renderTable();
+                    });
+                    paginationButtons.appendChild(pageBtn);
+                } else if (i === currentPage - range - 1 || i === currentPage + range + 1) {
+                    const dots = document.createElement('button');
+                    dots.className = 'bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center font-medium opacity-50';
+                    dots.textContent = '...';
+                    dots.disabled = true;
+                    dots.style.cursor = 'default';
+                    paginationButtons.appendChild(dots);
+                }
+            }
+            
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer font-medium transition-all duration-300 hover:bg-white/5 hover:text-text-primary disabled:opacity-40 disabled:cursor-not-allowed';
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.style.opacity = currentPage === totalPages ? '0.4' : '1';
+            nextBtn.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+            paginationButtons.appendChild(nextBtn);
+        }
+
+        // --- Live Filters & Search ---
+        function handleSearchAndFilters() {
+            const searchVal = searchInput.value.toLowerCase().trim();
+            const catVal = categoryFilter.value;
+            const statVal = statusFilter.value;
+            
+            filteredProducts = products.filter(prod => {
+                const matchesSearch = prod.name.toLowerCase().includes(searchVal) || prod.sku.toLowerCase().includes(searchVal);
+                const matchesCategory = catVal === '' || prod.category === catVal;
+                const matchesStatus = statVal === '' || prod.status === statVal;
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+            
+            currentPage = 1;
+            renderTable();
+        }
+
+        searchInput.addEventListener('input', handleSearchAndFilters);
+        categoryFilter.addEventListener('change', handleSearchAndFilters);
+        statusFilter.addEventListener('change', handleSearchAndFilters);
+
+        // --- Master Checkbox toggling ---
+        if (masterCheckbox) {
+            masterCheckbox.addEventListener('change', function() {
+                const checkboxes = productTableBody.querySelectorAll('.row-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            });
+        }
+
+        // --- SKU Auto Generator ---
+        document.getElementById('btnGenSku').addEventListener('click', () => {
+            const cat = prodCategory.value;
+            let prefix = 'NX-PROD';
+            if (cat === 'Phím cơ & Gaming') prefix = 'NX-KB';
+            else if (cat === 'Âm thanh Cao cấp') prefix = 'NX-HP';
+            else if (cat === 'Phụ kiện Thông minh') prefix = 'NX-SW';
+            
+            const randNum = Math.floor(1000 + Math.random() * 9000);
+            prodSku.value = `${prefix}-${randNum}`;
+            prodSku.classList.remove('invalid');
+        });
+
+        // --- Drawer Opening & Populate & Resets ---
+        function openDrawer(mode, id = null) {
+            // Clear prior validations
+            productForm.querySelectorAll('.form-control').forEach(el => el.classList.remove('invalid'));
+            
+            if (mode === 'add') {
+                drawerTitle.textContent = 'Thêm Sản phẩm mới';
+                productForm.reset();
+                prodId.value = '';
+                
+                // Set default status to active
+                document.querySelectorAll('.status-radio-card').forEach(c => c.classList.remove('active'));
+                const defCard = document.querySelector('.status-radio-card[data-status="active"]');
+                defCard.classList.add('active');
+                defCard.querySelector('input').checked = true;
+                
+                resetImagePreview();
+            } else if (mode === 'edit' && id) {
+                const prod = products.find(p => p.id === parseInt(id));
+                if (!prod) return;
+                
+                drawerTitle.textContent = 'Chỉnh sửa Sản phẩm';
+                prodId.value = prod.id;
+                prodName.value = prod.name;
+                prodCategory.value = prod.category;
+                prodSku.value = prod.sku;
+                prodPrice.value = prod.price;
+                prodStock.value = prod.status === 'draft' ? '' : prod.stock;
+                prodImageUrl.value = prod.image.startsWith('data:') ? '' : prod.image;
+                prodDescription.value = prod.description || '';
+                
+                // Select Status
+                document.querySelectorAll('.status-radio-card').forEach(c => c.classList.remove('active'));
+                const statCard = document.querySelector(`.status-radio-card[data-status="${prod.status}"]`);
+                if (statCard) {
+                    statCard.classList.add('active');
+                    statCard.querySelector('input').checked = true;
+                }
+                
+                // Show Image
+                if (prod.image) {
+                    showImagePreview(prod.image);
+                } else {
+                    resetImagePreview();
+                }
+            }
+            
+            productDrawer.classList.add('active');
+            drawerBackdrop.classList.add('active');
+        }
+
+        // Close drawer
+        function closeDrawer() {
+            productDrawer.classList.remove('active');
+            drawerBackdrop.classList.remove('active');
+        }
+
+        document.getElementById('btnAddNew').addEventListener('click', () => openDrawer('add'));
+        document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+        document.getElementById('btnCancelDrawer').addEventListener('click', closeDrawer);
+        drawerBackdrop.addEventListener('click', closeDrawer);
+
+        // Status radio cards interactive styling
+        document.querySelectorAll('.status-radio-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if(e.target.tagName === 'INPUT') return;
+                document.querySelectorAll('.status-radio-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                this.querySelector('input').checked = true;
+            });
+        });
+
+        // --- Drag & Drop / File Upload / URL preview ---
+        imageUploadArea.addEventListener('click', (e) => {
+            if (e.target.closest('#btnRemovePreview')) return;
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast('Lỗi tải ảnh', 'Dung lượng ảnh vượt quá 2MB.', 'danger');
+                    this.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showImagePreview(e.target.result);
+                    prodImageUrl.value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.add('dragover');
+        });
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.classList.remove('dragover');
+        });
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast('Lỗi tải ảnh', 'Dung lượng ảnh vượt quá 2MB.', 'danger');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showImagePreview(e.target.result);
+                    prodImageUrl.value = '';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        btnRemovePreview.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetImagePreview();
+        });
+
+        prodImageUrl.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val) {
+                showImagePreview(val);
+                fileInput.value = '';
+            } else {
+                resetImagePreview();
+            }
+        });
+
+        function showImagePreview(src) {
+            imgPreview.src = src;
+            imagePreviewOverlay.classList.remove('hidden');
+            imagePreviewOverlay.classList.add('flex');
+        }
+
+        function resetImagePreview() {
+            imgPreview.src = '';
+            imagePreviewOverlay.classList.remove('flex');
+            imagePreviewOverlay.classList.add('hidden');
+            fileInput.value = '';
+            prodImageUrl.value = '';
+        }
+
+        // --- Toast Alerts Utility ---
+        function showToast(title, desc, type = 'info') {
+            const toast = document.createElement('div');
+            
+            let borderClass = 'border-l-accent';
+            let iconClass = 'fa-circle-info text-accent';
+            if (type === 'success') {
+                borderClass = 'border-l-success';
+                iconClass = 'fa-circle-check text-success';
+            } else if (type === 'warning') {
+                borderClass = 'border-l-warning';
+                iconClass = 'fa-triangle-exclamation text-warning';
+            } else if (type === 'danger') {
+                borderClass = 'border-l-danger';
+                iconClass = 'fa-circle-xmark text-danger';
+            }
+            
+            toast.className = `toast ${type} bg-bg-card border border-white/5 border-l-4 ${borderClass} text-text-primary px-5 py-4 rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-3.5 min-w-[320px] max-w-[400px] translate-y-[50px] opacity-0 pointer-events-auto transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]`;
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-base flex-shrink-0"></i>
+                <div class="flex flex-col gap-0.5">
+                    <div class="text-xs font-bold">${escapeHtml(title)}</div>
+                    <div class="text-xs text-text-secondary">${escapeHtml(desc)}</div>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            }, 4000);
+        }
+
+        // --- Form Submit (Add / Edit Action) ---
+        productForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let isValid = true;
+            const reqFields = productForm.querySelectorAll('[required]');
+            reqFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('invalid');
+                }
+            });
+            
+            if (!isValid) {
+                showToast('Thiếu thông tin', 'Vui lòng điền đầy đủ các thông tin bắt buộc (*).', 'warning');
+                return;
+            }
+            
+            const idVal = prodId.value;
+            const nameVal = prodName.value.trim();
+            const catVal = prodCategory.value;
+            const skuVal = prodSku.value.trim();
+            const priceVal = parseFloat(prodPrice.value);
+            
+            const statusVal = document.querySelector('input[name="prodStatus"]:checked').value;
+            
+            let stockVal = parseInt(prodStock.value);
+            if (isNaN(stockVal)) stockVal = 0;
+            if (statusVal === 'draft' && prodStock.value === '') stockVal = 0;
+            
+            const descVal = prodDescription.value.trim();
+            
+            // Image Resolver
+            let imgVal = imgPreview.src;
+            if (!imgVal || imgVal.endsWith('/product-management3.html') || imgVal === window.location.href) {
+                imgVal = 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=100&auto=format&fit=crop&q=80';
+            }
+            
+            if (idVal) {
+                // Update
+                const index = products.findIndex(p => p.id === parseInt(idVal));
+                if (index !== -1) {
+                    products[index] = {
+                        ...products[index],
+                        name: nameVal,
+                        category: catVal,
+                        sku: skuVal,
+                        price: priceVal,
+                        stock: stockVal,
+                        status: statusVal,
+                        image: imgVal,
+                        description: descVal
+                    };
+                    showToast('Đã lưu thay đổi', `Sản phẩm ${skuVal} đã được cập nhật thành công.`, 'success');
+                }
+            } else {
+                // Create
+                const nextId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                products.unshift({
+                    id: nextId,
+                    name: nameVal,
+                    category: catVal,
+                    sku: skuVal,
+                    price: priceVal,
+                    stock: stockVal,
+                    status: statusVal,
+                    image: imgVal,
+                    description: descVal
+                });
+                showToast('Thành công', `Đã thêm sản phẩm mới ${skuVal}.`, 'success');
+            }
+            
+            closeDrawer();
+            handleSearchAndFilters();
+        });
+
+        // Dynamic validation removal
+        productForm.querySelectorAll('.form-control').forEach(el => {
+            el.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('invalid');
+                }
+            });
+            el.addEventListener('change', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('invalid');
+                }
+            });
+        });
+
+        // --- Edit & Delete Click Handlers (Delegated) ---
+        productTableBody.addEventListener('click', function(e) {
+            const editBtn = e.target.closest('.btn-edit');
+            const deleteBtn = e.target.closest('.btn-delete');
+            
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                openDrawer('edit', id);
+            }
+            
+            if (deleteBtn) {
+                const id = parseInt(deleteBtn.dataset.id);
+                const prod = products.find(p => p.id === id);
+                if (!prod) return;
+                
+                if (confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${prod.name}" (SKU: ${prod.sku}) không?`)) {
+                    products = products.filter(p => p.id !== id);
+                    showToast('Đã xóa sản phẩm', `Sản phẩm ${prod.sku} đã bị xóa bỏ.`, 'danger');
+                    handleSearchAndFilters();
+                }
+            }
+        });
+
+        // Initialize Table View
+        renderTable();
+    </script>
+</body>
+</html>

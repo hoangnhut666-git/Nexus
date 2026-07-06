@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS Admin // Category Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-base': '#08070b',
+                        'bg-surface': '#0f0e15',
+                        'bg-card': '#171520',
+                        'bg-card-hover': '#1f1d2b',
+                        'accent': '#6366f1',
+                        'cyber-cyan': '#00f2fe',
+                        'success': '#10b981',
+                        'success-bg': 'rgba(16, 185, 129, 0.1)',
+                        'warning': '#f59e0b',
+                        'warning-bg': 'rgba(245, 158, 11, 0.1)',
+                        'danger': '#ef4444',
+                        'danger-bg': 'rgba(239, 68, 68, 0.1)',
+                        'text-primary': '#f8fafc',
+                        'text-secondary': '#94a3b8',
+                        'text-muted': '#64748b',
+                    },
+                    backgroundImage: {
+                        'accent-gradient': 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            ::-webkit-scrollbar { width: 6px; height: 6px; }
+            ::-webkit-scrollbar-track { background: #08070b; }
+            ::-webkit-scrollbar-thumb { background: #272533; border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+
+            .custom-checkbox {
+                appearance: none;
+                width: 16px; height: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 4px;
+                background: #171520;
+                cursor: pointer;
+                position: relative;
+            }
+            .custom-checkbox:checked {
+                background: #6366f1;
+                border-color: #6366f1;
+            }
+            .custom-checkbox:checked::after {
+                content: '\f00c';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                font-size: 10px;
+                color: #fff;
+                position: absolute;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .drawer-backdrop { transition: opacity 0.3s ease; }
+            .drawer-backdrop.active { opacity: 1 !important; pointer-events: auto !important; }
+
+            .drawer { transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+            .drawer.active { right: 0 !important; }
+
+            .image-upload-area.dragover {
+                border-color: #6366f1 !important;
+                background-color: rgba(99, 102, 241, 0.15) !important;
+            }
+
+            .status-radio-card.active[data-status="active"] {
+                border-color: #10b981 !important;
+                background-color: rgba(16, 185, 129, 0.06) !important;
+            }
+            .status-radio-card.active[data-status="active"] .status-dot {
+                background-color: #10b981 !important;
+                box-shadow: 0 0 8px #10b981 !important;
+            }
+
+            .status-radio-card.active[data-status="hidden"] {
+                border-color: #94a3b8 !important;
+                background-color: rgba(255, 255, 255, 0.03) !important;
+            }
+            .status-radio-card.active[data-status="hidden"] .status-dot {
+                background-color: #94a3b8 !important;
+            }
+
+            .toast.show { transform: translateY(0) !important; opacity: 1 !important; }
+
+            .invalid {
+                border-color: #ef4444 !important;
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.15) !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-bg-base text-text-primary flex h-screen overflow-hidden antialiased font-sans">
+
+    <aside class="w-[260px] bg-bg-surface border-r border-white/5 flex flex-col transition-all duration-300 z-10 flex-shrink-0">
+        <div class="h-20 flex items-center px-6 border-b border-white/5">
+            <a href="#" class="text-[22px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+            </a>
+        </div>
+        
+        <div class="p-6 px-4 flex-1 overflow-y-auto">
+            <div class="text-[11px] uppercase text-text-muted tracking-wider mb-3 pl-3 font-semibold">Main Menu</div>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-chart-pie text-base w-5 text-center"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-box-open text-base w-5 text-center"></i> Products
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-400 bg-indigo-500/10 border-r-[3px] border-indigo-500 text-sm font-semibold mb-1 transition-all duration-300">
+                <i class="fa-solid fa-layer-group text-base w-5 text-center"></i> Categories
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-cart-shopping text-base w-5 text-center"></i> Orders
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-users text-base w-5 text-center"></i> Customers
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-tag text-base w-5 text-center"></i> Promotions
+            </a>
+            
+            <div class="text-[11px] uppercase text-text-muted tracking-wider mb-3 pl-3 font-semibold mt-6">System</div>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-chart-line text-base w-5 text-center"></i> Reports
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary">
+                <i class="fa-solid fa-gear text-base w-5 text-center"></i> Settings
+            </a>
+        </div>
+
+        <div class="p-5 border-t border-white/5 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-sm">A</div>
+            <div class="user-info">
+                <h4 class="text-sm font-semibold mb-0.5">Administrator</h4>
+                <p class="text-xs text-text-muted">admin@nexus.io</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden relative">
+        <div class="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(99,102,241,0.08)_0%,rgba(0,0,0,0)_70%)] z-[-1] pointer-events-none"></div>
+        
+        <header class="h-20 flex items-center justify-between px-8 border-b border-white/5 bg-bg-base/80 backdrop-blur-md">
+            <div class="page-title">
+                <h1 class="text-xl font-bold">Category Management</h1>
+            </div>
+            <div class="flex items-center gap-5">
+                <button class="bg-transparent border-none text-text-secondary text-lg cursor-pointer transition-all duration-300 hover:text-text-primary"><i class="fa-solid fa-moon"></i></button>
+                <button class="bg-transparent border-none text-text-secondary text-lg cursor-pointer relative transition-all duration-300 hover:text-text-primary">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute -top-1 -right-1 bg-danger w-2 h-2 rounded-full"></span>
+                </button>
+            </div>
+        </header>
+
+        <div class="p-8 overflow-y-auto flex-1">
+            
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex gap-4">
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
+                        <input type="text" placeholder="Search by name, slug..." id="searchInput" class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]">
+                    </div>
+                    <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40" id="statusFilter">
+                        <option value="">All statuses</option>
+                        <option value="active">Active</option>
+                        <option value="hidden">Hidden</option>
+                    </select>
+                </div>
+                
+                <button class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-[0_4px_15px_rgba(99,102,241,0.2)] flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)]" id="btnAddNew">
+                    <i class="fa-solid fa-plus"></i> Add Category
+                </button>
+            </div>
+
+            <div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="w-10 py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold"><input type="checkbox" class="custom-checkbox" id="masterCheckbox"></th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Category</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Slug</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Products</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Status</th>
+                            <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoryTableBody">
+                        </tbody>
+                </table>
+
+                <div class="flex justify-between items-center py-5 px-8 border-t border-white/5 text-sm text-text-muted">
+                    <div id="paginationText">Showing 0 to 0 of 0 categories</div>
+                    <div class="flex gap-2" id="paginationButtons">
+                        </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <div class="drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none" id="drawerBackdrop"></div>
+
+    <div class="drawer fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col" id="categoryDrawer">
+        <div class="h-20 px-8 flex items-center justify-between border-b border-white/5">
+            <h3 id="drawerTitle" class="text-lg font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Add New Category</h3>
+            <button class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-white/5 hover:rotate-90" id="btnCloseDrawer" title="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="categoryForm" novalidate class="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div class="drawer-body p-8 overflow-y-auto flex-1 flex flex-col gap-6">
+                <input type="hidden" id="catId">
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="catName">Category Name *</label>
+                    <input type="text" id="catName" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full" placeholder="e.g. Mechanical & Gaming" required>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="catSlug">Slug *</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="catSlug" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted flex-1" placeholder="mechanical-gaming" required>
+                        <button type="button" class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap" id="btnGenSlug" title="Generate from name">
+                            <i class="fa-solid fa-bolt mr-2"></i> Generate
+                        </button>
+                    </div>
+                    <span class="text-[10px] text-text-muted">SEO-friendly URL (e.g. nexus.io/category/mechanical-gaming)</span>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Status *</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="status-radio-card active border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover" data-status="active">
+                            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+                            <span class="text-xs font-semibold">Active</span>
+                        </label>
+                        <label class="status-radio-card border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover" data-status="hidden">
+                            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+                            <span class="text-xs font-semibold">Hidden</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2.5">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Image / Icon</label>
+                    
+                    <div class="border-2 border-dashed border-white/5 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-white/[0.01] relative overflow-hidden min-h-[120px] flex flex-col justify-center items-center gap-2 hover:border-accent hover:bg-accent/10 group" id="imageUploadArea">
+                        <i class="fa-solid fa-shapes text-3xl text-text-muted transition-all duration-300 group-hover:text-accent group-hover:-translate-y-0.5"></i>
+                        <p class="text-xs text-text-secondary">Drag & drop an icon/image here or click to upload</p>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        
+                        <div class="absolute inset-0 bg-bg-card hidden items-center justify-center z-[5]" id="imagePreviewOverlay">
+                            <button type="button" class="absolute top-2 right-2 bg-red-600/85 text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 text-[10px] hover:bg-red-600 hover:scale-110 z-[6]" id="btnRemovePreview" title="Remove image">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <img src="" alt="Preview" id="imgPreview" class="max-w-full max-h-full object-contain p-2">
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 mt-1">
+                        <input type="url" id="catImageUrl" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full" placeholder="Or paste image URL here...">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="catDescription">Description</label>
+                    <textarea id="catDescription" class="bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full resize-y min-h-[90px] font-sans" placeholder="Brief description of this category..."></textarea>
+                </div>
+            </div>
+            
+            <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
+                <button type="button" class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary" id="btnCancelDrawer">Cancel</button>
+                <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Category
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="toast-container fixed bottom-6 right-6 flex flex-col gap-3 z-[9999] pointer-events-none" id="toastContainer"></div>
+
+    <script>
+        // --- State & Mock Data ---
+        let categories = [
+            { id: 1, name: "Mechanical & Gaming", slug: "mechanical-gaming", count: 124, status: "active", image: "https://images.unsplash.com/photo-1595225476474-87563907a212?w=100&auto=format&fit=crop&q=80", description: "Mechanical keyboards, mice, and gaming peripherals." },
+            { id: 2, name: "Premium Audio", slug: "premium-audio", count: 85, status: "active", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&auto=format&fit=crop&q=80", description: "Headphones, Bluetooth speakers, and Hi-Res audio devices." },
+            { id: 3, name: "Smart Accessories", slug: "smart-accessories", count: 42, status: "active", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&auto=format&fit=crop&q=80", description: "Smartwatches, smart home devices, and IoT gadgets." },
+            { id: 4, name: "Displays & Monitors", slug: "displays-monitors", count: 18, status: "active", image: "https://images.unsplash.com/photo-1527443224154-c4a3942d4aff?w=100&auto=format&fit=crop&q=80", description: "PC monitors, monitor arms, and screen bars." },
+            { id: 5, name: "Backpacks & Cases", slug: "backpacks-cases", count: 0, status: "hidden", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100&auto=format&fit=crop&q=80", description: "Protective bags and cases for electronics on the go." }
+        ];
+
+        // Gen demo data for pagination
+        for (let i = 6; i <= 25; i++) {
+            const isHidden = i % 4 === 0;
+            categories.push({
+                id: i,
+                name: `Demo Category ${i}`,
+                slug: `demo-category-${i}`,
+                count: Math.floor(Math.random() * 50),
+                status: isHidden ? "hidden" : "active",
+                image: "https://images.unsplash.com/photo-1618424181497-157f25b6ce5b?w=100&auto=format&fit=crop&q=80",
+                description: `Auto-generated description for category ${i}.`
+            });
+        }
+
+        const ITEMS_PER_PAGE = 6;
+        let currentPage = 1;
+        let filteredData = [...categories];
+
+        // --- Selectors ---
+        const tableBody = document.getElementById('categoryTableBody');
+        const paginationText = document.getElementById('paginationText');
+        const paginationButtons = document.getElementById('paginationButtons');
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const masterCheckbox = document.getElementById('masterCheckbox');
+        
+        const categoryDrawer = document.getElementById('categoryDrawer');
+        const drawerBackdrop = document.getElementById('drawerBackdrop');
+        const categoryForm = document.getElementById('categoryForm');
+        const drawerTitle = document.getElementById('drawerTitle');
+        const toastContainer = document.getElementById('toastContainer');
+        
+        const catId = document.getElementById('catId');
+        const catName = document.getElementById('catName');
+        const catSlug = document.getElementById('catSlug');
+        const catDescription = document.getElementById('catDescription');
+        const catImageUrl = document.getElementById('catImageUrl');
+        
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviewOverlay = document.getElementById('imagePreviewOverlay');
+        const imgPreview = document.getElementById('imgPreview');
+        const btnRemovePreview = document.getElementById('btnRemovePreview');
+
+        // --- Helpers ---
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[m]));
+        }
+
+        // Generate slug from string
+        function generateSlug(str) {
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d").replace(/Đ/g, "D")
+                .replace(/[^a-z0-9\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-")
+                .replace(/^-+|-+$/g, "");
+        }
+
+        // --- Render UI ---
+        function renderTable() {
+            tableBody.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredData.length);
+            const paginatedItems = filteredData.slice(startIndex, endIndex);
+            
+            if (paginatedItems.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-text-muted"><i class="fa-regular fa-folder-open text-[36px] mb-3 block opacity-60"></i>No categories found.</td></tr>`;
+                paginationText.textContent = 'Showing 0 to 0 of 0 categories';
+                renderPaginationControls(0);
+                if(masterCheckbox) masterCheckbox.checked = false;
+                return;
+            }
+            
+            paginatedItems.forEach(item => {
+                let statusClass = item.status === 'active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-white/5 text-text-secondary border-white/5';
+                let statusText = item.status === 'active' ? 'Active' : 'Hidden';
+                
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/[0.01] hover:text-text-primary transition-colors duration-300';
+                tr.innerHTML = `
+                    <td class="py-4 px-5 border-b border-white/5 text-sm align-middle"><input type="checkbox" class="custom-checkbox row-checkbox"></td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                        <div class="flex items-center gap-4">
+                            <img src="${item.image || 'https://via.placeholder.com/100?text=Icon'}" class="w-10 h-10 rounded-lg object-cover bg-bg-base border border-white/5 p-1" onerror="this.src='https://via.placeholder.com/100?text=Icon'">
+                            <div>
+                                <div class="font-semibold text-text-primary">${escapeHtml(item.name)}</div>
+                                <div class="text-[11px] text-text-muted truncate max-w-[200px]" title="${escapeHtml(item.description)}">${escapeHtml(item.description) || 'No description'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">/${escapeHtml(item.slug)}</td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">${item.count}</td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm align-middle"><span class="inline-block px-3 py-1.5 rounded-full text-xs font-semibold border ${statusClass}">${statusText}</span></td>
+                    <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                        <div class="flex gap-2">
+                            <button class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500 hover:text-white hover:border-indigo-500 btn-edit" data-id="${item.id}" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
+                            <button class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-rose-500 hover:text-white hover:border-rose-500 btn-delete" data-id="${item.id}" title="Delete" ${item.count > 0 ? 'disabled style="opacity:0.3; cursor:not-allowed"' : ''}><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            const rowCheckboxes = tableBody.querySelectorAll('.row-checkbox');
+            rowCheckboxes.forEach(cb => cb.addEventListener('change', () => {
+                if(masterCheckbox) masterCheckbox.checked = Array.from(rowCheckboxes).every(c => c.checked);
+            }));
+            if(masterCheckbox) masterCheckbox.checked = false;
+            
+            paginationText.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${filteredData.length} categories`;
+            renderPaginationControls(filteredData.length);
+        }
+
+        function renderPaginationControls(totalItems) {
+            paginationButtons.innerHTML = '';
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            if (totalPages <= 1) return;
+            
+            const createBtn = (content, isDisabled, onClick, isCurrent = false) => {
+                const btn = document.createElement('button');
+                btn.className = `w-8 h-8 rounded-md flex items-center justify-center font-medium transition-all duration-300 ${isCurrent ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none' : 'bg-bg-card border border-white/5 text-text-secondary'}`;
+                if(!isCurrent && !isDisabled) btn.classList.add('hover:bg-white/5', 'hover:text-text-primary', 'cursor-pointer');
+                if(isDisabled) { btn.disabled = true; btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed'; }
+                btn.innerHTML = content;
+                if(onClick) btn.addEventListener('click', onClick);
+                return btn;
+            };
+
+            paginationButtons.appendChild(createBtn('<i class="fa-solid fa-chevron-left"></i>', currentPage === 1, () => { currentPage--; renderTable(); }));
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    paginationButtons.appendChild(createBtn(i, false, () => { currentPage = i; renderTable(); }, currentPage === i));
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    paginationButtons.appendChild(createBtn('...', true, null));
+                }
+            }
+            paginationButtons.appendChild(createBtn('<i class="fa-solid fa-chevron-right"></i>', currentPage === totalPages, () => { currentPage++; renderTable(); }));
+        }
+
+        // --- Filters ---
+        function applyFilters() {
+            const searchVal = searchInput.value.toLowerCase().trim();
+            const statVal = statusFilter.value;
+            filteredData = categories.filter(item => {
+                const matchSearch = item.name.toLowerCase().includes(searchVal) || item.slug.toLowerCase().includes(searchVal);
+                const matchStat = statVal === '' || item.status === statVal;
+                return matchSearch && matchStat;
+            });
+            currentPage = 1; renderTable();
+        }
+        searchInput.addEventListener('input', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+
+        // --- Drawer Logic ---
+        function openDrawer(mode, id = null) {
+            categoryForm.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+            
+            if (mode === 'add') {
+                drawerTitle.textContent = 'Add New Category';
+                categoryForm.reset();
+                catId.value = '';
+                document.querySelectorAll('.status-radio-card').forEach(c => c.classList.remove('active'));
+                document.querySelector('.status-radio-card[data-status="active"]').classList.add('active');
+                resetImagePreview();
+            } else if (mode === 'edit' && id) {
+                const item = categories.find(c => c.id === parseInt(id));
+                if (!item) return;
+                drawerTitle.textContent = 'Edit Category';
+                catId.value = item.id;
+                catName.value = item.name;
+                catSlug.value = item.slug;
+                catDescription.value = item.description || '';
+                catImageUrl.value = item.image.startsWith('data:') ? '' : item.image;
+                
+                document.querySelectorAll('.status-radio-card').forEach(c => c.classList.remove('active'));
+                document.querySelector(`.status-radio-card[data-status="${item.status}"]`)?.classList.add('active');
+                
+                if (item.image) showImagePreview(item.image);
+                else resetImagePreview();
+            }
+            categoryDrawer.classList.add('active');
+            drawerBackdrop.classList.add('active');
+        }
+        
+        function closeDrawer() {
+            categoryDrawer.classList.remove('active');
+            drawerBackdrop.classList.remove('active');
+        }
+
+        document.getElementById('btnAddNew').addEventListener('click', () => openDrawer('add'));
+        document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+        document.getElementById('btnCancelDrawer').addEventListener('click', closeDrawer);
+        drawerBackdrop.addEventListener('click', closeDrawer);
+        document.getElementById('btnGenSlug').addEventListener('click', () => {
+            if(catName.value.trim()) { catSlug.value = generateSlug(catName.value); catSlug.classList.remove('invalid'); }
+        });
+
+        // Status Select
+        document.querySelectorAll('.status-radio-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.status-radio-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Image Logic
+        imageUploadArea.addEventListener('click', (e) => { if (!e.target.closest('#btnRemovePreview')) fileInput.click(); });
+        fileInput.addEventListener('change', function() {
+            if (this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { showImagePreview(e.target.result); catImageUrl.value = ''; };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        btnRemovePreview.addEventListener('click', (e) => { e.stopPropagation(); resetImagePreview(); });
+        catImageUrl.addEventListener('input', function() { if (this.value.trim()) { showImagePreview(this.value); fileInput.value = ''; } else resetImagePreview(); });
+
+        function showImagePreview(src) {
+            imgPreview.src = src;
+            imagePreviewOverlay.classList.remove('hidden');
+            imagePreviewOverlay.classList.add('flex');
+        }
+        function resetImagePreview() {
+            imgPreview.src = '';
+            imagePreviewOverlay.classList.remove('flex');
+            imagePreviewOverlay.classList.add('hidden');
+            fileInput.value = catImageUrl.value = '';
+        }
+
+        // --- Notifications ---
+        function showToast(title, desc, type = 'info') {
+            const toast = document.createElement('div');
+            const map = { success: ['border-l-success', 'fa-circle-check text-success'], danger: ['border-l-danger', 'fa-circle-xmark text-danger'], warning: ['border-l-warning', 'fa-triangle-exclamation text-warning'] };
+            const style = map[type] || ['border-l-accent', 'fa-circle-info text-accent'];
+            toast.className = `toast bg-bg-card border border-white/5 border-l-4 ${style[0]} text-text-primary px-5 py-4 rounded-lg shadow-xl flex items-center gap-3.5 w-max max-w-[400px] translate-y-[50px] opacity-0 transition-all duration-300`;
+            toast.innerHTML = `<i class="fa-solid ${style[1]} text-base"></i><div class="flex flex-col gap-0.5"><div class="text-xs font-bold">${escapeHtml(title)}</div><div class="text-xs text-text-secondary">${escapeHtml(desc)}</div></div>`;
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        // --- Form Submit ---
+        categoryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            let isValid = true;
+            [catName, catSlug].forEach(field => {
+                if (!field.value.trim()) { field.classList.add('invalid'); isValid = false; }
+            });
+            if (!isValid) return showToast('Missing information', 'Please enter Name and Slug.', 'warning');
+
+            const id = catId.value;
+            const payload = {
+                name: catName.value.trim(),
+                slug: catSlug.value.trim(),
+                status: document.querySelector('.status-radio-card.active').dataset.status,
+                image: imgPreview.src || '',
+                description: catDescription.value.trim()
+            };
+            if(payload.image.includes('category-management.html')) payload.image = '';
+
+            if (id) {
+                const idx = categories.findIndex(c => c.id === parseInt(id));
+                if (idx > -1) {
+                    categories[idx] = { ...categories[idx], ...payload };
+                    showToast('Success', 'Category updated.', 'success');
+                }
+            } else {
+                payload.id = categories.length ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+                payload.count = 0;
+                categories.unshift(payload);
+                showToast('Success', 'New category added.', 'success');
+            }
+            closeDrawer(); applyFilters();
+        });
+
+        categoryForm.querySelectorAll('input').forEach(el => el.addEventListener('input', function() { if(this.value.trim()) this.classList.remove('invalid'); }));
+
+        // Edit / Delete Actions
+        tableBody.addEventListener('click', function(e) {
+            const btnEdit = e.target.closest('.btn-edit');
+            const btnDel = e.target.closest('.btn-delete');
+            if (btnEdit) openDrawer('edit', btnEdit.dataset.id);
+            if (btnDel && !btnDel.disabled) {
+                const item = categories.find(c => c.id === parseInt(btnDel.dataset.id));
+                if (item && confirm(`Delete category "${item.name}"?`)) {
+                    categories = categories.filter(c => c.id !== item.id);
+                    showToast('Deleted', `Successfully deleted ${item.name}`, 'danger');
+                    applyFilters();
+                }
+            } else if (btnDel && btnDel.disabled) {
+                showToast('Cannot delete', 'Category contains products and cannot be deleted.', 'warning');
+            }
+        });
+
+        // Init
+        renderTable();
+    </script>
+</body>
+</html>

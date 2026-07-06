@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS // Đăng ký</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-base': '#08070b',
+                        'bg-surface': '#0f0e15',
+                        'bg-card': '#171520',
+                        'bg-card-hover': '#1f1d2b',
+                        'accent': '#6366f1',
+                        'cyber-cyan': '#00f2fe',
+                        'success': '#10b981',
+                        'success-bg': 'rgba(16, 185, 129, 0.1)',
+                        'warning': '#f59e0b',
+                        'warning-bg': 'rgba(245, 158, 11, 0.1)',
+                        'danger': '#ef4444',
+                        'danger-bg': 'rgba(239, 68, 68, 0.1)',
+                        'text-primary': '#f8fafc',
+                        'text-secondary': '#94a3b8',
+                        'text-muted': '#64748b',
+                    },
+                    backgroundImage: {
+                        'accent-gradient': 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* Checkbox style */
+            .custom-checkbox {
+                appearance: none;
+                width: 16px; height: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 4px;
+                background: #171520;
+                cursor: pointer;
+                position: relative;
+                transition: all 0.3s ease;
+            }
+            .custom-checkbox:checked {
+                background: #6366f1;
+                border-color: #6366f1;
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+            }
+            .custom-checkbox:checked::after {
+                content: '\f00c';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                font-size: 10px;
+                color: #fff;
+                position: absolute;
+                top: 50%; left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .toast.show {
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+            }
+
+            .invalid {
+                border-color: #ef4444 !important;
+                box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-bg-base text-text-primary flex min-h-screen overflow-hidden antialiased font-sans">
+
+    <!-- Container chính chia đôi (Split Screen) -->
+    <main class="w-full flex">
+        
+        <!-- SIDE 1: LEFT BRAND/GRAPHIC PANEL (Ẩn trên thiết bị di động - Giống hệt login.html) -->
+        <section class="hidden lg:flex lg:w-1/2 bg-bg-surface border-r border-white/5 flex-col justify-between p-16 relative overflow-hidden">
+            <!-- Neon Glow Backgrounds -->
+            <div class="absolute -top-[10%] -left-[10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(99,102,241,0.12)_0%,rgba(0,0,0,0)_70%)] z-[0] pointer-events-none animate-pulse" style="animation-duration: 8s;"></div>
+            <div class="absolute -bottom-[15%] -right-[5%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(0,242,254,0.06)_0%,rgba(0,0,0,0)_70%)] z-[0] pointer-events-none animate-pulse" style="animation-duration: 12s;"></div>
+            
+            <!-- Logo Header -->
+            <div class="z-10">
+                <a href="#" class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+                    <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+                </a>
+            </div>
+
+            <!-- Graphic Display (Visual Mockup of the System) -->
+            <div class="z-10 my-auto relative w-full max-w-[420px] mx-auto">
+                
+                <!-- Main Glassmorphic Card -->
+                <div class="bg-bg-card/45 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 hover:scale-[1.03] hover:border-indigo-500/30 group">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500/70"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500/70"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500/70"></span>
+                        </div>
+                        <div class="text-[10px] text-text-muted uppercase font-bold tracking-widest bg-white/5 py-1 px-2.5 rounded-full font-sans">NEXUS System</div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-xs text-text-secondary mb-1">Doanh thu tháng này</div>
+                            <div class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent flex items-baseline gap-2">
+                                142.384.500 ₫
+                                <span class="text-xs font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md flex items-center gap-0.5 font-sans">
+                                    <i class="fa-solid fa-caret-up"></i> 12.4%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Simple Mock Bar Chart -->
+                        <div class="h-28 flex items-end gap-3.5 pt-4 border-t border-white/5">
+                            <div class="w-full bg-white/5 hover:bg-indigo-500/35 transition-all duration-300 rounded-md h-[40%] cursor-pointer relative group/bar">
+                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-bg-base border border-white/10 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity font-sans">40%</span>
+                            </div>
+                            <div class="w-full bg-white/5 hover:bg-indigo-500/35 transition-all duration-300 rounded-md h-[65%] cursor-pointer relative group/bar">
+                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-bg-base border border-white/10 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity font-sans">65%</span>
+                            </div>
+                            <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-500 rounded-md h-[90%] cursor-pointer relative group/bar shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-bg-base border border-white/10 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity font-bold font-sans">90%</span>
+                            </div>
+                            <div class="w-full bg-white/5 hover:bg-indigo-500/35 transition-all duration-300 rounded-md h-[50%] cursor-pointer relative group/bar">
+                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-bg-base border border-white/10 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity font-sans">50%</span>
+                            </div>
+                            <div class="w-full bg-white/5 hover:bg-indigo-500/35 transition-all duration-300 rounded-md h-[75%] cursor-pointer relative group/bar">
+                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-bg-base border border-white/10 text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity font-sans">75%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floating Glass Card 1 (System Health) -->
+                <div class="absolute -top-8 -right-8 bg-[#171520]/75 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl flex items-center gap-3.5 shadow-lg animate-bounce" style="animation-duration: 4s;">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <i class="fa-solid fa-bolt text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-text-muted font-bold uppercase tracking-wider">Hệ thống</div>
+                        <div class="text-xs font-bold text-text-primary">Độ trễ: 12ms</div>
+                    </div>
+                </div>
+
+                <!-- Floating Glass Card 2 (User Signin alert) -->
+                <div class="absolute -bottom-8 -left-8 bg-[#171520]/75 backdrop-blur-xl border border-white/10 p-3.5 rounded-2xl flex items-center gap-3.5 shadow-lg animate-bounce" style="animation-duration: 6s;">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <i class="fa-solid fa-shield-halved text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-text-muted font-bold uppercase tracking-wider">Bảo mật</div>
+                        <div class="text-xs font-bold text-text-primary">Mã hóa AES-256</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Text -->
+            <div class="z-10 max-w-sm">
+                <p class="text-sm text-text-secondary leading-relaxed">
+                    Trải nghiệm trình quản trị thông minh hàng đầu. Tối ưu hóa quy trình, trực quan hóa dữ liệu và vận hành hệ thống bán hàng chỉ bằng một chạm.
+                </p>
+            </div>
+        </section>
+
+        <!-- SIDE 2: RIGHT REGISTER FORM PANEL -->
+        <section class="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 sm:p-12 md:p-24 relative z-10 bg-bg-base overflow-y-auto">
+            <!-- Glowing background radial -->
+            <div class="absolute -top-[10%] -right-[5%] w-[450px] h-[450px] bg-[radial-gradient(circle,rgba(168,85,247,0.06)_0%,rgba(0,0,0,0)_70%)] z-[-1] pointer-events-none"></div>
+            
+            <div class="w-full max-w-[420px] flex flex-col gap-6 my-auto">
+                <!-- Mobile Logo Header (chỉ hiện khi màn hình nhỏ) -->
+                <div class="lg:hidden flex justify-center mb-2">
+                    <span class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+                        <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+                    </span>
+                </div>
+
+                <!-- Form Header Text -->
+                <div class="text-center lg:text-left">
+                    <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-1.5">Tạo tài khoản mới</h2>
+                    <p class="text-text-secondary text-sm">Điền thông tin bên dưới để đăng ký tài khoản quản trị.</p>
+                </div>
+
+                <!-- Registration Form -->
+                <form id="registerForm" class="flex flex-col gap-4" novalidate>
+                    <!-- Full Name Field -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="fullName">Họ và tên *</label>
+                        <div class="relative flex items-center group">
+                            <i class="fa-regular fa-user absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                            <input type="text" id="fullName" class="form-control w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-4 py-3 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]" placeholder="Ví dụ: Nguyễn Văn A" required>
+                        </div>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="email">Địa chỉ Email *</label>
+                        <div class="relative flex items-center group">
+                            <i class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                            <input type="email" id="email" class="form-control w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-4 py-3 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]" placeholder="admin@nexus.io" required>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="password">Mật khẩu *</label>
+                        <div class="relative flex items-center group">
+                            <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                            <input type="password" id="password" class="form-control w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-12 py-3 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]" placeholder="Tối thiểu 6 ký tự" required>
+                            
+                            <!-- Toggle view button -->
+                            <button type="button" id="btnTogglePassword" class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none" title="Hiển thị mật khẩu">
+                                <i class="fa-regular fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="confirmPassword">Xác nhận mật khẩu *</label>
+                        <div class="relative flex items-center group">
+                            <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                            <input type="password" id="confirmPassword" class="form-control w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-12 py-3 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]" placeholder="Nhập lại mật khẩu" required>
+                            
+                            <!-- Toggle view button -->
+                            <button type="button" id="btnToggleConfirmPassword" class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none" title="Hiển thị mật khẩu">
+                                <i class="fa-regular fa-eye" id="toggleConfirmIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Terms Agreement Checkbox -->
+                    <div class="flex items-start gap-2.5 mt-1 select-none">
+                        <input type="checkbox" class="custom-checkbox mt-0.5" id="termsAgree">
+                        <label for="termsAgree" class="text-xs text-text-secondary cursor-pointer leading-tight">
+                            Tôi đồng ý với <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Điều khoản dịch vụ</a> và <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Chính sách bảo mật</a>.
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="btnRegister" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group mt-2">
+                        <span id="btnText">Đăng ký Tài khoản</span>
+                        <i class="fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1" id="btnIcon"></i>
+                    </button>
+                </form>
+
+                <!-- Redirect to Login -->
+                <div class="text-center text-xs text-text-muted mt-2">
+                    Đã có tài khoản quản trị? <a href="login.html" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Đăng nhập ngay</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container fixed bottom-6 right-6 flex flex-col gap-3 z-[9999] pointer-events-none" id="toastContainer"></div>
+
+    <!-- UI Logic and Mock Registration -->
+    <script>
+        // DOM Elements
+        const registerForm = document.getElementById('registerForm');
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const termsAgreeCheckbox = document.getElementById('termsAgree');
+        
+        const btnRegister = document.getElementById('btnRegister');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        
+        const btnTogglePassword = document.getElementById('btnTogglePassword');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const btnToggleConfirmPassword = document.getElementById('btnToggleConfirmPassword');
+        const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
+        
+        const toastContainer = document.getElementById('toastContainer');
+
+        // Toggle Password Visibility
+        btnTogglePassword.addEventListener('click', () => {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            toggleIcon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        });
+
+        // Toggle Confirm Password Visibility
+        btnToggleConfirmPassword.addEventListener('click', () => {
+            const isPassword = confirmPasswordInput.getAttribute('type') === 'password';
+            confirmPasswordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            toggleConfirmIcon.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        });
+
+        // Dynamic Validation Removal
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('invalid');
+                }
+            });
+        });
+
+        // Escape HTML helper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, "&amp;")
+                             .replace(/</g, "&lt;")
+                             .replace(/>/g, "&gt;")
+                             .replace(/"/g, "&quot;")
+                             .replace(/'/g, "&#039;");
+        }
+
+        // Toast Alerts Utility (Matching login.html)
+        function showToast(title, desc, type = 'info') {
+            const toast = document.createElement('div');
+            
+            let borderClass = 'border-l-accent';
+            let iconClass = 'fa-circle-info text-accent';
+            if (type === 'success') {
+                borderClass = 'border-l-success';
+                iconClass = 'fa-circle-check text-success';
+            } else if (type === 'warning') {
+                borderClass = 'border-l-warning';
+                iconClass = 'fa-triangle-exclamation text-warning';
+            } else if (type === 'danger') {
+                borderClass = 'border-l-danger';
+                iconClass = 'fa-circle-xmark text-danger';
+            }
+            
+            toast.className = `toast ${type} bg-bg-card border border-white/5 border-l-4 ${borderClass} text-text-primary px-5 py-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-3.5 min-w-[320px] max-w-[400px] translate-y-[50px] opacity-0 pointer-events-auto transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]`;
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-base flex-shrink-0"></i>
+                <div class="flex flex-col gap-0.5">
+                    <div class="text-xs font-bold">${escapeHtml(title)}</div>
+                    <div class="text-xs text-text-secondary">${escapeHtml(desc)}</div>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            }, 4000);
+        }
+
+        // Email validation regex helper
+        function isValidEmail(email) {
+            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        // Form Submit Simulation
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const fullNameVal = fullNameInput.value.trim();
+            const emailVal = emailInput.value.trim();
+            const passwordVal = passwordInput.value;
+            const confirmPasswordVal = confirmPasswordInput.value;
+            const termsAgreed = termsAgreeCheckbox.checked;
+            
+            let isValid = true;
+
+            // Name validation
+            if (!fullNameVal) {
+                fullNameInput.classList.add('invalid');
+                isValid = false;
+            }
+
+            // Email validation
+            if (!emailVal || !isValidEmail(emailVal)) {
+                emailInput.classList.add('invalid');
+                isValid = false;
+                if(emailVal) {
+                    showToast('Định dạng sai', 'Vui lòng nhập địa chỉ email hợp lệ.', 'warning');
+                    return;
+                }
+            }
+
+            // Password length validation
+            if (!passwordVal || passwordVal.length < 6) {
+                passwordInput.classList.add('invalid');
+                isValid = false;
+                if(passwordVal) {
+                    showToast('Mật khẩu yếu', 'Mật khẩu phải có độ dài tối thiểu 6 ký tự.', 'warning');
+                    return;
+                }
+            }
+
+            // Confirm Password validation
+            if (!confirmPasswordVal) {
+                confirmPasswordInput.classList.add('invalid');
+                isValid = false;
+            } else if (passwordVal !== confirmPasswordVal) {
+                passwordInput.classList.add('invalid');
+                confirmPasswordInput.classList.add('invalid');
+                isValid = false;
+                showToast('Không trùng khớp', 'Xác nhận mật khẩu không khớp với mật khẩu đã nhập.', 'danger');
+                return;
+            }
+
+            // General empty field validation toast
+            if (!isValid && (!fullNameVal || !emailVal || !passwordVal || !confirmPasswordVal)) {
+                showToast('Thiếu thông tin', 'Vui lòng nhập đầy đủ các trường thông tin bắt buộc (*).', 'warning');
+                return;
+            }
+
+            // Terms checkbox validation
+            if (!termsAgreed) {
+                showToast('Điều khoản dịch vụ', 'Bạn phải đồng ý với Điều khoản dịch vụ để tạo tài khoản.', 'warning');
+                return;
+            }
+
+            // Mock registration submission API call
+            btnRegister.disabled = true;
+            btnText.textContent = 'Đang khởi tạo tài khoản...';
+            btnIcon.className = 'fa-solid fa-spinner animate-spin';
+
+            setTimeout(() => {
+                showToast('Đăng ký thành công', 'Tài khoản quản trị của bạn đã được khởi tạo! Đang chuyển hướng về trang đăng nhập...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

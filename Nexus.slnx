@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Nexus.csproj" />
+  <Project Path="Nexus.Test.Integration\Nexus.Test.Integration.csproj" />
+</Solution>

@@ -1,0 +1,303 @@
+﻿@page "/Account/Register"
+@layout AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using Nexus.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>NEXUS // Đăng ký</PageTitle>
+
+<div class="w-full max-w-[420px] flex flex-col gap-6 my-auto">
+    <div class="lg:hidden flex justify-center mb-2">
+        <span class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+            <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+        </span>
+    </div>
+
+    <div class="text-center lg:text-left">
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-1.5">Tạo tài khoản mới</h2>
+        <p class="text-text-secondary text-sm">Điền thông tin bên dưới để đăng ký tài khoản khách hàng.</p>
+    </div>
+
+    <StatusMessage Message="@Message" />
+
+    <EditForm EditContext="editContext" method="post" OnSubmit="RegisterUser" FormName="register" class="flex flex-col gap-4">
+        <DataAnnotationsValidator />
+
+        <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.FullName">Họ và tên *</label>
+            <div class="relative flex items-center group">
+                <i class="fa-regular fa-user absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                <InputText @bind-Value="Input.FullName"
+                           id="Input.FullName"
+                           class="@GetInputClass(() => Input.FullName)"
+                           autocomplete="name"
+                           aria-required="true"
+                           placeholder="Ví dụ: Nguyễn Văn A" />
+            </div>
+            <ValidationMessage For="() => Input.FullName" class="text-danger text-xs" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Địa chỉ Email *</label>
+            <div class="relative flex items-center group">
+                <i class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                <InputText @bind-Value="Input.Email"
+                           id="Input.Email"
+                           class="@GetInputClass(() => Input.Email)"
+                           autocomplete="username"
+                           aria-required="true"
+                           placeholder="customer@nexus.io" />
+            </div>
+            <ValidationMessage For="() => Input.Email" class="text-danger text-xs" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Mật khẩu *</label>
+            <div class="relative flex items-center group">
+                <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                <InputText type="@passwordInputType"
+                           @bind-Value="Input.Password"
+                           id="Input.Password"
+                           class="@($"{GetInputClass(() => Input.Password)} pr-12")"
+                           autocomplete="new-password"
+                           aria-required="true"
+                           placeholder="Tối thiểu 6 ký tự" />
+                <button type="button"
+                        @onclick="TogglePasswordVisibility"
+                        class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
+                        title="Hiển thị mật khẩu">
+                    <i class="@passwordToggleIconClass"></i>
+                </button>
+            </div>
+            <ValidationMessage For="() => Input.Password" class="text-danger text-xs" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.ConfirmPassword">Xác nhận mật khẩu *</label>
+            <div class="relative flex items-center group">
+                <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                <InputText type="@confirmPasswordInputType"
+                           @bind-Value="Input.ConfirmPassword"
+                           id="Input.ConfirmPassword"
+                           class="@($"{GetInputClass(() => Input.ConfirmPassword)} pr-12")"
+                           autocomplete="new-password"
+                           aria-required="true"
+                           placeholder="Nhập lại mật khẩu" />
+                <button type="button"
+                        @onclick="ToggleConfirmPasswordVisibility"
+                        class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
+                        title="Hiển thị mật khẩu">
+                    <i class="@confirmPasswordToggleIconClass"></i>
+                </button>
+            </div>
+            <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger text-xs" />
+        </div>
+
+        <div class="flex items-start gap-2.5 mt-1 select-none">
+            <InputCheckbox @bind-Value="Input.AcceptTerms" id="Input.AcceptTerms" class="custom-checkbox mt-0.5" />
+            <label for="Input.AcceptTerms" class="text-xs text-text-secondary cursor-pointer leading-tight">
+                Tôi đồng ý với <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Điều khoản dịch vụ</a> và <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Chính sách bảo mật</a>.
+            </label>
+        </div>
+        <ValidationMessage For="() => Input.AcceptTerms" class="text-danger text-xs" />
+
+        <button type="submit"
+                disabled="@isSubmitting"
+                class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+            <span>@(isSubmitting ? "Đang khởi tạo tài khoản..." : "Đăng ký Tài khoản")</span>
+            <i class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
+        </button>
+    </EditForm>
+
+    <div class="text-center text-xs text-text-muted mt-2">
+        Đã có tài khoản?
+        <a href="@loginUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Đăng nhập ngay</a>
+    </div>
+</div>
+
+@code {
+    private const string InputBaseClass = "w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-4 py-3 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
+
+    private IEnumerable<IdentityError>? identityErrors;
+    private EditContext editContext = default!;
+    private bool isSubmitting;
+    private string passwordInputType = "password";
+    private string confirmPasswordInputType = "password";
+    private string passwordToggleIconClass = "fa-regular fa-eye";
+    private string confirmPasswordToggleIconClass = "fa-regular fa-eye";
+
+    private string loginUrl => NavigationManager.GetUriWithQueryParameters(
+        "Account/Login",
+        new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl });
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string? Message => identityErrors is null
+        ? null
+        : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override void OnInitialized()
+    {
+        Input ??= new();
+        editContext = new EditContext(Input);
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        if (passwordInputType == "password")
+        {
+            passwordInputType = "text";
+            passwordToggleIconClass = "fa-regular fa-eye-slash";
+        }
+        else
+        {
+            passwordInputType = "password";
+            passwordToggleIconClass = "fa-regular fa-eye";
+        }
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        if (confirmPasswordInputType == "password")
+        {
+            confirmPasswordInputType = "text";
+            confirmPasswordToggleIconClass = "fa-regular fa-eye-slash";
+        }
+        else
+        {
+            confirmPasswordInputType = "password";
+            confirmPasswordToggleIconClass = "fa-regular fa-eye";
+        }
+    }
+
+    private string GetInputClass<T>(Expression<Func<T>> accessor)
+    {
+        var field = FieldIdentifier.Create(accessor);
+        var hasErrors = editContext.GetValidationMessages(field).Any();
+        return hasErrors ? $"{InputBaseClass} auth-input-invalid" : InputBaseClass;
+    }
+
+    public async Task RegisterUser()
+    {
+        if (!editContext.Validate())
+        {
+            return;
+        }
+
+        isSubmitting = true;
+        identityErrors = null;
+
+        var user = CreateUser();
+        user.FullName = Input.FullName;
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            isSubmitting = false;
+            identityErrors = result.Errors;
+            return;
+        }
+
+        var roleResult = await UserManager.AddToRoleAsync(user, IdentitySeedData.CustomerRole);
+        if (!roleResult.Succeeded)
+        {
+            isSubmitting = false;
+            identityErrors = roleResult.Errors;
+            return;
+        }
+
+        Logger.LogInformation("User created a new account with password.");
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        {
+            RedirectManager.RedirectTo(
+                "Account/RegisterConfirmation",
+                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+        }
+        else
+        {
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+    }
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<ApplicationUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
+        }
+        return (IUserEmailStore<ApplicationUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập họ và tên.")]
+        [Display(Name = "Họ và tên")]
+        public string FullName { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng nhập địa chỉ email.")]
+        [EmailAddress(ErrorMessage = "Vui lòng nhập địa chỉ email hợp lệ.")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
+        [StringLength(100, ErrorMessage = "Mật khẩu phải có độ dài tối thiểu {2} ký tự.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Mật khẩu")]
+        public string Password { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Xác nhận mật khẩu")]
+        [Compare(nameof(Password), ErrorMessage = "Xác nhận mật khẩu không khớp với mật khẩu đã nhập.")]
+        public string ConfirmPassword { get; set; } = "";
+
+        [Display(Name = "Điều khoản dịch vụ")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn phải đồng ý với Điều khoản dịch vụ để tạo tài khoản.")]
+        public bool AcceptTerms { get; set; }
+    }
+}

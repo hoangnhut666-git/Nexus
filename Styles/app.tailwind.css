@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+    --color-bg-base: #08070b;
+    --color-bg-surface: #0f0e15;
+    --color-bg-card: #171520;
+    --color-bg-card-hover: #1f1d2b;
+    --color-accent: #6366f1;
+    --color-cyber-cyan: #00f2fe;
+    --color-success: #10b981;
+    --color-success-bg: rgba(16, 185, 129, 0.1);
+    --color-warning: #f59e0b;
+    --color-warning-bg: rgba(245, 158, 11, 0.1);
+    --color-danger: #ef4444;
+    --color-danger-bg: rgba(239, 68, 68, 0.1);
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+    --font-sans: "Plus Jakarta Sans", sans-serif;
+}
+
+@layer utilities {
+    .custom-checkbox {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 4px;
+        background: #171520;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .custom-checkbox:checked {
+        background: #6366f1;
+        border-color: #6366f1;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .custom-checkbox:checked::after {
+        content: '\f00c';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 10px;
+        color: #fff;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .auth-input-invalid {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important;
+    }
+}
+
+h1:focus {
+    outline: none;
+}
+
+.blazor-error-boundary {
+    background: #b32121;
+    padding: 1rem;
+    color: white;
+}

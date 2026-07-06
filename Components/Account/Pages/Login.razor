@@ -1,0 +1,219 @@
+﻿@page "/Account/Login"
+@layout AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using Nexus.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>NEXUS // Đăng nhập</PageTitle>
+
+<div class="w-full max-w-[420px] flex flex-col gap-8 my-auto">
+    <div class="lg:hidden flex justify-center mb-2">
+        <span class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+            <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+        </span>
+    </div>
+
+    <div class="text-center lg:text-left">
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Chào mừng trở lại!</h2>
+        <p class="text-text-secondary text-sm">Vui lòng đăng nhập để bắt đầu phiên làm việc.</p>
+    </div>
+
+    <StatusMessage Message="@errorMessage" />
+
+    <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login" class="flex flex-col gap-5">
+        <DataAnnotationsValidator />
+
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Tài khoản hoặc Email *</label>
+            <div class="relative flex items-center group">
+                <i class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                <InputText @bind-Value="Input.Email"
+                           id="Input.Email"
+                           class="@GetInputClass(() => Input.Email)"
+                           autocomplete="username webauthn"
+                           aria-required="true"
+                           placeholder="admin@nexus.io" />
+            </div>
+            <ValidationMessage For="() => Input.Email" class="text-danger text-xs" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Mật khẩu *</label>
+            <div class="relative flex items-center group">
+                <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                <InputText type="@passwordInputType"
+                           @bind-Value="Input.Password"
+                           id="Input.Password"
+                           class="@($"{GetInputClass(() => Input.Password)} pr-12")"
+                           autocomplete="current-password"
+                           aria-required="true"
+                           placeholder="••••••••" />
+                <button type="button"
+                        @onclick="TogglePasswordVisibility"
+                        class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
+                        title="Hiển thị mật khẩu">
+                    <i class="@passwordToggleIconClass"></i>
+                </button>
+            </div>
+            <ValidationMessage For="() => Input.Password" class="text-danger text-xs" />
+        </div>
+
+        <div class="flex items-center justify-between mt-1">
+            <label class="flex items-center gap-2.5 text-xs text-text-secondary cursor-pointer select-none">
+                <InputCheckbox @bind-Value="Input.RememberMe" class="custom-checkbox" />
+                Ghi nhớ tài khoản
+            </label>
+            <a href="Account/ForgotPassword" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300">Quên mật khẩu?</a>
+        </div>
+
+        <button type="submit"
+                disabled="@isSubmitting"
+                class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+            <span>@(isSubmitting ? "Đang xác thực..." : "Đăng nhập vào Hệ thống")</span>
+            <i class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
+        </button>
+    </EditForm>
+
+    <div class="text-center text-xs text-text-muted mt-4">
+        Chưa có tài khoản?
+        <a href="@registerUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Đăng ký ngay</a>
+    </div>
+</div>
+
+@code {
+    private const string InputBaseClass = "w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
+
+    private string? errorMessage;
+    private EditContext editContext = default!;
+    private bool isSubmitting;
+    private string passwordInputType = "password";
+    private string passwordToggleIconClass = "fa-regular fa-eye";
+
+    private string registerUrl => NavigationManager.GetUriWithQueryParameters(
+        "Account/Register",
+        new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl });
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        editContext = new EditContext(Input);
+
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        if (passwordInputType == "password")
+        {
+            passwordInputType = "text";
+            passwordToggleIconClass = "fa-regular fa-eye-slash";
+        }
+        else
+        {
+            passwordInputType = "password";
+            passwordToggleIconClass = "fa-regular fa-eye";
+        }
+    }
+
+    private string GetInputClass<T>(System.Linq.Expressions.Expression<Func<T>> accessor)
+    {
+        var field = FieldIdentifier.Create(accessor);
+        var hasErrors = editContext.GetValidationMessages(field).Any();
+        return hasErrors ? $"{InputBaseClass} auth-input-invalid" : InputBaseClass;
+    }
+
+    public async Task LoginUser()
+    {
+        if (!string.IsNullOrEmpty(Input.Passkey?.Error))
+        {
+            errorMessage = $"Error: {Input.Passkey.Error}";
+            return;
+        }
+
+        SignInResult result;
+        if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
+        {
+            result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson);
+        }
+        else
+        {
+            if (!editContext.Validate())
+            {
+                return;
+            }
+
+            isSubmitting = true;
+            errorMessage = null;
+
+            var user = await UserManager.FindByEmailAsync(Input.Email)
+                ?? await UserManager.FindByNameAsync(Input.Email);
+
+            if (user is null)
+            {
+                isSubmitting = false;
+                errorMessage = "Error: Tài khoản hoặc mật khẩu không đúng.";
+                return;
+            }
+
+            result = await SignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        }
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+        else if (result.RequiresTwoFactor)
+        {
+            RedirectManager.RedirectTo(
+                "Account/LoginWith2fa",
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            isSubmitting = false;
+            errorMessage = "Error: Tài khoản hoặc mật khẩu không đúng.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Vui lòng nhập tài khoản hoặc email.")]
+        [Display(Name = "Tài khoản hoặc Email")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+
+        public PasskeyInputModel? Passkey { get; set; }
+    }
+}
