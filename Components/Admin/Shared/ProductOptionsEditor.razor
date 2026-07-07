@@ -1,0 +1,163 @@
+@using Nexus.Services.Products.Models
+
+<div class="bg-bg-card border border-white/5 rounded-xl p-6 flex flex-col gap-4">
+    <div class="flex justify-between items-center">
+        <h4 class="text-sm font-bold text-text-primary">Product Options</h4>
+        <button type="button"
+                class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs font-semibold rounded-lg hover:border-indigo-500/40 hover:text-text-primary"
+                @onclick="AddOption">
+            <i class="fa-solid fa-plus mr-1"></i> Add Option
+        </button>
+    </div>
+
+    @if (Options.Count == 0)
+    {
+        <p class="text-sm text-text-muted">No options yet. Add options like Color or Storage, then save and generate variants.</p>
+    }
+
+    @for (var optionIndex = 0; optionIndex < Options.Count; optionIndex++)
+    {
+        var option = Options[optionIndex];
+        var index = optionIndex;
+        <div class="border border-white/5 rounded-lg p-4 flex flex-col gap-3">
+            <div class="flex gap-2 items-center">
+                <input type="text"
+                       class="bg-bg-surface border border-white/5 text-text-primary px-3 py-2 rounded-lg text-sm flex-1 outline-none focus:border-indigo-500/40"
+                       placeholder="Option name (e.g. Color)"
+                       value="@option.Name"
+                       @onchange="(e) => option.Name = e.Value?.ToString() ?? string.Empty" />
+                <button type="button" class="text-text-secondary hover:text-text-primary px-2" title="Move up" disabled="@(index == 0)" @onclick="() => MoveOption(index, -1)">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+                <button type="button" class="text-text-secondary hover:text-text-primary px-2" title="Move down" disabled="@(index == Options.Count - 1)" @onclick="() => MoveOption(index, 1)">
+                    <i class="fa-solid fa-arrow-down"></i>
+                </button>
+                <button type="button" class="text-rose-400 hover:text-rose-300 px-2" title="Remove option" @onclick="() => RemoveOption(index)">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                @for (var valueIndex = 0; valueIndex < option.Values.Count; valueIndex++)
+                {
+                    var value = option.Values[valueIndex];
+                    var vIndex = valueIndex;
+                    <div class="flex items-center gap-1 bg-bg-surface border border-white/5 rounded-lg px-2 py-1">
+                        <input type="text"
+                               class="bg-transparent border-none text-text-primary text-sm outline-none w-24"
+                               placeholder="Value"
+                               value="@value.Value"
+                               @onchange="(e) => value.Value = e.Value?.ToString() ?? string.Empty" />
+                        <button type="button" class="text-text-muted hover:text-rose-400 text-xs" @onclick="() => RemoveValue(option, vIndex)">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                }
+                <button type="button"
+                        class="bg-bg-surface border border-dashed border-white/10 text-text-secondary px-3 py-1 rounded-lg text-xs hover:border-indigo-500/40"
+                        @onclick="() => AddValue(option)">
+                    + Value
+                </button>
+            </div>
+        </div>
+    }
+
+    <div class="flex justify-end">
+        <button type="button"
+                class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 text-sm font-semibold rounded-lg"
+                disabled="@isSaving"
+                @onclick="SaveAsync">
+            @(isSaving ? "Saving..." : "Save Options")
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<OptionEditorModel> Options { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<List<OptionEditorModel>> OptionsChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<List<OptionEditorModel>> OnSave { get; set; }
+
+    private bool isSaving;
+
+    private void AddOption()
+    {
+        Options.Add(new OptionEditorModel
+        {
+            SortOrder = Options.Count,
+            Values = [new OptionValueEditorModel { SortOrder = 0 }]
+        });
+    }
+
+    private void RemoveOption(int index)
+    {
+        Options.RemoveAt(index);
+        ReindexOptions();
+    }
+
+    private void MoveOption(int index, int delta)
+    {
+        var newIndex = index + delta;
+        if (newIndex < 0 || newIndex >= Options.Count)
+            return;
+
+        var item = Options[index];
+        Options.RemoveAt(index);
+        Options.Insert(newIndex, item);
+        ReindexOptions();
+    }
+
+    private static void AddValue(OptionEditorModel option)
+    {
+        option.Values.Add(new OptionValueEditorModel { SortOrder = option.Values.Count });
+    }
+
+    private static void RemoveValue(OptionEditorModel option, int index)
+    {
+        if (option.Values.Count > 1)
+            option.Values.RemoveAt(index);
+    }
+
+    private void ReindexOptions()
+    {
+        for (var i = 0; i < Options.Count; i++)
+            Options[i].SortOrder = i;
+    }
+
+    private async Task SaveAsync()
+    {
+        isSaving = true;
+        try
+        {
+            await OnSave.InvokeAsync(Options);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    public sealed class OptionEditorModel
+    {
+        public int? Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public int SortOrder { get; set; }
+
+        public List<OptionValueEditorModel> Values { get; set; } = [];
+    }
+
+    public sealed class OptionValueEditorModel
+    {
+        public int? Id { get; set; }
+
+        public string Value { get; set; } = string.Empty;
+
+        public int SortOrder { get; set; }
+    }
+}

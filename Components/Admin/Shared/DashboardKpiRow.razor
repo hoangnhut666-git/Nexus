@@ -1,0 +1,40 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+    @foreach (var kpi in Kpis)
+    {
+        <div class="bg-bg-surface border border-white/5 rounded-xl p-5 flex flex-col gap-3 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-[60px] h-full bg-gradient-to-l from-white/[0.02] to-transparent pointer-events-none"></div>
+            <div class="flex justify-between items-center">
+                <span class="text-[13px] text-text-secondary font-medium">@kpi.Title</span>
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-base @kpi.IconClass">
+                    <i class="@kpi.Icon"></i>
+                </div>
+            </div>
+            <div class="text-[28px] font-extrabold text-text-primary">@kpi.Value</div>
+            <div class="text-xs font-semibold flex items-center gap-1 @(kpi.IsPositive ? "text-success" : "text-danger")">
+                <i class="fa-solid @(kpi.IsPositive ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i>
+                @kpi.Trend
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<DashboardKpiItem> Kpis { get; set; } = DefaultKpis;
+
+    public static IReadOnlyList<DashboardKpiItem> DefaultKpis { get; } =
+    [
+        new("Total Revenue", "$324,500", "+12.5% vs last month", true, "fa-solid fa-wallet", "text-accent bg-indigo-500/15"),
+        new("Total Orders", "1,482", "+8.2% vs last month", true, "fa-solid fa-bag-shopping", "text-cyber-cyan bg-cyan-400/10"),
+        new("New Customers", "356", "-2.4% vs last month", false, "fa-solid fa-user-plus", "text-warning bg-warning-bg"),
+        new("Conversion Rate", "4.2%", "+1.1% vs last month", true, "fa-solid fa-bolt", "text-success bg-success-bg"),
+    ];
+
+    public sealed record DashboardKpiItem(
+        string Title,
+        string Value,
+        string Trend,
+        bool IsPositive,
+        string Icon,
+        string IconClass);
+}

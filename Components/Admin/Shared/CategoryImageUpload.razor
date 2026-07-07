@@ -1,0 +1,77 @@
+<div class="flex flex-col gap-2.5">
+    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Image / Icon</label>
+
+    <label for="@fileInputId" class="@uploadAreaClass">
+        <i class="fa-solid fa-shapes text-3xl text-text-muted transition-all duration-300 group-hover:text-accent group-hover:-translate-y-0.5"></i>
+        <p class="text-xs text-text-secondary">Drag & drop an icon/image here or click to upload</p>
+
+        @if (!string.IsNullOrWhiteSpace(PreviewUrl))
+        {
+            <div class="absolute inset-0 bg-bg-card flex items-center justify-center z-[5]">
+                <button type="button"
+                        class="absolute top-2 right-2 bg-red-600/85 text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 text-[10px] hover:bg-red-600 hover:scale-110 z-[6]"
+                        title="Remove image"
+                        @onclick="RemovePreview"
+                        @onclick:stopPropagation="true"
+                        @onclick:preventDefault="true">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <img src="@PreviewUrl" alt="Preview" class="max-w-full max-h-full object-contain p-2" />
+            </div>
+        }
+    </label>
+
+    <InputFile id="@fileInputId" class="hidden" OnChange="@HandleFileSelected" accept="image/*" />
+
+    <div class="flex flex-col gap-2 mt-1">
+        <InputText @bind-Value="ImageUrl"
+                   class="@InputClass"
+                   placeholder="Or paste image URL here..."
+                   @oninput="HandleUrlInput" />
+    </div>
+</div>
+
+@code {
+  [Parameter]
+  public string? ImageUrl { get; set; }
+
+  [Parameter]
+  public EventCallback<string?> ImageUrlChanged { get; set; }
+
+  [Parameter]
+  public string? PreviewUrl { get; set; }
+
+  [Parameter]
+  public EventCallback<string?> PreviewUrlChanged { get; set; }
+
+  [Parameter]
+  public EventCallback<InputFileChangeEventArgs> OnFileSelected { get; set; }
+
+  [Parameter]
+  public string InputClass { get; set; } = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
+
+  private readonly string fileInputId = $"file-input-{Guid.NewGuid():N}";
+  private const string uploadAreaClass = "image-upload-area border-2 border-dashed border-white/5 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-white/[0.01] relative overflow-hidden min-h-[120px] flex flex-col justify-center items-center gap-2 hover:border-accent hover:bg-accent/10 group";
+
+  private async Task HandleFileSelected(InputFileChangeEventArgs args)
+  {
+    await OnFileSelected.InvokeAsync(args);
+  }
+
+  private async Task HandleUrlInput(ChangeEventArgs args)
+  {
+    var value = args.Value?.ToString();
+    ImageUrl = value;
+    PreviewUrl = string.IsNullOrWhiteSpace(value) ? null : value;
+    await ImageUrlChanged.InvokeAsync(ImageUrl);
+    await PreviewUrlChanged.InvokeAsync(PreviewUrl);
+  }
+
+  private async Task RemovePreview()
+  {
+    ImageUrl = null;
+    PreviewUrl = null;
+    await ImageUrlChanged.InvokeAsync(null);
+    await PreviewUrlChanged.InvokeAsync(null);
+  }
+}

@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using Nexus.Data
+@using Nexus.Services.Auth
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -151,9 +152,15 @@
         }
 
         SignInResult result;
+        ApplicationUser? signedInUser = null;
+
         if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
         {
             result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson);
+            if (result.Succeeded)
+            {
+                signedInUser = await UserManager.GetUserAsync(HttpContext.User);
+            }
         }
         else
         {
@@ -165,23 +172,31 @@
             isSubmitting = true;
             errorMessage = null;
 
-            var user = await UserManager.FindByEmailAsync(Input.Email)
+            signedInUser = await UserManager.FindByEmailAsync(Input.Email)
                 ?? await UserManager.FindByNameAsync(Input.Email);
 
-            if (user is null)
+            if (signedInUser is null)
             {
                 isSubmitting = false;
                 errorMessage = "Error: Tài khoản hoặc mật khẩu không đúng.";
                 return;
             }
 
-            result = await SignInManager.PasswordSignInAsync(user, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            result = await SignInManager.PasswordSignInAsync(signedInUser, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         }
 
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
-            RedirectManager.RedirectTo(ReturnUrl);
+            if (signedInUser is not null)
+            {
+                var landingUrl = await RoleLandingHelper.ResolveReturnUrlAsync(ReturnUrl, signedInUser, UserManager);
+                RedirectManager.RedirectTo(landingUrl);
+            }
+            else
+            {
+                RedirectManager.RedirectTo(ReturnUrl);
+            }
         }
         else if (result.RequiresTwoFactor)
         {

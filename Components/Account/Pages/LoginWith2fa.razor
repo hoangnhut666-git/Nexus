@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using Nexus.Data
+@using Nexus.Services.Auth
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -75,7 +76,8 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
-            RedirectManager.RedirectTo(ReturnUrl);
+            var landingUrl = await RoleLandingHelper.ResolveReturnUrlAsync(ReturnUrl, user, UserManager);
+            RedirectManager.RedirectTo(landingUrl);
         }
         else if (result.IsLockedOut)
         {

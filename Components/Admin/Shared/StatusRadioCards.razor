@@ -1,0 +1,41 @@
+<div class="flex flex-col gap-2">
+    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Status *</label>
+    <div class="grid grid-cols-2 gap-3">
+        <button type="button"
+                class="@GetCardClass(true)"
+                data-status="active"
+                @onclick="() => SetActive(true)">
+            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+            <span class="text-xs font-semibold">Active</span>
+        </button>
+        <button type="button"
+                class="@GetCardClass(false)"
+                data-status="hidden"
+                @onclick="() => SetActive(false)">
+            <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
+            <span class="text-xs font-semibold">Hidden</span>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsActive { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<bool> IsActiveChanged { get; set; }
+
+    private const string BaseCardClass = "status-radio-card border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover";
+
+    private async Task SetActive(bool isActive)
+    {
+        IsActive = isActive;
+        await IsActiveChanged.InvokeAsync(isActive);
+    }
+
+    private string GetCardClass(bool activeValue)
+    {
+        var isSelected = IsActive == activeValue;
+        return isSelected ? $"{BaseCardClass} active" : BaseCardClass;
+    }
+}

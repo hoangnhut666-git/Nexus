@@ -1,0 +1,219 @@
+@using System.ComponentModel.DataAnnotations
+@using Nexus.Components.Admin.Shared
+@using Nexus.Services.Products
+@using Nexus.Services.Products.Models
+
+<div class="@backdropClass" @onclick="Close"></div>
+
+<div class="@drawerClass">
+    <div class="h-20 px-8 flex items-center justify-between border-b border-white/5">
+        <h3 class="text-lg font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">@Title</h3>
+        <button type="button"
+                class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-white/5 hover:rotate-90"
+                title="Close"
+                @onclick="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <DataAnnotationsValidator />
+
+        <div class="p-8 overflow-y-auto flex-1 flex flex-col gap-6">
+            <p class="text-xs text-text-muted">Create the product shell first. You can add options and variants on the detail page.</p>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-name">Product Name *</label>
+                <InputText id="product-name"
+                           @bind-Value="Model.Name"
+                           class="@GetInputClass(() => Model.Name)"
+                           placeholder="e.g. iPhone 16" />
+                <ValidationMessage For="() => Model.Name" class="text-danger text-xs" />
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-category">Category *</label>
+                <select id="product-category"
+                        class="@GetInputClass(() => Model.CategoryId)"
+                        value="@Model.CategoryId"
+                        @onchange="OnCategoryChanged">
+                    <option value="0">Select category</option>
+                    @foreach (var category in Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+                <ValidationMessage For="() => Model.CategoryId" class="text-danger text-xs" />
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-slug">Slug *</label>
+                <div class="flex gap-2">
+                    <InputText id="product-slug"
+                               @bind-Value="Model.Slug"
+                               class="@($"{GetInputClass(() => Model.Slug)} flex-1")"
+                               placeholder="iphone-16" />
+                    <button type="button"
+                            class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
+                            title="Generate from name"
+                            @onclick="GenerateSlug">
+                        <i class="fa-solid fa-bolt mr-2"></i> Generate
+                    </button>
+                </div>
+                <ValidationMessage For="() => Model.Slug" class="text-danger text-xs" />
+            </div>
+
+            <StatusRadioCards @bind-IsActive="Model.IsActive" />
+
+            <ProductImageUpload @bind-ImageUrl="Model.PrimaryImageUrl"
+                                @bind-PreviewUrl="previewUrl"
+                                OnFileSelected="@HandleFileSelected"
+                                InputClass="@InputBaseClass" />
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-description">Description</label>
+                <InputTextArea id="product-description"
+                               @bind-Value="Model.Description"
+                               class="@($"{InputBaseClass} resize-y min-h-[90px] font-sans")"
+                               placeholder="Brief description of this product..." />
+            </div>
+        </div>
+
+        <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
+            <button type="button"
+                    class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary"
+                    @onclick="Close">
+                Cancel
+            </button>
+            <button type="submit"
+                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+                    disabled="@isSaving">
+                <i class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Creating..." : "Create Product")
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Add New Product";
+
+    [Parameter]
+    public ProductFormModel Model { get; set; } = new();
+
+    [Parameter]
+    public IReadOnlyList<CategoryOption> Categories { get; set; } = [];
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<ProductFormSubmitContext> OnSave { get; set; }
+
+    private EditContext editContext = null!;
+    private string? previewUrl;
+    private IBrowserFile? pendingFile;
+    private bool isSaving;
+
+    private const string InputBaseClass = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
+
+    private string backdropClass => IsOpen
+        ? "drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none active"
+        : "drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none";
+
+    private string drawerClass => IsOpen
+        ? "drawer active fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col"
+        : "drawer fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col";
+
+    protected override void OnParametersSet()
+    {
+        editContext = new EditContext(Model);
+        previewUrl = Model.PrimaryImageUrl;
+        pendingFile = null;
+    }
+
+    private async Task Close() => await OnClose.InvokeAsync();
+
+    private void GenerateSlug()
+    {
+        if (!string.IsNullOrWhiteSpace(Model.Name))
+            Model.Slug = ProductSlugHelper.GenerateSlug(Model.Name);
+    }
+
+    private void OnCategoryChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var categoryId))
+            Model.CategoryId = categoryId;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs args)
+    {
+        pendingFile = args.File;
+        Model.PrimaryImageUrl = null;
+
+        await using var stream = pendingFile.OpenReadStream(ProductImageService.MaxFileSizeBytes);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        previewUrl = $"data:{pendingFile.ContentType};base64,{Convert.ToBase64String(memory.ToArray())}";
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            await OnSave.InvokeAsync(new ProductFormSubmitContext(Model, pendingFile));
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private string GetInputClass<T>(System.Linq.Expressions.Expression<Func<T>> accessor)
+    {
+        var field = FieldIdentifier.Create(accessor);
+        var hasErrors = editContext.GetValidationMessages(field).Any();
+        return hasErrors ? $"{InputBaseClass} admin-input-invalid" : InputBaseClass;
+    }
+
+    public sealed class CategoryOption
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public sealed class ProductFormModel : IValidatableObject
+    {
+        [Required(ErrorMessage = "Product name is required.")]
+        [MaxLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Slug is required.")]
+        [MaxLength(200)]
+        public string Slug { get; set; } = string.Empty;
+
+        [MaxLength(4000)]
+        public string? Description { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Category is required.")]
+        public int CategoryId { get; set; }
+
+        [MaxLength(500)]
+        public string? PrimaryImageUrl { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (CategoryId <= 0)
+                yield return new ValidationResult("Category is required.", [nameof(CategoryId)]);
+        }
+    }
+
+    public sealed record ProductFormSubmitContext(ProductFormModel Model, IBrowserFile? PendingFile);
+}

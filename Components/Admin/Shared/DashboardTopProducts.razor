@@ -1,0 +1,50 @@
+<div class="bg-bg-surface border border-white/5 rounded-xl p-6">
+    <div class="flex justify-between items-center mb-5">
+        <div class="text-base font-bold text-text-primary">@Title</div>
+    </div>
+    <div class="flex flex-col gap-4">
+        @foreach (var product in Products)
+        {
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-lg bg-bg-card border border-white/5 flex items-center justify-center text-xl @product.IconColorClass">
+                    <i class="@product.Icon"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="text-sm font-semibold text-text-primary mb-1">@product.Name</div>
+                    <div class="flex justify-between text-xs text-text-secondary mb-1.5">
+                        <span>Sold: @product.UnitsSold</span>
+                        <span>@product.Revenue</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-white/5 rounded overflow-hidden">
+                        <div class="h-full rounded @product.BarColorClass" style="width: @($"{product.ProgressPercent}%")"></div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Trending Products";
+
+    [Parameter]
+    public IReadOnlyList<TopProductItem> Products { get; set; } = DefaultProducts;
+
+    public static IReadOnlyList<TopProductItem> DefaultProducts { get; } =
+    [
+        new("NEXUS AirPods Pro 3", 245, "$42,500", 85, "fa-solid fa-headphones", "text-cyber-cyan", "bg-cyber-cyan"),
+        new("SmartPhone Z Fold", 120, "$156,000", 65, "fa-solid fa-mobile-screen", "text-accent", "bg-accent"),
+        new("Watch Series 9", 98, "$32,800", 45, "fa-regular fa-clock", "text-success", "bg-success"),
+        new("MacBook Pro M3", 45, "$185,000", 30, "fa-solid fa-laptop", "text-warning", "bg-warning"),
+    ];
+
+    public sealed record TopProductItem(
+        string Name,
+        int UnitsSold,
+        string Revenue,
+        int ProgressPercent,
+        string Icon,
+        string IconColorClass,
+        string BarColorClass);
+}

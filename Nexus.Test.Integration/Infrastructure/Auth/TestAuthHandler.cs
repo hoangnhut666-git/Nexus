@@ -26,6 +26,12 @@ public sealed class TestAuthHandler(
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        if (Request.Headers.TryGetValue("X-Test-Anonymous", out var anonymousValues)
+            && string.Equals(anonymousValues.ToString(), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.FromResult(AuthenticateResult.NoResult());
+        }
+
         var userId = TestUserId;
         var userName = TestUserName;
 

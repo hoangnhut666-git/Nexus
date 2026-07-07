@@ -1,7 +1,45 @@
 ﻿@page "/"
+@layout StorefrontLayout
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+@using Nexus.Services.Categories
+@using Nexus.Services.Categories.Models
+@using Nexus.Services.Products
+@using Nexus.Services.Products.Models
 
-<h1>Hello, world!</h1>
+@inject ICategoryService CategoryService
+@inject IProductService ProductService
 
-Welcome to your new app.
+<PageTitle>NEXUS // Premium E-Commerce</PageTitle>
+
+<HeroSection />
+<CategoryGrid Categories="categories" />
+<ProductGrid Products="products" />
+<PromoBanner />
+<FeaturesSection />
+<NewsletterSection />
+
+@code {
+    private IReadOnlyList<CategoryListItemDto> categories = [];
+    private IReadOnlyList<ProductListItemDto> products = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var categoryResult = await CategoryService.GetPagedAsync(new CategoryQuery
+        {
+            Status = CategoryStatusFilter.Active,
+            Page = 1,
+            PageSize = 4
+        });
+
+        var productResult = await ProductService.GetPagedAsync(new ProductQuery
+        {
+            Status = ProductStatusFilter.Active,
+            Page = 1,
+            PageSize = 8
+        });
+
+        categories = categoryResult.Items;
+        products = productResult.Items;
+    }
+}

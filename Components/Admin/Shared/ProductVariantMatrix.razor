@@ -1,0 +1,74 @@
+@using Nexus.Services.Products.Models
+@using System.Globalization
+
+<div class="bg-bg-card border border-white/5 rounded-xl overflow-x-auto">
+    <table class="w-full border-collapse min-w-[500px]">
+        <thead>
+            <tr>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5"></th>
+                @foreach (var col in ColumnValues)
+                {
+                    <th class="py-3 px-4 text-center text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">@col.Value</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in RowValues)
+            {
+                <tr>
+                    <td class="py-3 px-4 text-sm font-semibold text-text-primary border-b border-white/5">@row.Value</td>
+                    @foreach (var col in ColumnValues)
+                    {
+                        var variant = FindVariant(row.Id, col.Id);
+                        <td class="py-3 px-4 text-center border-b border-white/5 align-middle">
+                            @if (variant is null)
+                            {
+                                <button type="button"
+                                        class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                                        @onclick="() => OnAdd.InvokeAsync((row.Id, col.Id))">
+                                    + Add
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="w-full text-left hover:bg-white/[0.02] rounded-lg p-2 transition-colors"
+                                        @onclick="() => OnEdit.InvokeAsync(variant)">
+                                    <div class="text-xs text-text-muted font-mono">@variant.Sku</div>
+                                    <div class="text-sm font-semibold text-text-primary">@FormatPrice(variant.Price)</div>
+                                    <div class="text-xs text-text-secondary">Stock: @variant.StockQuantity</div>
+                                </button>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<ProductOptionValueDto> RowValues { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<ProductOptionValueDto> ColumnValues { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyList<ProductVariantDto> Variants { get; set; } = [];
+
+    [Parameter]
+    public EventCallback<(int RowValueId, int ColValueId)> OnAdd { get; set; }
+
+    [Parameter]
+    public EventCallback<ProductVariantDto> OnEdit { get; set; }
+
+    private ProductVariantDto? FindVariant(int rowValueId, int colValueId)
+    {
+        return Variants.FirstOrDefault(v =>
+            v.OptionValueIds.Contains(rowValueId) && v.OptionValueIds.Contains(colValueId));
+    }
+
+    private static string FormatPrice(decimal price) =>
+        string.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:N0} ₫", price);
+}

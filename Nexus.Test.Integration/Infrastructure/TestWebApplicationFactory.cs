@@ -53,17 +53,23 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices((_, services) =>
         {
-            var dbDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
-            if (dbDescriptor is not null)
-                services.Remove(dbDescriptor);
+            var dbDescriptors = services.Where(d =>
+                d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>)
+                || d.ServiceType == typeof(IDbContextFactory<ApplicationDbContext>)
+                || d.ServiceType == typeof(ApplicationDbContext)).ToList();
 
-            services.AddDbContext<ApplicationDbContext>(options =>
+            foreach (var descriptor in dbDescriptors)
+                services.Remove(descriptor);
+
+            services.AddDbContextFactory<ApplicationDbContext>(options =>
             {
                 options.UseSqlServer(_connectionString);
                 options.ConfigureWarnings(w =>
                     w.Ignore(RelationalEventId.PendingModelChangesWarning));
             });
+
+            services.AddScoped<ApplicationDbContext>(sp =>
+                sp.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
 
             services.RemoveAll<IAuthenticationSchemeProvider>();
             services.AddAuthentication(options =>

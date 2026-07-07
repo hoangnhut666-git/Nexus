@@ -1,0 +1,201 @@
+@using Nexus.Services.Categories.Models
+
+<div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+    <table class="w-full border-collapse">
+        <thead>
+            <tr>
+                <th class="w-10 py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">
+                    <input type="checkbox" class="custom-checkbox" @bind="@selectAll" @bind:after="OnSelectAllChanged" />
+                </th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Category</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Slug</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Products</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Status</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Items.Count == 0)
+            {
+                <tr>
+                    <td colspan="6" class="text-center py-12 text-text-muted">
+                        <i class="fa-regular fa-folder-open text-[36px] mb-3 block opacity-60"></i>
+                        No categories found.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Items)
+                {
+                    <tr class="hover:bg-white/[0.01] hover:text-text-primary transition-colors duration-300">
+                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                            <input type="checkbox" class="custom-checkbox" checked="@IsSelected(item.Id)" @onchange="(e) => ToggleSelection(item.Id, e)" />
+                        </td>
+                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                            <div class="flex items-center gap-4">
+                                <img src="@GetImageSrc(item.ImageUrl)"
+                                     alt="@item.Name"
+                                     class="w-10 h-10 rounded-lg object-cover bg-bg-base border border-white/5 p-1" />
+                                <div>
+                                    <div class="font-semibold text-text-primary">@item.Name</div>
+                                    <div class="text-[11px] text-text-muted truncate max-w-[200px]" title="@item.Description">
+                                        @(string.IsNullOrWhiteSpace(item.Description) ? "No description" : item.Description)
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">/@item.Slug</td>
+                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">@item.ProductCount</td>
+                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                            <span class="@GetStatusBadgeClass(item.IsActive)">@(item.IsActive ? "Active" : "Hidden")</span>
+                        </td>
+                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                            <div class="flex gap-2">
+                                <button type="button"
+                                        class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500 hover:text-white hover:border-indigo-500"
+                                        title="Edit"
+                                        @onclick="() => OnEdit.InvokeAsync(item.Id)">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
+                                <button type="button"
+                                        class="@GetDeleteButtonClass(item.ProductCount > 0)"
+                                        title="Delete"
+                                        disabled="@(item.ProductCount > 0)"
+                                        @onclick="() => OnDelete.InvokeAsync(item)">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <div class="flex justify-between items-center py-5 px-8 border-t border-white/5 text-sm text-text-muted">
+        <div>@paginationText</div>
+        <div class="flex gap-2">
+            @if (TotalPages > 1)
+            {
+                <button type="button"
+                        class="@GetPageButtonClass(false, Page == 1)"
+                        disabled="@(Page == 1)"
+                        @onclick="() => OnPageChanged.InvokeAsync(Page - 1)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+
+                @for (var pageNumber = 1; pageNumber <= TotalPages; pageNumber++)
+                {
+                    if (pageNumber == 1 || pageNumber == TotalPages || (pageNumber >= Page - 1 && pageNumber <= Page + 1))
+                    {
+                        <button type="button"
+                                class="@GetPageButtonClass(pageNumber == Page, false)"
+                                @onclick="() => OnPageChanged.InvokeAsync(pageNumber)">
+                            @pageNumber
+                        </button>
+                    }
+                    else if (pageNumber == Page - 2 || pageNumber == Page + 2)
+                    {
+                        <button type="button" class="@GetPageButtonClass(false, true)" disabled="true">...</button>
+                    }
+                }
+
+                <button type="button"
+                        class="@GetPageButtonClass(false, Page == TotalPages)"
+                        disabled="@(Page == TotalPages)"
+                        @onclick="() => OnPageChanged.InvokeAsync(Page + 1)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<CategoryListItemDto> Items { get; set; } = [];
+
+    [Parameter]
+    public int Page { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; }
+
+    [Parameter]
+    public int TotalCount { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnPageChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<CategoryListItemDto> OnDelete { get; set; }
+
+    private bool selectAll;
+    private readonly HashSet<int> selectedIds = [];
+
+    private int TotalPages => PageSize > 0 ? (int)Math.Ceiling(TotalCount / (double)PageSize) : 0;
+
+    private string paginationText
+    {
+        get
+        {
+            if (TotalCount == 0)
+                return "Showing 0 to 0 of 0 categories";
+
+            var start = (Page - 1) * PageSize + 1;
+            var end = Math.Min(Page * PageSize, TotalCount);
+            return $"Showing {start} to {end} of {TotalCount} categories";
+        }
+    }
+
+    private static string GetImageSrc(string? imageUrl) =>
+        string.IsNullOrWhiteSpace(imageUrl)
+            ? "https://via.placeholder.com/100?text=Icon"
+            : imageUrl;
+
+    private static string GetStatusBadgeClass(bool isActive) =>
+        isActive
+            ? "inline-block px-3 py-1.5 rounded-full text-xs font-semibold border bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+            : "inline-block px-3 py-1.5 rounded-full text-xs font-semibold border bg-white/5 text-text-secondary border-white/5";
+
+    private static string GetDeleteButtonClass(bool isDisabled) =>
+        isDisabled
+            ? "bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center opacity-30 cursor-not-allowed"
+            : "bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-rose-500 hover:text-white hover:border-rose-500";
+
+    private static string GetPageButtonClass(bool isCurrent, bool isDisabled)
+    {
+        if (isCurrent)
+            return "w-8 h-8 rounded-md flex items-center justify-center font-medium transition-all duration-300 bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none";
+
+        var baseClass = "w-8 h-8 rounded-md flex items-center justify-center font-medium transition-all duration-300 bg-bg-card border border-white/5 text-text-secondary";
+        return isDisabled ? $"{baseClass} opacity-40 cursor-not-allowed" : $"{baseClass} hover:bg-white/5 hover:text-text-primary cursor-pointer";
+    }
+
+    private bool IsSelected(int id) => selectedIds.Contains(id);
+
+    private void ToggleSelection(int id, ChangeEventArgs args)
+    {
+        var isChecked = args.Value is bool value && value;
+        if (isChecked)
+            selectedIds.Add(id);
+        else
+            selectedIds.Remove(id);
+
+        selectAll = Items.Count > 0 && Items.All(i => selectedIds.Contains(i.Id));
+    }
+
+    private void OnSelectAllChanged()
+    {
+        selectedIds.Clear();
+        if (selectAll)
+        {
+            foreach (var item in Items)
+                selectedIds.Add(item.Id);
+        }
+    }
+}

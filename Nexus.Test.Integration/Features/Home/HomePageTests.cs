@@ -39,4 +39,16 @@ public sealed class HomePageTests : IClassFixture<TestDatabaseFixture>, IAsyncLi
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
+
+    [Fact]
+    public async Task GetHomePage_ContainsStorefrontContent()
+    {
+        var response = await _client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        html.Should().Contain("NEXUS");
+        html.Should().Contain("Trending Categories");
+        html.Should().Contain("Hottest Products");
+        html.Should().Contain("Join the NEXUS Club");
+    }
 }

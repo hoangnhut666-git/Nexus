@@ -1,0 +1,185 @@
+@using System.ComponentModel.DataAnnotations
+@using Nexus.Components.Admin.Layout
+@using Nexus.Components.Admin.Shared
+@using Nexus.Services.Categories
+@using Nexus.Services.Categories.Models
+
+<div class="@backdropClass" @onclick="Close"></div>
+
+<div class="@drawerClass">
+    <div class="h-20 px-8 flex items-center justify-between border-b border-white/5">
+        <h3 class="text-lg font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">@Title</h3>
+        <button type="button"
+                class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-white/5 hover:rotate-90"
+                title="Close"
+                @onclick="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <DataAnnotationsValidator />
+
+        <div class="p-8 overflow-y-auto flex-1 flex flex-col gap-6">
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="category-name">Category Name *</label>
+                <InputText id="category-name"
+                           @bind-Value="Model.Name"
+                           class="@GetInputClass(() => Model.Name)"
+                           placeholder="e.g. Mechanical & Gaming" />
+                <ValidationMessage For="() => Model.Name" class="text-danger text-xs" />
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="category-slug">Slug *</label>
+                <div class="flex gap-2">
+                    <InputText id="category-slug"
+                               @bind-Value="Model.Slug"
+                               class="@($"{GetInputClass(() => Model.Slug)} flex-1")"
+                               placeholder="mechanical-gaming" />
+                    <button type="button"
+                            class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
+                            title="Generate from name"
+                            @onclick="GenerateSlug">
+                        <i class="fa-solid fa-bolt mr-2"></i> Generate
+                    </button>
+                </div>
+                <ValidationMessage For="() => Model.Slug" class="text-danger text-xs" />
+                <span class="text-[10px] text-text-muted">SEO-friendly URL (e.g. nexus.io/category/mechanical-gaming)</span>
+            </div>
+
+            <StatusRadioCards @bind-IsActive="Model.IsActive" />
+
+            <CategoryImageUpload @bind-ImageUrl="Model.ImageUrl"
+                                 @bind-PreviewUrl="previewUrl"
+                                 OnFileSelected="@HandleFileSelected"
+                                 InputClass="@InputBaseClass" />
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="category-description">Description</label>
+                <InputTextArea id="category-description"
+                               @bind-Value="Model.Description"
+                               class="@($"{InputBaseClass} resize-y min-h-[90px] font-sans")"
+                               placeholder="Brief description of this category..." />
+            </div>
+        </div>
+
+        <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
+            <button type="button"
+                    class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary"
+                    @onclick="Close">
+                Cancel
+            </button>
+            <button type="submit"
+                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+                    disabled="@isSaving">
+                <i class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Saving..." : "Save Category")
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Add New Category";
+
+    [Parameter]
+    public CategoryFormModel Model { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<CategoryFormSubmitContext> OnSave { get; set; }
+
+    private EditContext editContext = null!;
+    private string? previewUrl;
+    private IBrowserFile? pendingFile;
+    private bool isSaving;
+
+    private const string InputBaseClass = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
+
+    private string backdropClass => IsOpen
+        ? "drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none active"
+        : "drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none";
+
+    private string drawerClass => IsOpen
+        ? "drawer active fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col"
+        : "drawer fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col";
+
+    protected override void OnParametersSet()
+    {
+        editContext = new EditContext(Model);
+        previewUrl = Model.ImageUrl;
+        pendingFile = null;
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private void GenerateSlug()
+    {
+        if (!string.IsNullOrWhiteSpace(Model.Name))
+            Model.Slug = CategorySlugHelper.GenerateSlug(Model.Name);
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs args)
+    {
+        pendingFile = args.File;
+        Model.ImageUrl = null;
+
+        await using var stream = pendingFile.OpenReadStream(CategoryImageService.MaxFileSizeBytes);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        var base64 = Convert.ToBase64String(memory.ToArray());
+        previewUrl = $"data:{pendingFile.ContentType};base64,{base64}";
+    }
+
+    private async Task HandleSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            await OnSave.InvokeAsync(new CategoryFormSubmitContext(Model, pendingFile));
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private string GetInputClass<T>(System.Linq.Expressions.Expression<Func<T>> accessor)
+    {
+        var field = FieldIdentifier.Create(accessor);
+        var hasErrors = editContext.GetValidationMessages(field).Any();
+        return hasErrors ? $"{InputBaseClass} admin-input-invalid" : InputBaseClass;
+    }
+
+    public sealed class CategoryFormModel
+    {
+        public int? Id { get; set; }
+
+        [Required(ErrorMessage = "Category name is required.")]
+        [MaxLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Slug is required.")]
+        [MaxLength(200)]
+        public string Slug { get; set; } = string.Empty;
+
+        [MaxLength(2000)]
+        public string? Description { get; set; }
+
+        [MaxLength(500)]
+        public string? ImageUrl { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
+
+    public sealed record CategoryFormSubmitContext(CategoryFormModel Model, IBrowserFile? PendingFile);
+}

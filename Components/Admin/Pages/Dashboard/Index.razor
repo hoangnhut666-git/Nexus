@@ -1,0 +1,15 @@
+@page "/admin"
+@rendermode InteractiveServer
+
+<CascadingValue Value="@PageTitle" Name="AdminPageTitle">
+    <DashboardKpiRow />
+    <div class="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6 mb-6">
+        <DashboardRevenueChart />
+        <DashboardTopProducts />
+    </div>
+    <DashboardRecentOrders />
+</CascadingValue>
+
+@code {
+    private const string PageTitle = "Dashboard Overview";
+}

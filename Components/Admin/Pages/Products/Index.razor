@@ -1,0 +1,262 @@
+@page "/admin/products"
+@rendermode InteractiveServer
+
+@using Nexus.Components.Admin.Shared
+@using Nexus.Services.Categories
+@using Nexus.Services.Categories.Models
+@using Nexus.Services.Products
+@using Nexus.Services.Products.Models
+@using static Nexus.Components.Admin.Shared.ProductDrawer
+
+@inject IProductService ProductService
+@inject IProductImageService ProductImageService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+
+<CascadingValue Name="AdminPageTitle" Value="@("Product Management")">
+    <div>
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex gap-4 flex-wrap">
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
+                    <input type="text"
+                           placeholder="Search by name, SKU..."
+                           class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                           value="@searchTerm"
+                           @oninput="OnSearchInput" />
+                </div>
+                <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                        value="@statusFilter"
+                        @onchange="OnStatusFilterChanged">
+                    <option value="@ProductStatusFilter.All">All statuses</option>
+                    <option value="@ProductStatusFilter.Active">Active</option>
+                    <option value="@ProductStatusFilter.Hidden">Hidden</option>
+                </select>
+                <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                        value="@categoryFilter"
+                        @onchange="OnCategoryFilterChanged">
+                    <option value="0">All categories</option>
+                    @foreach (var category in categoryOptions)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
+            </div>
+
+            <button type="button"
+                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-[0_4px_15px_rgba(99,102,241,0.2)] flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)]"
+                    @onclick="OpenCreateDrawer">
+                <i class="fa-solid fa-plus"></i> Add Product
+            </button>
+        </div>
+
+        @if (pagedResult is not null)
+        {
+            <ProductTable Items="@pagedResult.Items"
+                          Page="@query.Page"
+                          PageSize="@query.PageSize"
+                          TotalCount="@pagedResult.TotalCount"
+                          OnPageChanged="@ChangePageAsync"
+                          OnEdit="@NavigateToDetailAsync"
+                          OnToggleActive="@ToggleActiveAsync" />
+        }
+    </div>
+</CascadingValue>
+
+<ProductDrawer IsOpen="@drawerOpen"
+               Title="@("Add New Product")"
+               Model="@formModel"
+               Categories="@categoryOptions"
+               OnClose="@CloseDrawer"
+               OnSave="@CreateProductAsync" />
+
+<AdminToast Messages="@toasts" />
+
+@code {
+    private readonly ProductQuery query = new() { Status = ProductStatusFilter.Active };
+    private PagedResult<ProductListItemDto>? pagedResult;
+    private string searchTerm = string.Empty;
+    private ProductStatusFilter statusFilter = ProductStatusFilter.Active;
+    private int categoryFilter;
+
+    private bool drawerOpen;
+    private ProductFormModel formModel = new();
+    private List<CategoryOption> categoryOptions = [];
+
+    private readonly List<AdminToastMessage> toasts = [];
+    private CancellationTokenSource? searchDebounceCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoryOptionsAsync();
+        await LoadProductsAsync();
+    }
+
+    private async Task LoadCategoryOptionsAsync()
+    {
+        var result = await CategoryService.GetPagedAsync(new CategoryQuery
+        {
+            Status = CategoryStatusFilter.Active,
+            Page = 1,
+            PageSize = 100
+        });
+
+        categoryOptions = result.Items
+            .Select(c => new CategoryOption { Id = c.Id, Name = c.Name })
+            .ToList();
+    }
+
+    private async Task LoadProductsAsync()
+    {
+        query.Search = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim();
+        query.Status = statusFilter;
+        query.CategoryId = categoryFilter > 0 ? categoryFilter : null;
+        pagedResult = await ProductService.GetPagedAsync(query);
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs args)
+    {
+        searchTerm = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+
+        searchDebounceCts?.Cancel();
+        searchDebounceCts = new CancellationTokenSource();
+        var token = searchDebounceCts.Token;
+
+        try
+        {
+            await Task.Delay(300, token);
+            await LoadProductsAsync();
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnStatusFilterChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<ProductStatusFilter>(args.Value?.ToString(), out var selected))
+            statusFilter = selected;
+
+        query.Page = 1;
+        await LoadProductsAsync();
+    }
+
+    private async Task OnCategoryFilterChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var selected))
+            categoryFilter = selected;
+
+        query.Page = 1;
+        await LoadProductsAsync();
+    }
+
+    private async Task ChangePageAsync(int page)
+    {
+        query.Page = page;
+        await LoadProductsAsync();
+    }
+
+    private void OpenCreateDrawer()
+    {
+        formModel = new ProductFormModel
+        {
+            IsActive = true,
+            CategoryId = categoryOptions.FirstOrDefault()?.Id ?? 0
+        };
+        drawerOpen = true;
+    }
+
+    private void NavigateToDetailAsync(int id) =>
+        Navigation.NavigateTo($"/admin/products/{id}");
+
+    private void CloseDrawer() => drawerOpen = false;
+
+    private async Task CreateProductAsync(ProductFormSubmitContext context)
+    {
+        var model = context.Model;
+        var imageUrl = model.PrimaryImageUrl;
+
+        if (context.PendingFile is not null)
+        {
+            await using var stream = context.PendingFile.OpenReadStream(Nexus.Services.Products.ProductImageService.MaxFileSizeBytes);
+            var uploadResult = await ProductImageService.SaveUploadedFileAsync(
+                stream,
+                context.PendingFile.Name,
+                context.PendingFile.ContentType,
+                context.PendingFile.Size);
+
+            if (!uploadResult.Success)
+            {
+                ShowToast("Upload failed", uploadResult.Error ?? "Could not upload image.", AdminToastType.Warning);
+                return;
+            }
+
+            imageUrl = uploadResult.Data;
+        }
+
+        var result = await ProductService.CreateAsync(new CreateProductRequest
+        {
+            Name = model.Name,
+            Slug = model.Slug,
+            Description = model.Description,
+            CategoryId = model.CategoryId,
+            IsActive = model.IsActive,
+            Price = 0,
+            StockQuantity = 0,
+            VariantIsActive = true,
+            PrimaryImageUrl = imageUrl
+        });
+
+        if (!result.Success)
+        {
+            ShowToast("Create failed", result.Error ?? "Could not create product.", AdminToastType.Danger);
+            return;
+        }
+
+        drawerOpen = false;
+        Navigation.NavigateTo($"/admin/products/{result.Data!.Id}");
+    }
+
+    private async Task ToggleActiveAsync(ProductListItemDto item)
+    {
+        var newStatus = !item.IsActive;
+        var result = await ProductService.SetActiveAsync(item.Id, newStatus);
+
+        if (!result.Success)
+        {
+            ShowToast("Update failed", result.Error ?? "Could not update product status.", AdminToastType.Danger);
+            return;
+        }
+
+        ShowToast(
+            newStatus ? "Product shown" : "Product hidden",
+            $"{item.Name} is now {(newStatus ? "active" : "hidden")}.",
+            newStatus ? AdminToastType.Success : AdminToastType.Warning);
+
+        await LoadProductsAsync();
+    }
+
+    private void ShowToast(string title, string description, AdminToastType type)
+    {
+        var toast = new AdminToastMessage
+        {
+            Title = title,
+            Description = description,
+            Type = type
+        };
+
+        toasts.Add(toast);
+        _ = RemoveToastAfterDelayAsync(toast.Id);
+    }
+
+    private async Task RemoveToastAfterDelayAsync(Guid toastId)
+    {
+        await Task.Delay(3000);
+        var toast = toasts.FirstOrDefault(t => t.Id == toastId);
+        if (toast is not null)
+            toasts.Remove(toast);
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,83 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Nexus.Data
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceScopeFactory ScopeFactory
+
+<aside class="w-[260px] bg-bg-surface border-r border-white/5 flex flex-col transition-all duration-300 z-10 flex-shrink-0">
+    <div class="h-20 flex items-center px-6 border-b border-white/5">
+        <a href="/" class="text-[22px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+            <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+        </a>
+    </div>
+
+    <div class="p-6 px-4 flex-1 overflow-y-auto">
+        <div class="text-[11px] uppercase text-text-muted tracking-wider mb-3 pl-3 font-semibold">Main Menu</div>
+
+        <NavLink href="/admin"
+                 class="@NavLinkClass"
+                 ActiveClass="@NavLinkActiveClass"
+                 Match="NavLinkMatch.All">
+            <i class="fa-solid fa-chart-pie text-base w-5 text-center"></i> Dashboard
+        </NavLink>
+        <NavLink href="/admin/products" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-box-open text-base w-5 text-center"></i> Products
+        </NavLink>
+        <NavLink href="/admin/categories" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-layer-group text-base w-5 text-center"></i> Categories
+        </NavLink>
+        <NavLink href="/admin/orders" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-cart-shopping text-base w-5 text-center"></i> Orders
+        </NavLink>
+        <NavLink href="/admin/customers" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-users text-base w-5 text-center"></i> Customers
+        </NavLink>
+        <NavLink href="/admin/promotions" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-tag text-base w-5 text-center"></i> Promotions
+        </NavLink>
+
+        <div class="text-[11px] uppercase text-text-muted tracking-wider mb-3 pl-3 font-semibold mt-6">System</div>
+        <NavLink href="/admin/reports" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-chart-line text-base w-5 text-center"></i> Reports
+        </NavLink>
+        <NavLink href="/admin/settings" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+            <i class="fa-solid fa-gear text-base w-5 text-center"></i> Settings
+        </NavLink>
+    </div>
+
+    <div class="p-5 border-t border-white/5 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-sm">@userInitial</div>
+        <div>
+            <h4 class="text-sm font-semibold mb-0.5">@displayName</h4>
+            <p class="text-xs text-text-muted">@displayEmail</p>
+        </div>
+    </div>
+</aside>
+
+@code {
+    private const string NavLinkClass = "flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary text-sm font-medium mb-1 transition-all duration-300 hover:bg-white/5 hover:text-text-primary";
+    private const string NavLinkActiveClass = "text-indigo-400 bg-indigo-500/10 border-r-[3px] border-indigo-500 font-semibold";
+
+    private string displayName = "Administrator";
+    private string displayEmail = "admin@nexus.io";
+    private string userInitial = "A";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var appUser = await userManager.GetUserAsync(user);
+            displayName = appUser?.FullName ?? user.Identity.Name ?? "Administrator";
+            displayEmail = appUser?.Email ?? user.Identity.Name ?? "admin@nexus.io";
+            userInitial = string.IsNullOrWhiteSpace(displayName)
+                ? "A"
+                : displayName.Trim()[0].ToString().ToUpperInvariant();
+        }
+    }
+}

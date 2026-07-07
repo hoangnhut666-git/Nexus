@@ -1,0 +1,302 @@
+@page "/admin/categories"
+@rendermode InteractiveServer
+
+@using Nexus.Components.Admin.Shared
+@using Nexus.Services.Categories
+@using Nexus.Services.Categories.Models
+@using static Nexus.Components.Admin.Shared.CategoryDrawer
+
+@inject ICategoryService CategoryService
+@inject ICategoryImageService CategoryImageService
+
+<CascadingValue Name="AdminPageTitle" Value="@("Category Management")">
+    <div>
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex gap-4">
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
+                    <input type="text"
+                           placeholder="Search by name, slug..."
+                           class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                           value="@searchTerm"
+                           @oninput="OnSearchInput" />
+                </div>
+                <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                        value="@statusFilter"
+                        @onchange="OnStatusFilterChanged">
+                    <option value="@CategoryStatusFilter.All">All statuses</option>
+                    <option value="@CategoryStatusFilter.Active">Active</option>
+                    <option value="@CategoryStatusFilter.Hidden">Hidden</option>
+                </select>
+            </div>
+
+            <button type="button"
+                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-[0_4px_15px_rgba(99,102,241,0.2)] flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)]"
+                    @onclick="OpenCreateDrawer">
+                <i class="fa-solid fa-plus"></i> Add Category
+            </button>
+        </div>
+
+        @if (pagedResult is not null)
+        {
+            <CategoryTable Items="@pagedResult.Items"
+                           Page="@query.Page"
+                           PageSize="@query.PageSize"
+                           TotalCount="@pagedResult.TotalCount"
+                           OnPageChanged="@ChangePageAsync"
+                           OnEdit="@OpenEditDrawerAsync"
+                           OnDelete="@RequestDeleteAsync" />
+        }
+    </div>
+</CascadingValue>
+
+<CategoryDrawer IsOpen="@drawerOpen"
+                Title="@drawerTitle"
+                Model="@formModel"
+                OnClose="@CloseDrawer"
+                OnSave="@SaveCategoryAsync" />
+
+<AdminToast Messages="@toasts" />
+
+@if (deleteCandidate is not null)
+{
+    <div class="fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4">
+        <div class="bg-bg-surface border border-white/5 rounded-xl p-6 max-w-md w-full shadow-2xl">
+            <h3 class="text-lg font-bold mb-2">Delete category?</h3>
+            <p class="text-sm text-text-secondary mb-6">Delete category "@deleteCandidate.Name"?</p>
+            <div class="flex justify-end gap-3">
+                <button type="button"
+                        class="bg-transparent border border-white/5 text-text-secondary py-2 px-4 text-sm font-semibold rounded-lg hover:bg-white/5"
+                        @onclick="CancelDelete">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="bg-danger text-white py-2 px-4 text-sm font-semibold rounded-lg"
+                        @onclick="ConfirmDeleteAsync">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly CategoryQuery query = new();
+    private PagedResult<CategoryListItemDto>? pagedResult;
+    private string searchTerm = string.Empty;
+    private CategoryStatusFilter statusFilter = CategoryStatusFilter.All;
+
+    private bool drawerOpen;
+    private string drawerTitle = "Add New Category";
+    private CategoryFormModel formModel = new();
+
+    private CategoryListItemDto? deleteCandidate;
+    private readonly List<AdminToastMessage> toasts = [];
+    private CancellationTokenSource? searchDebounceCts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategoriesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        query.Search = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim();
+        query.Status = statusFilter;
+        pagedResult = await CategoryService.GetPagedAsync(query);
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs args)
+    {
+        searchTerm = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+
+        searchDebounceCts?.Cancel();
+        searchDebounceCts = new CancellationTokenSource();
+        var token = searchDebounceCts.Token;
+
+        try
+        {
+            await Task.Delay(300, token);
+            await LoadCategoriesAsync();
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnStatusFilterChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<CategoryStatusFilter>(args.Value?.ToString(), out var selected))
+            statusFilter = selected;
+
+        query.Page = 1;
+        await LoadCategoriesAsync();
+    }
+
+    private async Task ChangePageAsync(int page)
+    {
+        query.Page = page;
+        await LoadCategoriesAsync();
+    }
+
+    private void OpenCreateDrawer()
+    {
+        drawerTitle = "Add New Category";
+        formModel = new CategoryFormModel { IsActive = true };
+        drawerOpen = true;
+    }
+
+    private async Task OpenEditDrawerAsync(int id)
+    {
+        var category = await CategoryService.GetByIdAsync(id);
+        if (category is null)
+        {
+            ShowToast("Not found", "Category could not be loaded.", AdminToastType.Warning);
+            return;
+        }
+
+        drawerTitle = "Edit Category";
+        formModel = new CategoryFormModel
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Slug = category.Slug,
+            Description = category.Description,
+            ImageUrl = category.ImageUrl,
+            IsActive = category.IsActive
+        };
+        drawerOpen = true;
+    }
+
+    private void CloseDrawer()
+    {
+        drawerOpen = false;
+    }
+
+    private async Task SaveCategoryAsync(CategoryFormSubmitContext context)
+    {
+        var model = context.Model;
+        var imageUrl = model.ImageUrl;
+
+        if (context.PendingFile is not null)
+        {
+            await using var stream = context.PendingFile.OpenReadStream(Nexus.Services.Categories.CategoryImageService.MaxFileSizeBytes);
+            var uploadResult = await CategoryImageService.SaveUploadedFileAsync(
+                stream,
+                context.PendingFile.Name,
+                context.PendingFile.ContentType,
+                context.PendingFile.Size);
+
+            if (!uploadResult.Success)
+            {
+                ShowToast("Upload failed", uploadResult.Error ?? "Could not upload image.", AdminToastType.Warning);
+                return;
+            }
+
+            imageUrl = uploadResult.Data;
+        }
+
+        if (model.Id.HasValue)
+        {
+            var result = await CategoryService.UpdateAsync(model.Id.Value, new UpdateCategoryRequest
+            {
+                Name = model.Name,
+                Slug = model.Slug,
+                Description = model.Description,
+                ImageUrl = imageUrl,
+                IsActive = model.IsActive
+            });
+
+            if (!result.Success)
+            {
+                ShowToast("Update failed", result.Error ?? "Could not update category.", AdminToastType.Danger);
+                return;
+            }
+
+            ShowToast("Success", "Category updated.", AdminToastType.Success);
+        }
+        else
+        {
+            var result = await CategoryService.CreateAsync(new CreateCategoryRequest
+            {
+                Name = model.Name,
+                Slug = model.Slug,
+                Description = model.Description,
+                ImageUrl = imageUrl,
+                IsActive = model.IsActive
+            });
+
+            if (!result.Success)
+            {
+                ShowToast("Create failed", result.Error ?? "Could not create category.", AdminToastType.Danger);
+                return;
+            }
+
+            ShowToast("Success", "New category added.", AdminToastType.Success);
+        }
+
+        drawerOpen = false;
+        query.Page = 1;
+        await LoadCategoriesAsync();
+    }
+
+    private Task RequestDeleteAsync(CategoryListItemDto item)
+    {
+        if (item.ProductCount > 0)
+        {
+            ShowToast("Cannot delete", "Category contains products and cannot be deleted.", AdminToastType.Warning);
+            return Task.CompletedTask;
+        }
+
+        deleteCandidate = item;
+        return Task.CompletedTask;
+    }
+
+    private void CancelDelete()
+    {
+        deleteCandidate = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (deleteCandidate is null)
+            return;
+
+        var result = await CategoryService.DeleteAsync(deleteCandidate.Id);
+        var name = deleteCandidate.Name;
+        deleteCandidate = null;
+
+        if (!result.Success)
+        {
+            ShowToast("Delete failed", result.Error ?? "Could not delete category.", AdminToastType.Danger);
+            return;
+        }
+
+        ShowToast("Deleted", $"Successfully deleted {name}", AdminToastType.Danger);
+        await LoadCategoriesAsync();
+    }
+
+    private void ShowToast(string title, string description, AdminToastType type)
+    {
+        var toast = new AdminToastMessage
+        {
+            Title = title,
+            Description = description,
+            Type = type
+        };
+
+        toasts.Add(toast);
+        _ = RemoveToastAfterDelayAsync(toast.Id);
+    }
+
+    private async Task RemoveToastAfterDelayAsync(Guid toastId)
+    {
+        await Task.Delay(3000);
+        var toast = toasts.FirstOrDefault(t => t.Id == toastId);
+        if (toast is not null)
+            toasts.Remove(toast);
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

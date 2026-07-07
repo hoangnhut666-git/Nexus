@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS // Premium E‑Commerce</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'jakarta': ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        'nexus-base': '#08070b',
+                        'nexus-surface': '#0f0e15',
+                        'nexus-card': '#171520',
+                        'nexus-card-hover': '#1f1d2b',
+                        'nexus-accent': '#6366f1',
+                        'nexus-cyan': '#00f2fe',
+                        'nexus-text': '#f8fafc',
+                        'nexus-secondary': '#94a3b8',
+                        'nexus-muted': '#64748b',
+                        'nexus-border': 'rgba(255,255,255,0.05)',
+                    },
+                    backgroundImage: {
+                        'accent-gradient': 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                        'cyan-glow': 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%)',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blobby': 'blobby 12s infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                            '100%': { transform: 'translateY(0px)' },
+                        },
+                        blobby: {
+                            '0%': { borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%' },
+                            '100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 50% 40%' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* minimal custom for scrollbar & blur */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #08070b; }
+        ::-webkit-scrollbar-thumb { background: #272533; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6366f1; }
+        .backdrop-blur-20 { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .backdrop-blur-8 { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .hero-glow::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+        .hero-glow::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+        .promo-glow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,242,254,0.08) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-nexus-base text-nexus-text font-jakarta antialiased overflow-x-hidden">
+
+    <!-- Announcement Bar -->
+    <div class="bg-gradient-to-r from-[#0f0e15] via-[#1e1b2e] to-[#0f0e15] border-b border-nexus-border text-center py-2.5 text-sm font-medium text-nexus-secondary tracking-wide">
+        ⚡ CYBER WEEK: Use code <span class="text-nexus-cyan font-semibold">NEXUS20</span> for 20% off all tech orders!
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-nexus-surface/85 backdrop-blur-20 border-b border-nexus-border transition-all">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
+            <!-- Logo -->
+            <a href="#" class="text-2xl font-extrabold tracking-wide flex items-center gap-2 bg-gradient-to-r from-white to-nexus-secondary bg-clip-text text-transparent">
+                <i class="fa-solid fa-cube text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"></i>NEXUS.
+            </a>
+
+            <!-- Nav -->
+            <nav class="hidden md:block">
+                <ul class="flex gap-9 text-sm font-medium text-nexus-secondary">
+                    <li><a href="#" class="active text-nexus-text relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-accent-gradient hover:text-nexus-text transition">Home</a></li>
+                    <li><a href="#" class="hover:text-nexus-text transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-accent-gradient after:transition-all">Shop</a></li>
+                    <li><a href="#" class="hover:text-nexus-text transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-accent-gradient after:transition-all">Collections</a></li>
+                    <li><a href="#" class="hover:text-nexus-text transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-accent-gradient after:transition-all">Limited Offers</a></li>
+                    <li><a href="#" class="hover:text-nexus-text transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-accent-gradient after:transition-all">Support</a></li>
+                </ul>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="flex items-center gap-5">
+                <div class="relative hidden lg:flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 text-nexus-muted text-sm"></i>
+                    <input type="text" placeholder="Search future products..." class="bg-white/5 border border-nexus-border rounded-lg py-2.5 pl-10 pr-4 text-sm text-nexus-text w-52 focus:w-64 focus:outline-none focus:border-[rgba(99,102,241,0.4)] focus:bg-white/10 transition-all shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                </div>
+                <button class="text-nexus-secondary hover:text-nexus-text p-2 rounded-full hover:bg-white/5 transition" title="Wishlist">
+                    <i class="fa-regular fa-heart text-lg"></i>
+                </button>
+                <button class="text-nexus-secondary hover:text-nexus-text p-2 rounded-full hover:bg-white/5 transition relative" title="Cart">
+                    <i class="fa-solid fa-bag-shopping text-lg"></i>
+                    <span class="absolute -top-1 -right-1 bg-accent-gradient text-white text-[10px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-nexus-surface">3</span>
+                </button>
+                <button class="text-nexus-secondary hover:text-nexus-text p-2 rounded-full hover:bg-white/5 transition" title="Account">
+                    <i class="fa-regular fa-user text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative py-16 md:py-24 overflow-hidden hero-glow">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+            <div class="text-center md:text-left">
+                <div class="inline-flex items-center gap-2 bg-white/5 border border-nexus-border px-4 py-1.5 rounded-full text-sm text-nexus-secondary mb-6">
+                    <i class="fa-solid fa-bolt text-nexus-cyan"></i> Next‑Gen Digital Devices 2026
+                </div>
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight mb-6">
+                    Experience the <span class="bg-gradient-to-r from-[#6366f1] via-[#a855f7] to-[#00f2fe] bg-clip-text text-transparent">cutting‑edge</span> ecosystem
+                </h1>
+                <p class="text-nexus-secondary text-lg leading-relaxed max-w-xl mx-auto md:mx-0 mb-10">
+                    Discover premium peripherals and smart products designed with minimalist aesthetics and future‑ready performance.
+                </p>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                    <a href="#" class="bg-accent-gradient text-white px-8 py-4 rounded-lg font-semibold flex items-center gap-3 shadow-[0_4px_20px_rgba(99,102,241,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(99,102,241,0.45)] transition">
+                        Explore Now <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <a href="#" class="border border-nexus-border bg-white/5 text-nexus-text px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition">Watch Trailer</a>
+                </div>
+            </div>
+            <div class="relative flex justify-center items-center order-first md:order-last">
+                <div class="absolute w-full h-full bg-gradient-to-br from-[rgba(99,102,241,0.1)] to-[rgba(168,85,247,0.05)] rounded-[40%_60%_70%_30%_/_40%_50%_60%_50%] blur-2xl animate-blobby"></div>
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80" alt="Premium Headphones" class="relative z-10 drop-shadow-2xl rounded-2xl border border-white/5 animate-float">
+                <!-- floating badge -->
+                <div class="absolute bottom-6 left-0 md:-left-6 bg-nexus-card/60 backdrop-blur-20 border border-white/10 p-4 rounded-2xl flex items-center gap-4 z-20 shadow-xl">
+                    <div class="bg-cyan-400/10 text-nexus-cyan w-11 h-11 rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-fire"></i></div>
+                    <div>
+                        <span class="text-xs text-nexus-secondary block">Best Seller</span>
+                        <strong class="text-sm font-semibold">Nexus Sound Pro X</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight">Trending Categories</h2>
+                    <p class="text-nexus-secondary text-sm">Quick‑find products by your needs</p>
+                </div>
+                <a href="#" class="text-nexus-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">All categories <i class="fa-solid fa-chevron-right text-xs"></i></a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-[rgba(99,102,241,0.4)] hover:bg-nexus-card-hover transition shadow-lg hover:shadow-2xl">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl hover:bg-accent-gradient hover:text-white hover:scale-110 transition"> <i class="fa-solid fa-headphones"></i> </div>
+                    <h3 class="font-semibold">Premium Audio</h3>
+                    <p class="text-nexus-muted text-sm">24 products</p>
+                </div>
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-[rgba(99,102,241,0.4)] hover:bg-nexus-card-hover transition shadow-lg hover:shadow-2xl">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl hover:bg-accent-gradient hover:text-white hover:scale-110 transition"> <i class="fa-solid fa-keyboard"></i> </div>
+                    <h3 class="font-semibold">Mech & Gaming</h3>
+                    <p class="text-nexus-muted text-sm">18 products</p>
+                </div>
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-[rgba(99,102,241,0.4)] hover:bg-nexus-card-hover transition shadow-lg hover:shadow-2xl">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl hover:bg-accent-gradient hover:text-white hover:scale-110 transition"> <i class="fa-solid fa-display"></i> </div>
+                    <h3 class="font-semibold">Desk Setup</h3>
+                    <p class="text-nexus-muted text-sm">32 products</p>
+                </div>
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-[rgba(99,102,241,0.4)] hover:bg-nexus-card-hover transition shadow-lg hover:shadow-2xl">
+                    <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl hover:bg-accent-gradient hover:text-white hover:scale-110 transition"> <i class="fa-solid fa-mobile-screen"></i> </div>
+                    <h3 class="font-semibold">Smart Accessories</h3>
+                    <p class="text-nexus-muted text-sm">40 products</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight">Hottest Products</h2>
+                    <p class="text-nexus-secondary text-sm">Exclusive limited‑edition designs for you</p>
+                </div>
+                <a href="#" class="text-nexus-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">View all <i class="fa-solid fa-chevron-right text-xs"></i></a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Product card (repeated) -->
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-accent-gradient text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Hot</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&auto=format&fit=crop&q=80" alt="mech keyboard" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Mechanical Keyboard</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">CyberType S87 Wireless</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">2,800,000 ₫</span><span class="font-bold text-lg">2,450,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">4.9</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Product 2 -->
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-nexus-cyan text-black text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">New</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=80" alt="smartwatch" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Smartwatch</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">Chrono Shield V2</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="font-bold text-lg">4,200,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">4.8</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Product 3 -->
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500&auto=format&fit=crop&q=80" alt="speaker" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Audio</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">Ambient Sound Sphere</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">1,950,000 ₫</span><span class="font-bold text-lg">1,590,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">4.7</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Product 4 -->
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-15%</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="earbuds" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Earbuds</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">AuraPods Pro ANC</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">3,100,000 ₫</span><span class="font-bold text-lg">2,635,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">5.0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Duplicate cards for demo (same structure) -->
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-15%</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="earbuds" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Earbuds</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">AuraPods Pro ANC</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">3,100,000 ₫</span><span class="font-bold text-lg">2,635,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">5.0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-15%</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="earbuds" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Earbuds</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">AuraPods Pro ANC</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">3,100,000 ₫</span><span class="font-bold text-lg">2,635,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">5.0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-15%</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="earbuds" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Earbuds</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">AuraPods Pro ANC</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">3,100,000 ₫</span><span class="font-bold text-lg">2,635,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">5.0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-nexus-surface border border-nexus-border rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
+                    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+                        <span class="absolute top-3 left-3 z-10 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">-15%</span>
+                        <button class="absolute top-3 right-3 z-10 bg-nexus-base/60 backdrop-blur-8 border border-nexus-border text-nexus-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="earbuds" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-nexus-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                            <button class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-nexus-accent hover:text-white transition shadow-lg"><i class="fa-solid fa-cart-plus"></i> Add to cart</button>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="text-nexus-muted text-xs uppercase tracking-wide">Earbuds</div>
+                        <h3 class="font-semibold text-base truncate"><a href="#" class="hover:text-nexus-accent">AuraPods Pro ANC</a></h3>
+                        <div class="flex justify-between items-center mt-2">
+                            <div><span class="text-nexus-muted text-sm line-through block">3,100,000 ₫</span><span class="font-bold text-lg">2,635,000 ₫</span></div>
+                            <div class="text-yellow-400 text-xs flex items-center gap-1"><i class="fa-solid fa-star"></i> <span class="text-nexus-secondary font-medium">5.0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promo Banner -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="relative bg-gradient-to-br from-[#13111c] to-[#1d1933] border border-nexus-border rounded-3xl p-8 md:p-16 grid md:grid-cols-[1.2fr_0.8fr] items-center gap-12 overflow-hidden promo-glow">
+                <div>
+                    <span class="bg-accent-gradient text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wide inline-block mb-4">Exclusive Flash Sale</span>
+                    <h2 class="text-3xl md:text-4xl font-extrabold leading-tight mb-4">Last chance to grab the Studio Setup Combo</h2>
+                    <p class="text-nexus-secondary max-w-md">Up to 35% off on pro‑grade gear trusted by streamers and creators.</p>
+                    <div class="flex gap-4 mt-6">
+                        <div class="bg-white/5 border border-nexus-border rounded-lg min-w-[64px] p-3 text-center"><div class="text-nexus-cyan text-2xl font-bold">02</div><span class="text-nexus-muted text-[10px] uppercase">Days</span></div>
+                        <div class="bg-white/5 border border-nexus-border rounded-lg min-w-[64px] p-3 text-center"><div class="text-nexus-cyan text-2xl font-bold">14</div><span class="text-nexus-muted text-[10px] uppercase">Hours</span></div>
+                        <div class="bg-white/5 border border-nexus-border rounded-lg min-w-[64px] p-3 text-center"><div class="text-nexus-cyan text-2xl font-bold">45</div><span class="text-nexus-muted text-[10px] uppercase">Min</span></div>
+                        <div class="bg-white/5 border border-nexus-border rounded-lg min-w-[64px] p-3 text-center"><div class="text-nexus-cyan text-2xl font-bold">18</div><span class="text-nexus-muted text-[10px] uppercase">Sec</span></div>
+                    </div>
+                    <a href="#" class="inline-block mt-8 bg-accent-gradient text-white px-8 py-4 rounded-lg font-semibold hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(99,102,241,0.3)] transition">Claim Deal</a>
+                </div>
+                <div class="flex justify-center">
+                    <img src="https://images.unsplash.com/photo-1547119957-637f8679db1e?w=600&auto=format&fit=crop&q=80" alt="workspace" class="drop-shadow-2xl max-h-72 md:max-h-96 object-contain">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-3 gap-8 border-t border-nexus-border pt-16">
+                <div class="flex gap-5 items-start">
+                    <i class="fa-solid fa-truck-fast text-3xl text-nexus-accent bg-[rgba(99,102,241,0.06)] p-4 rounded-xl border border-[rgba(99,102,241,0.15)]"></i>
+                    <div><h3 class="font-semibold text-lg">Lightning Delivery</h3><p class="text-nexus-secondary text-sm">2‑hour delivery in Hanoi & HCMC. Free for orders over 2M.</p></div>
+                </div>
+                <div class="flex gap-5 items-start">
+                    <i class="fa-solid fa-shield-halved text-3xl text-nexus-accent bg-[rgba(99,102,241,0.06)] p-4 rounded-xl border border-[rgba(99,102,241,0.15)]"></i>
+                    <div><h3 class="font-semibold text-lg">1‑for‑1 Warranty</h3><p class="text-nexus-secondary text-sm">100% authentic. Extended 24‑month electronics warranty.</p></div>
+                </div>
+                <div class="flex gap-5 items-start">
+                    <i class="fa-solid fa-headset text-3xl text-nexus-accent bg-[rgba(99,102,241,0.06)] p-4 rounded-xl border border-[rgba(99,102,241,0.15)]"></i>
+                    <div><h3 class="font-semibold text-lg">24/7 Expert Support</h3><p class="text-nexus-secondary text-sm">Tech‑savvy team ready via chat or hotline.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-20 bg-nexus-surface border-t border-nexus-border text-center">
+        <div class="max-w-xl mx-auto px-6">
+            <h2 class="text-3xl font-bold">Join the NEXUS Club</h2>
+            <p class="text-nexus-secondary mt-3 mb-8">Subscribe to never miss exclusive drops and get a 100k voucher for your first order.</p>
+            <form class="flex gap-3 bg-white/5 border border-nexus-border p-1.5 rounded-lg" onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
+                <input type="email" placeholder="Enter your email..." class="flex-1 bg-transparent border-none px-4 py-3 text-sm text-nexus-text focus:outline-none" required>
+                <button type="submit" class="bg-white text-black px-6 py-3 font-semibold text-sm rounded-lg hover:bg-accent-gradient hover:text-white transition">Subscribe</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-nexus-base border-t border-nexus-border py-16 md:py-20 text-nexus-secondary text-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid md:grid-cols-[1.2fr_0.6fr_0.6fr_0.6fr] gap-12 mb-16">
+                <div>
+                    <a href="#" class="text-2xl font-extrabold flex items-center gap-2 bg-gradient-to-r from-white to-nexus-secondary bg-clip-text text-transparent"><i class="fa-solid fa-cube text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"></i>NEXUS.</a>
+                    <p class="mt-4 max-w-xs leading-relaxed">The premium tech destination that defines your future lifestyle and workspace.</p>
+                    <div class="flex gap-3 mt-6">
+                        <a href="#" class="w-10 h-10 bg-nexus-surface border border-nexus-border rounded-full flex items-center justify-center hover:bg-nexus-accent hover:text-white hover:border-nexus-accent transition"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="w-10 h-10 bg-nexus-surface border border-nexus-border rounded-full flex items-center justify-center hover:bg-nexus-accent hover:text-white hover:border-nexus-accent transition"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-10 h-10 bg-nexus-surface border border-nexus-border rounded-full flex items-center justify-center hover:bg-nexus-accent hover:text-white hover:border-nexus-accent transition"><i class="fa-brands fa-threads"></i></a>
+                        <a href="#" class="w-10 h-10 bg-nexus-surface border border-nexus-border rounded-full flex items-center justify-center hover:bg-nexus-accent hover:text-white hover:border-nexus-accent transition"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div><h4 class="text-nexus-text font-semibold uppercase tracking-wide mb-6">Shop</h4><ul class="space-y-3"><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">All Products</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Audio</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Mech Keyboards</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">New Arrivals</a></li></ul></div>
+                <div><h4 class="text-nexus-text font-semibold uppercase tracking-wide mb-6">Policy</h4><ul class="space-y-3"><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Terms of Service</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Privacy</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Shipping</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Returns</a></li></ul></div>
+                <div><h4 class="text-nexus-text font-semibold uppercase tracking-wide mb-6">Contact</h4><ul class="space-y-3"><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">support@nexus.io</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">1900 88xx</a></li><li><a href="#" class="hover:text-nexus-text hover:pl-1 transition">Nexus Tower, D1, HCMC</a></li></ul></div>
+            </div>
+            <div class="border-t border-nexus-border pt-6 flex flex-col md:flex-row justify-between items-center text-nexus-muted text-xs gap-4">
+                <p>&copy; 2026 NEXUS Tech‑Ecom. Minimalist design for peak experience.</p>
+                <div class="flex gap-4 text-lg"><i class="fa-brands fa-cc-visa"></i><i class="fa-brands fa-cc-mastercard"></i><i class="fa-brands fa-apple-pay"></i><i class="fa-solid fa-wallet"></i></div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

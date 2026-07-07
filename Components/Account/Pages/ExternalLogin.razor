@@ -7,6 +7,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using Nexus.Data
+@using Nexus.Services.Auth
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -121,7 +122,17 @@
                 "{Name} logged in with {LoginProvider} provider.",
                 externalLoginInfo.Principal.Identity?.Name,
                 externalLoginInfo.LoginProvider);
-            RedirectManager.RedirectTo(ReturnUrl);
+            var signedInUser = await UserManager.GetUserAsync(HttpContext.User);
+            if (signedInUser is not null)
+            {
+                var landingUrl = await RoleLandingHelper.ResolveReturnUrlAsync(ReturnUrl, signedInUser, UserManager);
+                RedirectManager.RedirectTo(landingUrl);
+            }
+            else
+            {
+                RedirectManager.RedirectTo(ReturnUrl);
+            }
+
             return;
         }
         else if (result.IsLockedOut)
@@ -176,7 +187,8 @@
                 else
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
-                    RedirectManager.RedirectTo(ReturnUrl);
+                    var landingUrl = await RoleLandingHelper.ResolveReturnUrlAsync(ReturnUrl, user, UserManager);
+                    RedirectManager.RedirectTo(landingUrl);
                 }
             }
         }

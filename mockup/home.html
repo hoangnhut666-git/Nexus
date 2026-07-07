@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS // Sàn Thương Mại Điện Tử Premium</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- Hệ thống Màu sắc & Biến số (Dark Mode Palette) --- */
+        :root {
+            --bg-base: #08070b;         /* Nền sâu nhất */
+            --bg-surface: #0f0e15;      /* Nền lớp trên (Header, Sections) */
+            --bg-card: #171520;         /* Nền của thẻ sản phẩm */
+            --bg-card-hover: #1f1d2b;   /* Nền khi hover thẻ */
+            
+            --accent: #6366f1;          /* Màu chủ đạo Indigo */
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --cyber-cyan: #00f2fe;
+            
+            --text-primary: #f8fafc;    /* Chữ chính trắng sáng */
+            --text-secondary: #94a3b8;  /* Chữ phụ xám xanh */
+            --text-muted: #64748b;     /* Chữ làm mờ hẳn */
+            
+            --border: rgba(255, 255, 255, 0.05);
+            --border-focus: rgba(99, 102, 241, 0.4);
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+        }
+
+        /* --- Cấu hình CSS Cơ bản --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Tùy biến thanh cuộn (Scrollbar) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-base);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #272533;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* --- Khối Tiện ích / Layout Chung --- */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .badge {
+            background: var(--accent-gradient);
+            color: #fff;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Announcement Bar --- */
+        .announcement-bar {
+            background: linear-gradient(90deg, #0f0e15 0%, #1e1b2e 50%, #0f0e15 100%);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+        .announcement-bar span {
+            color: var(--cyber-cyan);
+            font-weight: 600;
+        }
+
+        /* --- Navigation Header --- */
+        header {
+            background-color: rgba(15, 14, 21, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo i {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 36px;
+        }
+
+        nav a {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            position: relative;
+            padding: 8px 0;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--text-primary);
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: var(--transition);
+        }
+
+        nav a:hover::after, nav a.active::after {
+            width: 100%;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            background-color: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            padding: 10px 16px 10px 40px;
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            width: 220px;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            width: 280px;
+            border-color: var(--border-focus);
+            background-color: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            position: relative;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            color: var(--text-primary);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-btn .cart-count {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-surface);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 60px 0 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hiệu ứng đèn Neon lập lòe phía sau */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            align-items: center;
+            gap: 60px;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        .hero-tag i {
+            color: var(--cyber-cyan);
+        }
+
+        .hero-content h1 {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            margin-bottom: 24px;
+        }
+        .hero-content h1 span {
+            background: linear-gradient(90deg, #6366f1, #a855f7, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 40px;
+            max-width: 560px;
+        }
+
+        .cta-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: #fff;
+            padding: 16px 36px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.45);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            color: var(--text-primary);
+            padding: 16px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--text-secondary);
+        }
+
+        .hero-image-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-img-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(168,85,247,0.05) 100%);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            filter: blur(20px);
+            animation: blobby 12s infinite alternate;
+            z-index: 1;
+        }
+
+        .hero-image {
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 20px 50px rgba(0,0,0,0.5));
+            animation: float 6s ease-in-out infinite;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Glassmorphism Badge nổi trên Hero */
+        .hero-status-card {
+            position: absolute;
+            bottom: 30px;
+            left: -20px;
+            background: rgba(23, 21, 32, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 3;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .hero-status-card i {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--cyber-cyan);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .hero-status-card span {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .hero-status-card strong {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        /* --- Section Header --- */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .section-title-area h2 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .section-title-area p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .view-all-link {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .view-all-link:hover {
+            color: #a855f7;
+            gap: 10px;
+        }
+
+        /* --- Category Section --- */
+        .categories {
+            padding: 60px 0;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .category-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 30px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .category-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-focus);
+            background-color: var(--bg-card-hover);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .category-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-size: 24px;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+        .category-card:hover .category-icon {
+            background: var(--accent-gradient);
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .category-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .category-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* --- Product Grid Section --- */
+        .products-section {
+            padding: 60px 0;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            position: relative;
+        }
+        .product-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+
+        .product-image-container {
+            background-color: #14131a;
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover .product-img {
+            transform: scale(1.08);
+        }
+
+        .product-tags {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 5;
+        }
+
+        .wishlist-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(15, 14, 21, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            transition: var(--transition);
+        }
+        .wishlist-btn:hover {
+            background: #fff;
+            color: #ef4444;
+            border-color: #fff;
+        }
+
+        /* Khối chứa nút mua nhanh trượt từ dưới lên */
+        .product-action-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(8, 7, 11, 0.9) 0%, rgba(8, 7, 11, 0) 100%);
+            display: flex;
+            justify-content: center;
+            transform: translateY(101%);
+            transition: var(--transition);
+            z-index: 6;
+        }
+        .product-card:hover .product-action-overlay {
+            transform: translateY(0);
+        }
+
+        .btn-quick-add {
+            background-color: #fff;
+            color: #000;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        }
+        .btn-quick-add:hover {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .product-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-title a:hover {
+            color: var(--accent);
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price-box {
+            display: flex;
+            flex-direction: column;
+        }
+        .old-price {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-bottom: 2px;
+        }
+        .current-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .product-rating {
+            font-size: 12px;
+            color: #f59e0b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .product-rating span {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* --- Promo Banner Section --- */
+        .promo-banner {
+            padding: 60px 0;
+        }
+
+        .promo-wrapper {
+            background: linear-gradient(135deg, #13111c 0%, #1d1933 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 60px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .promo-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.08) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+
+        .promo-content h2 {
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        .promo-content p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 32px;
+            max-width: 500px;
+        }
+
+        /* Countdown Timer */
+        .countdown {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        .countdown-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            min-width: 70px;
+            padding: 12px;
+            text-align: center;
+        }
+        .countdown-item div {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--cyber-cyan);
+        }
+        .countdown-item span {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .promo-image {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+        .promo-image img {
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.5));
+            max-height: 350px;
+        }
+
+        /* --- Trust Features Section --- */
+        .features {
+            padding: 40px 0 80px 0;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            border-top: 1px solid var(--border);
+            padding-top: 60px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .feature-item i {
+            font-size: 26px;
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.06);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+        .feature-item h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .feature-item p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* --- Newsletter Subscription --- */
+        .newsletter {
+            padding: 80px 0;
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+        }
+        .newsletter-content {
+            max-width: 580px;
+            margin: 0 auto;
+        }
+        .newsletter h2 {
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .newsletter p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-size: 15px;
+        }
+        .newsletter-form {
+            display: flex;
+            gap: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 6px;
+            border-radius: var(--radius-sm);
+        }
+        .newsletter-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .newsletter-form input:focus {
+            outline: none;
+        }
+        .newsletter-form button {
+            background-color: #fff;
+            color: #000;
+            border: none;
+            padding: 0 26px;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: calc(var(--radius-sm) - 2px);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .newsletter-form button:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: var(--bg-base);
+            border-top: 1px solid var(--border);
+            padding: 80px 0 30px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.2fr repeat(3, 0.6fr);
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+
+        .footer-logo-area p {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+        .social-links a {
+            width: 38px;
+            height: 38px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+        .social-links a:hover {
+            color: #fff;
+            background-color: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .footer-column h4 {
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-column ul {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .footer-column a {
+            color: var(--text-secondary);
+        }
+        .footer-column a:hover {
+            color: var(--text-primary);
+            padding-left: 4px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .footer-payments {
+            display: flex;
+            gap: 14px;
+            font-size: 20px;
+        }
+
+        /* --- Keyframe Animations --- */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes blobby {
+            0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+            100% { border-radius: 60% 40% 30% 70% / 60% 30% 50% 40%; }
+        }
+
+        /* --- Responsive Thiết bị di động --- */
+        @media (max-width: 1100px) {
+            .product-grid, .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hero-grid, .promo-wrapper {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .hero-image-wrapper, .promo-image {
+                order: -1;
+            }
+            .hero-content {
+                text-align: center;
+            }
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .cta-group {
+                justify-content: center;
+            }
+            .hero-status-card {
+                left: 20px;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav, .search-box {
+                display: none; /* Ẩn bớt phần tử trên mobile để tinh gọn */
+            }
+            .hero-content h1 {
+                font-size: 38px;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        ⚡ SỰ KIỆN CYBER WEEK: Nhập mã <span>NEXUS20</span> giảm ngay 20% cho tất cả đơn hàng công nghệ!
+    </div>
+
+    <!-- Navigation Header -->
+    <header>
+        <div class="container header-container">
+            <!-- Logo -->
+            <a href="#" class="logo">
+                <i class="fa-solid fa-cube"></i>NEXUS.
+            </a>
+            
+            <!-- Menu Navigation -->
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Trang chủ</a></li>
+                    <li><a href="#">Cửa hàng</a></li>
+                    <li><a href="#">Bộ sưu tập</a></li>
+                    <li><a href="#">Ưu đãi số lượng hạn</a></li>
+                    <li><a href="#">Hỗ trợ</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Hành động Header -->
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Tìm sản phẩm tương lai...">
+                </div>
+                
+                <button class="action-btn" title="Yêu thích">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+                
+                <button class="action-btn" title="Giỏ hàng">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-count">3</span>
+                </button>
+                
+                <button class="action-btn" title="Tài khoản">
+                    <i class="fa-regular fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <div class="hero-tag">
+                    <i class="fa-solid fa-bolt"></i> Thế Hệ Thiết Bị Số Mới 2026
+                </div>
+                <h1>Trải nghiệm hệ sinh thái <span>Công nghệ Tối tân</span></h1>
+                <p>Khám phá bộ sưu tập thiết bị ngoại vi và sản phẩm thông minh cao cấp được thiết kế chuẩn Minimalist nhưng mang sức mạnh bùng nổ của tương lai.</p>
+                <div class="cta-group">
+                    <a href="#" class="btn-primary">
+                        Khám phá Ngay <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <a href="#" class="btn-secondary">Xem Video giới thiệu</a>
+                </div>
+            </div>
+            <div class="hero-image-wrapper">
+                <div class="hero-img-bg"></div>
+                <!-- Sử dụng hình ảnh chất lượng từ Unsplash với tone tối/hiện đại -->
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80" alt="Premium Headphones" class="hero-image">
+                
+                <!-- Floating status badge -->
+                <div class="hero-status-card">
+                    <i class="fa-solid fa-fire"></i>
+                    <div>
+                        <span>Sản phẩm Best Seller</span>
+                        <strong>Nexus Sound Pro X</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Section -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-title-area">
+                    <h2>Danh mục Xu hướng</h2>
+                    <p>Tìm kiếm nhanh sản phẩm theo nhu cầu của bạn</p>
+                </div>
+                <a href="#" class="view-all-link">Tất cả danh mục <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+            
+            <div class="category-grid">
+                <div class="category-card">
+                    <div class="category-icon"><i class="fa-solid fa-headphones"></i></div>
+                    <h3>Âm thanh Cao cấp</h3>
+                    <p>24 sản phẩm</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon"><i class="fa-solid fa-keyboard"></i></div>
+                    <h3>Phím Cơ & Gaming</h3>
+                    <p>18 sản phẩm</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon"><i class="fa-solid fa-display"></i></div>
+                    <h3>Setup Phòng Máy</h3>
+                    <p>32 sản phẩm</p>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                    <h3>Phụ kiện Thông minh</h3>
+                    <p>40 sản phẩm</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Grid Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-title-area">
+                    <h2>Sản Phẩm Đang Hot</h2>
+                    <p>Thiết kế hoàn mỹ, số lượng giới hạn dành riêng cho bạn</p>
+                </div>
+                <a href="#" class="view-all-link">Xem tất cả <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+            
+            <div class="product-grid">
+                <!-- Sản phẩm 1 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge">Hot</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&auto=format&fit=crop&q=80" alt="Bàn phím cơ" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Bàn phím cơ</div>
+                        <h3 class="product-title"><a href="#">Bàn Phím Cơ Không Dây CyberType S87</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">2,800,000 ₫</span>
+                                <span class="current-price">2,450,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>4.9</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sản phẩm 2 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge" style="background: var(--cyber-cyan); color: #000;">Mới</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=80" alt="Đồng hồ thông minh" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Smartwatch</div>
+                        <h3 class="product-title"><a href="#">Đồng Hồ Thông Minh Chrono Shield V2</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="current-price">4,200,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>4.8</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sản phẩm 3 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500&auto=format&fit=crop&q=80" alt="Loa Bluetooth" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Âm thanh</div>
+                        <h3 class="product-title"><a href="#">Loa Bluetooth Ambient Sound Sphere</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">1,950,000 ₫</span>
+                                <span class="current-price">1,590,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>4.7</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sản phẩm 4 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge" style="background: #ef4444;">-15%</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="Tai nghe in-ear" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Tai nghe</div>
+                        <h3 class="product-title"><a href="#">Tai Nghe TWS Khử Tiếng Ồn AuraPods Pro</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">3,100,000 ₫</span>
+                                <span class="current-price">2,635,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sản phẩm 4 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge" style="background: #ef4444;">-15%</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="Tai nghe in-ear" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Tai nghe</div>
+                        <h3 class="product-title"><a href="#">Tai Nghe TWS Khử Tiếng Ồn AuraPods Pro</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">3,100,000 ₫</span>
+                                <span class="current-price">2,635,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sản phẩm 4 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge" style="background: #ef4444;">-15%</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="Tai nghe in-ear" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Tai nghe</div>
+                        <h3 class="product-title"><a href="#">Tai Nghe TWS Khử Tiếng Ồn AuraPods Pro</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">3,100,000 ₫</span>
+                                <span class="current-price">2,635,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sản phẩm 4 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge" style="background: #ef4444;">-15%</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="Tai nghe in-ear" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Tai nghe</div>
+                        <h3 class="product-title"><a href="#">Tai Nghe TWS Khử Tiếng Ồn AuraPods Pro</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">3,100,000 ₫</span>
+                                <span class="current-price">2,635,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sản phẩm 4 -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <div class="product-tags">
+                            <span class="badge" style="background: #ef4444;">-15%</span>
+                        </div>
+                        <button class="wishlist-btn" title="Thêm vào danh sách ước"><i class="fa-regular fa-heart"></i></button>
+                        <img src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80" alt="Tai nghe in-ear" class="product-img">
+                        <div class="product-action-overlay">
+                            <button class="btn-quick-add"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-meta">Tai nghe</div>
+                        <h3 class="product-title"><a href="#">Tai Nghe TWS Khử Tiếng Ồn AuraPods Pro</a></h3>
+                        <div class="product-footer">
+                            <div class="price-box">
+                                <span class="old-price">3,100,000 ₫</span>
+                                <span class="current-price">2,635,000 ₫</span>
+                            </div>
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i> <span>5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promo Countdown Banner Section -->
+    <section class="promo-banner">
+        <div class="container">
+            <div class="promo-wrapper">
+                <div class="promo-content">
+                    <span class="badge" style="margin-bottom: 16px;">Flash Sale Độc Quyền</span>
+                    <h2>Cơ hội cuối cùng sở hữu trọn bộ Combo Setup Studio</h2>
+                    <p>Giảm giá kịch sàn lên đến 35% cho các combo thiết bị làm việc chuyên nghiệp được các Streamer và Creator tin dùng nhất.</p>
+                    
+                    <!-- Giả lập bộ đếm thời gian thực tế -->
+                    <div class="countdown">
+                        <div class="countdown-item">
+                            <div>02</div>
+                            <span>Ngày</span>
+                        </div>
+                        <div class="countdown-item">
+                            <div>14</div>
+                            <span>Giờ</span>
+                        </div>
+                        <div class="countdown-item">
+                            <div>45</div>
+                            <span>Phút</span>
+                        </div>
+                        <div class="countdown-item">
+                            <div>18</div>
+                            <span>Giây</span>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="btn-primary">Nhận Ưu Đãi Ngay</a>
+                </div>
+                <div class="promo-image">
+                    <img src="https://images.unsplash.com/photo-1547119957-637f8679db1e?w=600&auto=format&fit=crop&q=80" alt="Minimalist Workspace Setup">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    <div>
+                        <h3>Giao hàng Siêu tốc</h3>
+                        <p>Nhận hàng trong vòng 2 giờ tại nội thành Hà Nội & TP. Hồ Chí Minh. Miễn phí cho đơn từ 2 triệu.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div>
+                        <h3>Bảo hành 1 Đổi 1</h3>
+                        <p>Cam kết sản phẩm chính hãng 100%. Chính sách bảo hành điện tử độc quyền lên đến 24 tháng.</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <i class="fa-solid fa-headset"></i>
+                    <div>
+                        <h3>Hỗ trợ Chuyên gia 24/7</h3>
+                        <p>Đội ngũ kỹ thuật viên am hiểu công nghệ luôn sẵn sàng hỗ trợ bạn qua chatbox hoặc hotline.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Subscription -->
+    <section class="newsletter">
+        <div class="container newsletter-content">
+            <h2>Gia nhập Câu lạc bộ NEXUS</h2>
+            <p>Đăng ký nhận bản tin để không bỏ lỡ các đợt phát hành sản phẩm giới hạn độc quyền và nhận ngay voucher 100k cho đơn hàng đầu tiên.</p>
+            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký!');">
+                <input type="email" placeholder="Nhập địa chỉ email của bạn..." required>
+                <button type="submit">Đăng ký</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-logo-area">
+                    <a href="#" class="logo" style="margin-bottom: 10px;">
+                        <i class="fa-solid fa-cube"></i>NEXUS.
+                    </a>
+                    <p>Nền tảng mua sắm thiết bị số cao cấp, định hình phong cách không gian sống và làm việc tương lai của bạn.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-threads"></i></a>
+                        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Mua sắm</h4>
+                    <ul>
+                        <li><a href="#">Tất cả Sản phẩm</a></li>
+                        <li><a href="#">Thiết bị Âm thanh</a></li>
+                        <li><a href="#">Phím cơ Độc quyền</a></li>
+                        <li><a href="#">Hàng Mới Về</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Chính sách</h4>
+                    <ul>
+                        <li><a href="#">Điều khoản Dịch vụ</a></li>
+                        <li><a href="#">Chính sách Bảo mật</a></li>
+                        <li><a href="#">Vận chuyển & Giao nhận</a></li>
+                        <li><a href="#">Đổi trả & Hoàn tiền</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h4>Liên hệ</h4>
+                    <ul>
+                        <li><a href="#">Hỗ trợ: support@nexus.io</a></li>
+                        <li><a href="#">Hotline: 1900 88xx</a></li>
+                        <li><a href="#">Trụ sở: Tòa nhà Nexus, Quận 1, TP. HCM</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 NEXUS Tech-Ecom. Được thiết kế tối giản & hiện đại cho trải nghiệm đỉnh cao.</p>
+                <div class="footer-payments">
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                    <i class="fa-brands fa-apple-pay"></i>
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

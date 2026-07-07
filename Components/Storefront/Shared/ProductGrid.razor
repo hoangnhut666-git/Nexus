@@ -1,0 +1,35 @@
+@using Nexus.Services.Products.Models
+
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight">Hottest Products</h2>
+                <p class="text-text-secondary text-sm">Exclusive limited-edition designs for you</p>
+            </div>
+            <a href="#" class="text-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">View all <i class="fa-solid fa-chevron-right text-xs"></i></a>
+        </div>
+
+        @if (Products.Count == 0)
+        {
+            <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center text-text-secondary">
+                <i class="fa-solid fa-box-open text-3xl mb-4 text-text-muted"></i>
+                <p>No products available yet. New arrivals coming soon.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                @foreach (var product in Products)
+                {
+                    <ProductCard Product="product" />
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<ProductListItemDto> Products { get; set; } = [];
+}

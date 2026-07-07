@@ -1,0 +1,50 @@
+@using Nexus.Services.Categories.Models
+
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight">Trending Categories</h2>
+                <p class="text-text-secondary text-sm">Quick-find products by your needs</p>
+            </div>
+            <a href="#" class="text-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">All categories <i class="fa-solid fa-chevron-right text-xs"></i></a>
+        </div>
+
+        @if (Categories.Count == 0)
+        {
+            <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center text-text-secondary">
+                <i class="fa-solid fa-layer-group text-3xl mb-4 text-text-muted"></i>
+                <p>No categories available yet. Check back soon for new collections.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                @foreach (var category in Categories)
+                {
+                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-indigo-500/40 hover:bg-bg-card-hover transition shadow-lg hover:shadow-2xl">
+                        <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 hover:text-white hover:scale-110 transition">
+                            <i class="@GetCategoryIcon(category.Name)"></i>
+                        </div>
+                        <h3 class="font-semibold">@category.Name</h3>
+                        <p class="text-text-muted text-sm">@category.ProductCount products</p>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<CategoryListItemDto> Categories { get; set; } = [];
+
+    private static string GetCategoryIcon(string name) => name.ToLowerInvariant() switch
+    {
+        var n when n.Contains("audio") || n.Contains("headphone") => "fa-solid fa-headphones",
+        var n when n.Contains("keyboard") || n.Contains("gaming") || n.Contains("mech") => "fa-solid fa-keyboard",
+        var n when n.Contains("desk") || n.Contains("display") || n.Contains("monitor") => "fa-solid fa-display",
+        var n when n.Contains("mobile") || n.Contains("smart") || n.Contains("accessories") => "fa-solid fa-mobile-screen",
+        _ => "fa-solid fa-cube"
+    };
+}

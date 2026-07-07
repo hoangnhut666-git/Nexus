@@ -1,0 +1,50 @@
+<div class="bg-bg-surface border border-white/5 rounded-xl p-6">
+    <div class="flex justify-between items-center mb-5">
+        <div class="text-base font-bold text-text-primary">@Title</div>
+        @if (!string.IsNullOrWhiteSpace(ActionLabel))
+        {
+            <a href="@ActionHref" class="text-accent text-[13px] font-semibold hover:underline">
+                @ActionLabel <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        }
+    </div>
+    <div class="h-[250px] flex items-end justify-between gap-2.5 pt-5">
+        @foreach (var bar in Bars)
+        {
+            <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full bg-white/5 rounded-t h-[200px] flex items-end">
+                    <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t transition-all duration-1000"
+                         style="height: @($"{bar.HeightPercent}%")"></div>
+                </div>
+                <span class="text-xs text-text-muted">@bar.Label</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Revenue Chart (7 Days)";
+
+    [Parameter]
+    public string ActionLabel { get; set; } = "View detailed report";
+
+    [Parameter]
+    public string ActionHref { get; set; } = "#";
+
+    [Parameter]
+    public IReadOnlyList<ChartBarItem> Bars { get; set; } = DefaultBars;
+
+    public static IReadOnlyList<ChartBarItem> DefaultBars { get; } =
+    [
+        new("Mon", 40),
+        new("Tue", 65),
+        new("Wed", 30),
+        new("Thu", 85),
+        new("Fri", 55),
+        new("Sat", 90),
+        new("Sun", 75),
+    ];
+
+    public sealed record ChartBarItem(string Label, int HeightPercent);
+}

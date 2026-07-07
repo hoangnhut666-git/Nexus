@@ -1,0 +1,597 @@
+@page "/admin/products/{ProductId:int}"
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Nexus.Components.Admin.Shared
+@using Nexus.Services.Categories
+@using Nexus.Services.Categories.Models
+@using Nexus.Services.Products
+@using Nexus.Services.Products.Models
+@using static Nexus.Components.Admin.Shared.ProductDrawer
+@using static Nexus.Components.Admin.Shared.ProductOptionsEditor
+
+@inject IProductService ProductService
+@inject IProductImageService ProductImageService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+
+<CascadingValue Name="AdminPageTitle" Value="@pageTitle">
+    @if (product is null && !isLoading)
+    {
+        <div class="text-text-muted">Product not found.</div>
+    }
+    else if (product is not null)
+    {
+        <div class="flex flex-col gap-6">
+            <div class="flex items-center gap-4">
+                <a href="/admin/products" class="text-text-secondary hover:text-text-primary text-sm">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Back to products
+                </a>
+                <h2 class="text-lg font-bold text-text-primary">@product.Name</h2>
+            </div>
+
+            <div class="flex gap-2 border-b border-white/5">
+                <button type="button" class="@GetTabClass("info")" @onclick='() => activeTab = "info"'>Info</button>
+                <button type="button" class="@GetTabClass("variants")" @onclick='() => activeTab = "variants"'>Variants</button>
+            </div>
+
+            @if (activeTab == "info")
+            {
+                <EditForm Model="@infoModel" OnValidSubmit="@SaveInfoAsync" class="flex flex-col gap-6 max-w-2xl">
+                    <DataAnnotationsValidator />
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Name *</label>
+                        <InputText @bind-Value="infoModel.Name" class="@InputBaseClass" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Slug *</label>
+                        <div class="flex gap-2">
+                            <InputText @bind-Value="infoModel.Slug" class="@($"{InputBaseClass} flex-1")" />
+                            <button type="button" class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg text-xs font-semibold" @onclick="GenerateSlug">
+                                <i class="fa-solid fa-bolt mr-1"></i> Generate
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Category *</label>
+                        <select class="@InputBaseClass" value="@infoModel.CategoryId" @onchange="OnCategoryChanged">
+                            <option value="0">Select category</option>
+                            @foreach (var category in categoryOptions)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <StatusRadioCards @bind-IsActive="infoModel.IsActive" />
+                    <ProductImageUpload @bind-ImageUrl="infoModel.PrimaryImageUrl"
+                                        @bind-PreviewUrl="infoPreviewUrl"
+                                        OnFileSelected="@HandleInfoFileSelected"
+                                        InputClass="@InputBaseClass" />
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Description</label>
+                        <InputTextArea @bind-Value="infoModel.Description" class="@($"{InputBaseClass} min-h-[90px]")" />
+                    </div>
+                    <button type="submit" class="self-start bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg" disabled="@isSavingInfo">
+                        @(isSavingInfo ? "Saving..." : "Save Info")
+                    </button>
+                </EditForm>
+            }
+            else
+            {
+                <ProductOptionsEditor Options="@optionModels" OnSave="@SaveOptionsAsync" />
+
+                <div class="bg-bg-card border border-white/5 rounded-xl p-6 flex flex-col gap-4">
+                    <h4 class="text-sm font-bold text-text-primary">Generate Variants</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] uppercase text-text-muted font-semibold">Default Price</label>
+                            <input type="number" class="@InputBaseClass" min="0" value="@generatePrice" @onchange="(e) => generatePrice = ParseDecimal(e.Value)" />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] uppercase text-text-muted font-semibold">Default Stock</label>
+                            <input type="number" class="@InputBaseClass" min="0" value="@generateStock" @onchange="(e) => generateStock = ParseInt(e.Value)" />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[10px] uppercase text-text-muted font-semibold">SKU Prefix (optional)</label>
+                            <input type="text" class="@InputBaseClass" value="@skuPrefix" @onchange="(e) => skuPrefix = e.Value?.ToString()" placeholder="@product.Slug" />
+                        </div>
+                        <div class="flex items-end">
+                            <button type="button"
+                                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-4 text-sm font-semibold rounded-lg"
+                                    disabled="@isGenerating"
+                                    @onclick="GenerateVariantsAsync">
+                                @(isGenerating ? "Generating..." : "Generate All Combinations")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @if (selectedVariantIds.Count > 0)
+                {
+                    <div class="bg-bg-card border border-white/5 rounded-xl p-4 flex flex-wrap gap-3 items-end">
+                        <span class="text-sm text-text-secondary">@selectedVariantIds.Count selected</span>
+                        <input type="number" class="@($"{InputBaseClass} w-32")" placeholder="Price" value="@bulkPrice" @onchange="(e) => bulkPrice = ParseDecimal(e.Value)" />
+                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkSetPriceAsync">Set Price</button>
+                        <input type="number" class="@($"{InputBaseClass} w-24")" placeholder="Stock +/-" value="@bulkStockDelta" @onchange="(e) => bulkStockDelta = ParseInt(e.Value)" />
+                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkAdjustStockAsync">Adjust Stock</button>
+                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(true)">Activate</button>
+                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(false)">Deactivate</button>
+                    </div>
+                }
+
+                @if (product.Options.Count == 2)
+                {
+                    <ProductVariantMatrix RowValues="@product.Options[0].Values"
+                                          ColumnValues="@product.Options[1].Values"
+                                          Variants="@product.Variants"
+                                          OnAdd="@OpenCreateVariantForCell"
+                                          OnEdit="@OpenEditVariant" />
+                }
+                else
+                {
+                    <ProductVariantList Variants="@product.Variants"
+                                        OnEdit="@OpenEditVariant"
+                                        OnDelete="@DeleteVariantAsync"
+                                        SelectedIdsChanged="@OnVariantSelectionChanged" />
+                }
+            }
+        </div>
+    }
+</CascadingValue>
+
+@if (variantEditorOpen)
+{
+    <div class="fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4">
+        <div class="bg-bg-surface border border-white/5 rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4">
+            <h3 class="text-lg font-bold">@(editingVariantId.HasValue ? "Edit Variant" : "Add Variant")</h3>
+            @if (!string.IsNullOrWhiteSpace(variantEditorLabel))
+            {
+                <p class="text-sm text-text-secondary">@variantEditorLabel</p>
+            }
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] uppercase text-text-muted font-semibold">SKU *</label>
+                <input type="text" class="@InputBaseClass" value="@variantSku" @onchange="(e) => variantSku = e.Value?.ToString() ?? string.Empty" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] uppercase text-text-muted font-semibold">Price</label>
+                    <input type="number" class="@InputBaseClass" min="0" value="@variantPrice" @onchange="(e) => variantPrice = ParseDecimal(e.Value)" />
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] uppercase text-text-muted font-semibold">Stock</label>
+                    <input type="number" class="@InputBaseClass" min="0" value="@variantStock" @onchange="(e) => variantStock = ParseInt(e.Value)" />
+                </div>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-text-secondary">
+                <input type="checkbox" class="custom-checkbox" checked="@variantActive" @onchange="(e) => variantActive = e.Value is bool b && b" />
+                Active
+            </label>
+            <div class="flex justify-end gap-3">
+                @if (editingVariantId.HasValue)
+                {
+                    <button type="button" class="text-rose-400 text-sm font-semibold mr-auto" @onclick="DeleteEditingVariantAsync">Delete</button>
+                }
+                <button type="button" class="bg-transparent border border-white/5 text-text-secondary py-2 px-4 text-sm rounded-lg" @onclick="CloseVariantEditor">Cancel</button>
+                <button type="button" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 text-sm font-semibold rounded-lg" @onclick="SaveVariantAsync">Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+<AdminToast Messages="@toasts" />
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    private ProductDetailDto? product;
+    private string pageTitle = "Product";
+    private string activeTab = "info";
+    private bool isLoading = true;
+    private bool isSavingInfo;
+    private bool isGenerating;
+
+    private InfoFormModel infoModel = new();
+    private string? infoPreviewUrl;
+    private IBrowserFile? infoPendingFile;
+    private List<CategoryOption> categoryOptions = [];
+
+    private List<OptionEditorModel> optionModels = [];
+    private decimal generatePrice;
+    private int generateStock;
+    private string? skuPrefix;
+
+    private HashSet<int> selectedVariantIds = [];
+    private decimal bulkPrice;
+    private int bulkStockDelta;
+
+    private bool variantEditorOpen;
+    private int? editingVariantId;
+    private string variantEditorLabel = string.Empty;
+    private string variantSku = string.Empty;
+    private decimal variantPrice;
+    private int variantStock;
+    private bool variantActive = true;
+    private List<int> pendingOptionValueIds = [];
+
+    private readonly List<AdminToastMessage> toasts = [];
+    private const string InputBaseClass = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 placeholder-text-muted w-full";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        await LoadCategoriesAsync();
+        await LoadProductAsync();
+        isLoading = false;
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        var result = await CategoryService.GetPagedAsync(new CategoryQuery
+        {
+            Status = CategoryStatusFilter.Active,
+            PageSize = 100
+        });
+        categoryOptions = result.Items.Select(c => new CategoryOption { Id = c.Id, Name = c.Name }).ToList();
+    }
+
+    private async Task LoadProductAsync()
+    {
+        product = await ProductService.GetByIdAsync(ProductId);
+        if (product is null)
+            return;
+
+        pageTitle = product.Name;
+        infoModel = new InfoFormModel
+        {
+            Name = product.Name,
+            Slug = product.Slug,
+            Description = product.Description,
+            CategoryId = product.CategoryId,
+            IsActive = product.IsActive,
+            PrimaryImageUrl = product.Images.FirstOrDefault()?.ImageUrl
+        };
+        infoPreviewUrl = infoModel.PrimaryImageUrl;
+
+        optionModels = product.Options.Select(o => new OptionEditorModel
+        {
+            Id = o.Id,
+            Name = o.Name,
+            SortOrder = o.SortOrder,
+            Values = o.Values.Select(v => new OptionValueEditorModel
+            {
+                Id = v.Id,
+                Value = v.Value,
+                SortOrder = v.SortOrder
+            }).ToList()
+        }).ToList();
+    }
+
+    private string GetTabClass(string tab) =>
+        activeTab == tab
+            ? "px-4 py-2 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400"
+            : "px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-text-secondary hover:text-text-primary";
+
+    private void GenerateSlug()
+    {
+        if (!string.IsNullOrWhiteSpace(infoModel.Name))
+            infoModel.Slug = ProductService.GenerateSlug(infoModel.Name);
+    }
+
+    private void OnCategoryChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var id))
+            infoModel.CategoryId = id;
+    }
+
+    private async Task HandleInfoFileSelected(InputFileChangeEventArgs args)
+    {
+        infoPendingFile = args.File;
+        infoModel.PrimaryImageUrl = null;
+        await using var stream = infoPendingFile.OpenReadStream(Nexus.Services.Products.ProductImageService.MaxFileSizeBytes);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        infoPreviewUrl = $"data:{infoPendingFile.ContentType};base64,{Convert.ToBase64String(memory.ToArray())}";
+    }
+
+    private async Task SaveInfoAsync()
+    {
+        isSavingInfo = true;
+        try
+        {
+            var imageUrl = infoModel.PrimaryImageUrl;
+            if (infoPendingFile is not null)
+            {
+                await using var stream = infoPendingFile.OpenReadStream(Nexus.Services.Products.ProductImageService.MaxFileSizeBytes);
+                var upload = await ProductImageService.SaveUploadedFileAsync(stream, infoPendingFile.Name, infoPendingFile.ContentType, infoPendingFile.Size);
+                if (!upload.Success)
+                {
+                    ShowToast("Upload failed", upload.Error ?? "Could not upload image.", AdminToastType.Warning);
+                    return;
+                }
+                imageUrl = upload.Data;
+            }
+
+            var result = await ProductService.UpdateAsync(ProductId, new UpdateProductRequest
+            {
+                Name = infoModel.Name,
+                Slug = infoModel.Slug,
+                Description = infoModel.Description,
+                CategoryId = infoModel.CategoryId,
+                IsActive = infoModel.IsActive,
+                PrimaryImageUrl = imageUrl
+            });
+
+            if (!result.Success)
+            {
+                ShowToast("Save failed", result.Error ?? "Could not save product.", AdminToastType.Danger);
+                return;
+            }
+
+            product = result.Data;
+            ShowToast("Saved", "Product info updated.", AdminToastType.Success);
+        }
+        finally
+        {
+            isSavingInfo = false;
+        }
+    }
+
+    private async Task SaveOptionsAsync(List<OptionEditorModel> options)
+    {
+        var request = new SaveProductOptionsRequest
+        {
+            Options = options.Select(o => new ProductOptionInput
+            {
+                Id = o.Id,
+                Name = o.Name,
+                SortOrder = o.SortOrder,
+                Values = o.Values.Select(v => new ProductOptionValueInput
+                {
+                    Id = v.Id,
+                    Value = v.Value,
+                    SortOrder = v.SortOrder
+                }).ToList()
+            }).ToList()
+        };
+
+        var result = await ProductService.SaveOptionsAsync(ProductId, request);
+        if (!result.Success)
+        {
+            ShowToast("Save failed", result.Error ?? "Could not save options.", AdminToastType.Danger);
+            return;
+        }
+
+        product = result.Data;
+        optionModels = options;
+        ShowToast("Saved", "Product options updated.", AdminToastType.Success);
+    }
+
+    private async Task GenerateVariantsAsync()
+    {
+        isGenerating = true;
+        try
+        {
+            var result = await ProductService.GenerateVariantsAsync(ProductId, new GenerateVariantsRequest
+            {
+                DefaultPrice = generatePrice,
+                DefaultStock = generateStock,
+                SkuPrefix = skuPrefix
+            });
+
+            if (!result.Success)
+            {
+                ShowToast("Generate failed", result.Error ?? "Could not generate variants.", AdminToastType.Danger);
+                return;
+            }
+
+            await LoadProductAsync();
+            ShowToast("Generated", $"{result.Data!.Count} new variant(s) created.", AdminToastType.Success);
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    private Task OnVariantSelectionChanged(HashSet<int> ids)
+    {
+        selectedVariantIds = ids;
+        return Task.CompletedTask;
+    }
+
+    private void OpenCreateVariantForCell((int RowValueId, int ColValueId) cell)
+    {
+        pendingOptionValueIds = [cell.RowValueId, cell.ColValueId];
+        editingVariantId = null;
+        variantEditorLabel = BuildLabelForValueIds(pendingOptionValueIds);
+        variantSku = ProductSkuHelper.GenerateSku(product!.Slug, GetValueLabels(pendingOptionValueIds), skuPrefix);
+        variantPrice = generatePrice;
+        variantStock = generateStock;
+        variantActive = true;
+        variantEditorOpen = true;
+    }
+
+    private void OpenEditVariant(ProductVariantDto variant)
+    {
+        editingVariantId = variant.Id;
+        pendingOptionValueIds = variant.OptionValueIds.ToList();
+        variantEditorLabel = variant.OptionLabel;
+        variantSku = variant.Sku;
+        variantPrice = variant.Price;
+        variantStock = variant.StockQuantity;
+        variantActive = variant.IsActive;
+        variantEditorOpen = true;
+    }
+
+    private void CloseVariantEditor() => variantEditorOpen = false;
+
+    private async Task SaveVariantAsync()
+    {
+        var input = new VariantUpsertInput
+        {
+            Id = editingVariantId,
+            Sku = variantSku,
+            Price = variantPrice,
+            StockQuantity = variantStock,
+            IsActive = variantActive,
+            OptionValueIds = pendingOptionValueIds
+        };
+
+        var result = await ProductService.UpsertVariantsAsync(ProductId, new UpsertVariantsRequest
+        {
+            Variants = [input]
+        });
+
+        if (!result.Success)
+        {
+            ShowToast("Save failed", result.Error ?? "Could not save variant.", AdminToastType.Danger);
+            return;
+        }
+
+        product = result.Data;
+        variantEditorOpen = false;
+        ShowToast("Saved", "Variant updated.", AdminToastType.Success);
+    }
+
+    private async Task DeleteEditingVariantAsync()
+    {
+        if (!editingVariantId.HasValue)
+            return;
+
+        await DeleteVariantByIdAsync(editingVariantId.Value);
+        variantEditorOpen = false;
+    }
+
+    private async Task DeleteVariantAsync(ProductVariantDto variant) =>
+        await DeleteVariantByIdAsync(variant.Id);
+
+    private async Task DeleteVariantByIdAsync(int variantId)
+    {
+        var result = await ProductService.UpsertVariantsAsync(ProductId, new UpsertVariantsRequest
+        {
+            DeleteVariantIds = [variantId]
+        });
+
+        if (!result.Success)
+        {
+            ShowToast("Delete failed", result.Error ?? "Could not delete variant.", AdminToastType.Danger);
+            return;
+        }
+
+        product = result.Data;
+        ShowToast("Deleted", "Variant removed.", AdminToastType.Warning);
+    }
+
+    private async Task BulkSetPriceAsync()
+    {
+        var result = await ProductService.BulkUpdateVariantsAsync(ProductId, new BulkVariantActionRequest
+        {
+            VariantIds = selectedVariantIds.ToList(),
+            Action = BulkVariantAction.SetPrice,
+            Price = bulkPrice
+        });
+        await HandleBulkResult(result, "Prices updated.");
+    }
+
+    private async Task BulkAdjustStockAsync()
+    {
+        var result = await ProductService.BulkUpdateVariantsAsync(ProductId, new BulkVariantActionRequest
+        {
+            VariantIds = selectedVariantIds.ToList(),
+            Action = BulkVariantAction.AdjustStock,
+            StockDelta = bulkStockDelta
+        });
+        await HandleBulkResult(result, "Stock adjusted.");
+    }
+
+    private async Task BulkSetActiveAsync(bool isActive)
+    {
+        var result = await ProductService.BulkUpdateVariantsAsync(ProductId, new BulkVariantActionRequest
+        {
+            VariantIds = selectedVariantIds.ToList(),
+            Action = BulkVariantAction.SetActive,
+            IsActive = isActive
+        });
+        await HandleBulkResult(result, isActive ? "Variants activated." : "Variants deactivated.");
+    }
+
+    private async Task HandleBulkResult(ServiceResult<int> result, string successMessage)
+    {
+        if (!result.Success)
+        {
+            ShowToast("Bulk update failed", result.Error ?? "Could not update variants.", AdminToastType.Danger);
+            return;
+        }
+
+        await LoadProductAsync();
+        selectedVariantIds.Clear();
+        ShowToast("Updated", successMessage, AdminToastType.Success);
+    }
+
+    private string BuildLabelForValueIds(IEnumerable<int> valueIds)
+    {
+        if (product is null)
+            return string.Empty;
+
+        var labels = new List<string>();
+        foreach (var option in product.Options.OrderBy(o => o.SortOrder))
+        {
+            var match = option.Values.FirstOrDefault(v => valueIds.Contains(v.Id));
+            if (match is not null)
+                labels.Add(match.Value);
+        }
+
+        return string.Join(" / ", labels);
+    }
+
+    private IEnumerable<string> GetValueLabels(IEnumerable<int> valueIds)
+    {
+        if (product is null)
+            return [];
+
+        return product.Options
+            .SelectMany(o => o.Values)
+            .Where(v => valueIds.Contains(v.Id))
+            .Select(v => v.Value);
+    }
+
+    private static decimal ParseDecimal(object? value) =>
+        decimal.TryParse(value?.ToString(), out var d) ? d : 0;
+
+    private static int ParseInt(object? value) =>
+        int.TryParse(value?.ToString(), out var i) ? i : 0;
+
+    private void ShowToast(string title, string description, AdminToastType type)
+    {
+        var toast = new AdminToastMessage { Title = title, Description = description, Type = type };
+        toasts.Add(toast);
+        _ = RemoveToastAfterDelayAsync(toast.Id);
+    }
+
+    private async Task RemoveToastAfterDelayAsync(Guid toastId)
+    {
+        await Task.Delay(3000);
+        var toast = toasts.FirstOrDefault(t => t.Id == toastId);
+        if (toast is not null)
+            toasts.Remove(toast);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private sealed class InfoFormModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public string Slug { get; set; } = string.Empty;
+
+        public string? Description { get; set; }
+
+        public int CategoryId { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public string? PrimaryImageUrl { get; set; }
+    }
+}

@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using Nexus.Data
+@using Nexus.Services.Auth
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -247,7 +248,8 @@
         else
         {
             await SignInManager.SignInAsync(user, isPersistent: false);
-            RedirectManager.RedirectTo(ReturnUrl);
+            var landingUrl = await RoleLandingHelper.ResolveReturnUrlAsync(ReturnUrl, user, UserManager);
+            RedirectManager.RedirectTo(landingUrl);
         }
     }
 
