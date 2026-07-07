@@ -1,5 +1,4 @@
 @using Nexus.Services.Products.Models
-@using System.Globalization
 
 <div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
     <table class="w-full border-collapse">
@@ -48,7 +47,7 @@
                         </td>
                         <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">@item.CategoryName</td>
                         <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle font-mono text-xs">@item.Sku</td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">@FormatPrice(item.Price)</td>
+                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">@MoneyFormatter.Format(item.Price)</td>
                         <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">@item.TotalStock</td>
                         <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
                             <span class="@GetStatusBadgeClass(item.IsActive)">@(item.IsActive ? "Active" : "Hidden")</span>
@@ -158,9 +157,6 @@
         string.IsNullOrWhiteSpace(imageUrl)
             ? "https://via.placeholder.com/100?text=Product"
             : imageUrl;
-
-    private static string FormatPrice(decimal price) =>
-        string.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:N0} ₫", price);
 
     private static string GetStatusBadgeClass(bool isActive) =>
         isActive

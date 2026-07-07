@@ -52,7 +52,7 @@
                 {
                     <span class="text-text-muted text-xs mr-1">From</span>
                 }
-                <span class="font-bold text-lg">@FormatPrice(Product.MinPrice)</span>
+                <span class="font-bold text-lg">@MoneyFormatter.Format(Product.MinPrice)</span>
             </div>
             @if (Product.InStock)
             {
@@ -85,7 +85,4 @@
         await OnQuickAdd.InvokeAsync(Product);
         isAdding = false;
     }
-
-    private static string FormatPrice(decimal price) =>
-        price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
 }

@@ -5,7 +5,7 @@
     {
         <div>
             <div class="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Price</div>
-            <div class="text-3xl font-extrabold text-text-primary">@FormatPrice(ResolvedVariant.Price)</div>
+            <div class="text-3xl font-extrabold text-text-primary">@MoneyFormatter.Format(ResolvedVariant.Price)</div>
         </div>
         <div class="text-sm text-text-secondary">
             SKU: <span class="text-text-primary font-medium">@ResolvedVariant.Sku</span>
@@ -82,7 +82,4 @@
         if (CanAddToCart && !IsAdding)
             await OnAddToCart.InvokeAsync();
     }
-
-    private static string FormatPrice(decimal price) =>
-        price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
 }

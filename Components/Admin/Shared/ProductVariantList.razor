@@ -1,5 +1,4 @@
 @using Nexus.Services.Products.Models
-@using System.Globalization
 
 <div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
     <table class="w-full border-collapse">
@@ -33,7 +32,7 @@
                         </td>
                         <td class="py-3 px-4 border-b border-white/5 text-sm text-text-primary">@(string.IsNullOrWhiteSpace(variant.OptionLabel) ? "Default" : variant.OptionLabel)</td>
                         <td class="py-3 px-4 border-b border-white/5 text-xs font-mono text-text-secondary">@variant.Sku</td>
-                        <td class="py-3 px-4 border-b border-white/5 text-sm font-semibold">@FormatPrice(variant.Price)</td>
+                        <td class="py-3 px-4 border-b border-white/5 text-sm font-semibold">@MoneyFormatter.Format(variant.Price)</td>
                         <td class="py-3 px-4 border-b border-white/5 text-sm">@variant.StockQuantity</td>
                         <td class="py-3 px-4 border-b border-white/5 text-sm">
                             <span class="@GetStatusClass(variant.IsActive)">@(variant.IsActive ? "Active" : "Hidden")</span>
@@ -70,9 +69,6 @@
 
     private bool selectAll;
     private readonly HashSet<int> selectedIds = [];
-
-    private static string FormatPrice(decimal price) =>
-        string.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:N0} ₫", price);
 
     private static string GetStatusClass(bool isActive) =>
         isActive

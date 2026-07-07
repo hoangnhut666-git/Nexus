@@ -1,5 +1,4 @@
 @using Nexus.Services.Products.Models
-@using System.Globalization
 
 <div class="bg-bg-card border border-white/5 rounded-xl overflow-x-auto">
     <table class="w-full border-collapse min-w-[500px]">
@@ -35,7 +34,7 @@
                                         class="w-full text-left hover:bg-white/[0.02] rounded-lg p-2 transition-colors"
                                         @onclick="() => OnEdit.InvokeAsync(variant)">
                                     <div class="text-xs text-text-muted font-mono">@variant.Sku</div>
-                                    <div class="text-sm font-semibold text-text-primary">@FormatPrice(variant.Price)</div>
+                                    <div class="text-sm font-semibold text-text-primary">@MoneyFormatter.Format(variant.Price)</div>
                                     <div class="text-xs text-text-secondary">Stock: @variant.StockQuantity</div>
                                 </button>
                             }
@@ -68,7 +67,4 @@
         return Variants.FirstOrDefault(v =>
             v.OptionValueIds.Contains(rowValueId) && v.OptionValueIds.Contains(colValueId));
     }
-
-    private static string FormatPrice(decimal price) =>
-        string.Format(CultureInfo.GetCultureInfo("vi-VN"), "{0:N0} ₫", price);
 }

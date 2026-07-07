@@ -234,7 +234,7 @@ public sealed class CartServiceTests : IClassFixture<TestDatabaseFixture>, IAsyn
     public async Task GetCartAsync_AppliesShippingFeeAndVatBelowThreshold()
     {
         await _dbHelper.EnsureUserAsync(UserA);
-        var variant = await SeedVariantAsync("summary-fee", price: 2_000_000m, stock: 10);
+        var variant = await SeedVariantAsync("summary-fee", price: 20.00m, stock: 10);
 
         await using var scope = _factory.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ICartService>();
@@ -243,17 +243,17 @@ public sealed class CartServiceTests : IClassFixture<TestDatabaseFixture>, IAsyn
 
         var cart = await service.GetCartAsync(UserA);
 
-        cart.Subtotal.Should().Be(4_000_000m);
+        cart.Subtotal.Should().Be(40.00m);
         cart.ShippingFee.Should().Be(CartPricing.StandardShippingFee);
-        cart.TaxAmount.Should().Be(320_000m);
-        cart.Total.Should().Be(4_000_000m + CartPricing.StandardShippingFee + 320_000m);
+        cart.TaxAmount.Should().Be(3.20m);
+        cart.Total.Should().Be(40.00m + CartPricing.StandardShippingFee + 3.20m);
     }
 
     [Fact]
     public async Task GetCartAsync_FreeShippingAtOrAboveThreshold()
     {
         await _dbHelper.EnsureUserAsync(UserA);
-        var variant = await SeedVariantAsync("summary-free", price: 3_000_000m, stock: 10);
+        var variant = await SeedVariantAsync("summary-free", price: 60.00m, stock: 10);
 
         await using var scope = _factory.Services.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<ICartService>();
@@ -262,10 +262,10 @@ public sealed class CartServiceTests : IClassFixture<TestDatabaseFixture>, IAsyn
 
         var cart = await service.GetCartAsync(UserA);
 
-        cart.Subtotal.Should().Be(6_000_000m);
+        cart.Subtotal.Should().Be(120.00m);
         cart.ShippingFee.Should().Be(0m);
-        cart.TaxAmount.Should().Be(480_000m);
-        cart.Total.Should().Be(6_480_000m);
+        cart.TaxAmount.Should().Be(9.60m);
+        cart.Total.Should().Be(129.60m);
     }
 
     [Fact]

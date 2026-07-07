@@ -112,8 +112,8 @@
                             </div>
 
                             <div class="flex flex-col items-end gap-3">
-                                <div class="text-lg font-extrabold text-accent">@FormatPrice(item.LineTotal)</div>
-                                <div class="text-xs text-text-muted">@FormatPrice(item.UnitPrice) each</div>
+                                <div class="text-lg font-extrabold text-accent">@MoneyFormatter.Format(item.LineTotal)</div>
+                                <div class="text-xs text-text-muted">@MoneyFormatter.Format(item.UnitPrice) each</div>
                                 <button type="button"
                                         class="w-8 h-8 rounded-lg bg-danger-bg border border-danger/20 text-danger flex items-center justify-center hover:bg-danger hover:text-white transition disabled:opacity-40"
                                         disabled="@isBusy"
@@ -132,17 +132,17 @@
 
                     <div class="flex justify-between text-sm text-text-secondary mb-4">
                         <span>Subtotal (@cart.TotalQuantity items)</span>
-                        <span class="text-text-primary font-medium">@FormatPrice(cart.Subtotal)</span>
+                        <span class="text-text-primary font-medium">@MoneyFormatter.Format(cart.Subtotal)</span>
                     </div>
                     <div class="flex justify-between text-sm text-text-secondary mb-4">
                         <span>Shipping</span>
                         <span class="text-text-primary font-medium">
-                            @(cart.ShippingFee == 0 ? "Free" : FormatPrice(cart.ShippingFee))
+                            @(cart.ShippingFee == 0 ? "Free" : MoneyFormatter.Format(cart.ShippingFee))
                         </span>
                     </div>
                     <div class="flex justify-between text-sm text-text-secondary mb-4">
                         <span>VAT (8%)</span>
-                        <span class="text-text-primary font-medium">@FormatPrice(cart.TaxAmount)</span>
+                        <span class="text-text-primary font-medium">@MoneyFormatter.Format(cart.TaxAmount)</span>
                     </div>
 
                     <div class="flex gap-2 my-6">
@@ -159,7 +159,7 @@
 
                     <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
                         <span class="text-base font-semibold">Total</span>
-                        <span class="text-2xl font-extrabold text-accent">@FormatPrice(cart.Total)</span>
+                        <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(cart.Total)</span>
                     </div>
 
                     <button type="button"
@@ -251,7 +251,4 @@
 
         isBusy = false;
     }
-
-    private static string FormatPrice(decimal price) =>
-        price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
 }
