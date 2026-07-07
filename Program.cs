@@ -7,6 +7,7 @@ using Nexus.Data;
 using Nexus.Services.Cart;
 using Nexus.Services.Categories;
 using Nexus.Services.Orders;
+using Nexus.Services.Payments;
 using Nexus.Services.Products;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +72,12 @@ builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.Configure<PayPalOptions>(builder.Configuration.GetSection(PayPalOptions.SectionName));
+builder.Services.AddScoped<IPaymentGateway, CodPaymentGateway>();
+builder.Services.AddHttpClient<PayPalPaymentGateway>();
+builder.Services.AddScoped<IPaymentGateway>(sp => sp.GetRequiredService<PayPalPaymentGateway>());
+builder.Services.AddScoped<IPaymentGatewayResolver, PaymentGatewayResolver>();
 
 var app = builder.Build();
 

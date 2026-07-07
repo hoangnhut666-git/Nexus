@@ -4,12 +4,14 @@ using Nexus.Data.Entities;
 using Nexus.Services.Cart;
 using Nexus.Services.Categories.Models;
 using Nexus.Services.Orders.Models;
+using Nexus.Services.Payments;
 
 namespace Nexus.Services.Orders;
 
 public sealed class OrderService(
     IDbContextFactory<ApplicationDbContext> dbContextFactory,
-    ICartService cartService) : IOrderService
+    ICartService cartService,
+    IPaymentGatewayResolver gatewayResolver) : IOrderService
 {
     public async Task<ServiceResult<PlaceOrderResult>> CreateOrderFromCartAsync(
         string userId,
@@ -19,8 +21,8 @@ public sealed class OrderService(
         if (string.IsNullOrWhiteSpace(userId))
             return ServiceResult<PlaceOrderResult>.Fail("You must be signed in to place an order.");
 
-        if (request.Method != PaymentMethod.Cod)
-            return ServiceResult<PlaceOrderResult>.Fail("Only Cash on Delivery is supported right now.");
+        if (request.Method is not (PaymentMethod.Cod or PaymentMethod.PayPal))
+            return ServiceResult<PlaceOrderResult>.Fail("Unsupported payment method.");
 
         var cart = await cartService.GetCartAsync(userId, cancellationToken);
 
@@ -67,11 +69,20 @@ public sealed class OrderService(
 
         var now = DateTime.UtcNow;
 
+        var payment = new Payment
+        {
+            Method = request.Method,
+            Status = PaymentStatus.Pending,
+            Amount = cart.Total,
+            Currency = "USD",
+            CreatedAt = now
+        };
+
         var order = new Order
         {
             UserId = userId,
             Status = OrderStatus.Pending,
-            PaymentMethod = PaymentMethod.Cod,
+            PaymentMethod = request.Method,
             PaymentStatus = PaymentStatus.Pending,
             Subtotal = cart.Subtotal,
             ShippingFee = cart.ShippingFee,
@@ -97,17 +108,7 @@ public sealed class OrderService(
                 Quantity = line.Quantity,
                 LineTotal = line.LineTotal
             }).ToList(),
-            Payments =
-            [
-                new Payment
-                {
-                    Method = PaymentMethod.Cod,
-                    Status = PaymentStatus.Pending,
-                    Amount = cart.Total,
-                    Currency = "USD",
-                    CreatedAt = now
-                }
-            ]
+            Payments = [payment]
         };
 
         context.Orders.Add(order);
@@ -116,13 +117,151 @@ public sealed class OrderService(
         order.OrderNumber = OrderNumberGenerator.Generate(order.CreatedAt, order.Id);
         await context.SaveChangesAsync(cancellationToken);
 
+        // PayPal requires buyer approval before capture, so we create the gateway order now
+        // and hand back an approval URL. COD settles on delivery with no gateway interaction.
+        string? redirectUrl = null;
+        if (request.Method == PaymentMethod.PayPal)
+        {
+            var baseUrl = (request.ReturnUrlBase ?? string.Empty).TrimEnd('/');
+            var returnUrl = $"{baseUrl}/checkout/paypal/return";
+            var cancelUrl = $"{baseUrl}/checkout/paypal/cancel";
+
+            var gateway = gatewayResolver.Resolve(PaymentMethod.PayPal);
+            var initiation = await gateway.CreatePaymentAsync(order, returnUrl, cancelUrl, cancellationToken);
+
+            if (!initiation.Success || initiation.Data?.ApprovalUrl is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return ServiceResult<PlaceOrderResult>.Fail(
+                    initiation.Error ?? "Could not start the PayPal payment.");
+            }
+
+            payment.GatewayTransactionRef = initiation.Data.GatewayOrderId;
+            await context.SaveChangesAsync(cancellationToken);
+            redirectUrl = initiation.Data.ApprovalUrl;
+        }
+        else
+        {
+            // COD: settle the cart immediately.
+            await context.CartItems
+                .Where(ci => ci.UserId == userId)
+                .ExecuteDeleteAsync(cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return ServiceResult<PlaceOrderResult>.Ok(new PlaceOrderResult(order.OrderNumber, redirectUrl));
+    }
+
+    public async Task<ServiceResult<OrderDto>> CompletePayPalPaymentAsync(
+        string userId,
+        string paypalOrderId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(paypalOrderId))
+            return ServiceResult<OrderDto>.Fail("Order not found.");
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+        var order = await context.Orders
+            .Include(o => o.Items)
+            .Include(o => o.Payments)
+            .FirstOrDefaultAsync(
+                o => o.UserId == userId
+                     && o.Payments.Any(p => p.GatewayTransactionRef == paypalOrderId),
+                cancellationToken);
+
+        if (order is null)
+            return ServiceResult<OrderDto>.Fail("Order not found.");
+
+        // Idempotency: a refresh or duplicate return must not capture again.
+        if (order.PaymentStatus == PaymentStatus.Completed)
+            return ServiceResult<OrderDto>.Ok(MapOrder(order));
+
+        if (order.Status == OrderStatus.Cancelled)
+            return ServiceResult<OrderDto>.Fail("This order has been cancelled.");
+
+        var payment = order.Payments.First(p => p.GatewayTransactionRef == paypalOrderId);
+
+        var gateway = gatewayResolver.Resolve(PaymentMethod.PayPal);
+        var capture = await gateway.CapturePaymentAsync(paypalOrderId, cancellationToken);
+
+        var now = DateTime.UtcNow;
+
+        if (!capture.Success || capture.Data is null || !capture.Data.Success)
+        {
+            payment.Status = PaymentStatus.Failed;
+            order.PaymentStatus = PaymentStatus.Failed;
+            order.UpdatedAt = now;
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return ServiceResult<OrderDto>.Fail(capture.Error ?? capture.Data?.Error ?? "PayPal payment failed.");
+        }
+
+        var result = capture.Data;
+
+        if (result.CapturedAmount != order.Total
+            || !string.Equals(result.Currency, order.Currency, StringComparison.OrdinalIgnoreCase))
+        {
+            payment.Status = PaymentStatus.Failed;
+            order.PaymentStatus = PaymentStatus.Failed;
+            order.UpdatedAt = now;
+            payment.RawPayloadJson = result.RawJson;
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return ServiceResult<OrderDto>.Fail("Captured amount did not match the order total.");
+        }
+
+        order.Status = OrderStatus.Paid;
+        order.PaymentStatus = PaymentStatus.Completed;
+        order.UpdatedAt = now;
+        payment.Status = PaymentStatus.Completed;
+        payment.CompletedAt = now;
+        payment.RawPayloadJson = result.RawJson;
+
         await context.CartItems
             .Where(ci => ci.UserId == userId)
             .ExecuteDeleteAsync(cancellationToken);
 
+        await context.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
-        return ServiceResult<PlaceOrderResult>.Ok(new PlaceOrderResult(order.OrderNumber));
+        return ServiceResult<OrderDto>.Ok(MapOrder(order));
+    }
+
+    public async Task<ServiceResult<bool>> MarkPayPalCancelledAsync(
+        string userId,
+        string paypalOrderId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(paypalOrderId))
+            return ServiceResult<bool>.Fail("Order not found.");
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var order = await context.Orders
+            .Include(o => o.Payments)
+            .FirstOrDefaultAsync(
+                o => o.UserId == userId
+                     && o.Payments.Any(p => p.GatewayTransactionRef == paypalOrderId),
+                cancellationToken);
+
+        if (order is null)
+            return ServiceResult<bool>.Fail("Order not found.");
+
+        // A completed payment cannot be cancelled from the return flow.
+        if (order.PaymentStatus == PaymentStatus.Completed)
+            return ServiceResult<bool>.Ok(true);
+
+        var payment = order.Payments.First(p => p.GatewayTransactionRef == paypalOrderId);
+        payment.Status = PaymentStatus.Failed;
+        order.PaymentStatus = PaymentStatus.Failed;
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return ServiceResult<bool>.Ok(true);
     }
 
     public async Task<OrderDto?> GetOrderAsync(

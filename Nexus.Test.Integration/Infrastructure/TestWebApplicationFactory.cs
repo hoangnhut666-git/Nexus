@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Nexus.Services.Payments;
 using Nexus.Test.Integration.Infrastructure.Auth;
 
 namespace Nexus.Test.Integration.Infrastructure;
@@ -20,6 +21,9 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _connectionString;
     private readonly IReadOnlyDictionary<string, string?>? _additionalConfig;
+
+    /// <summary>Offline PayPal stand-in; configure its flags before driving the OrderService.</summary>
+    public FakePayPalGateway PayPalGateway { get; } = new();
 
     public TestWebApplicationFactory(string connectionString)
     {
@@ -71,6 +75,11 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddScoped<ApplicationDbContext>(sp =>
                 sp.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
+
+            // Replace the real gateways with COD + an offline PayPal fake so no network is hit.
+            services.RemoveAll<IPaymentGateway>();
+            services.AddScoped<IPaymentGateway, CodPaymentGateway>();
+            services.AddSingleton<IPaymentGateway>(PayPalGateway);
 
             services.RemoveAll<IAuthenticationSchemeProvider>();
             services.AddAuthentication(options =>

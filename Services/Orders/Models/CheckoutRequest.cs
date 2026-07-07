@@ -19,4 +19,10 @@ public sealed class CheckoutRequest
     public string ShipCountry { get; init; } = string.Empty;
 
     public PaymentMethod Method { get; init; } = PaymentMethod.Cod;
+
+    /// <summary>
+    /// Absolute base URL of the app (e.g. NavigationManager.BaseUri), used to build
+    /// PayPal return/cancel URLs. Ignored for COD.
+    /// </summary>
+    public string? ReturnUrlBase { get; init; }
 }

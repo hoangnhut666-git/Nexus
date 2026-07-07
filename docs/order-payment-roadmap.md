@@ -396,10 +396,10 @@ Currency    Schema       Order svc    Checkout     PayPal       Admin
 
 #### Acceptance criteria
 
-- [ ] Successful PayPal approval creates a `Paid` order with stored transaction ref.
-- [ ] Cancel/failure leaves an unpaid order the user can retry.
-- [ ] Duplicate return/refresh does not double-capture or double-clear.
-- [ ] Captured amount matches order total; stored currency is USD.
+- [x] Successful PayPal approval creates a `Paid` order with stored transaction ref.
+- [x] Cancel/failure leaves an unpaid order the user can retry.
+- [x] Duplicate return/refresh does not double-capture or double-clear.
+- [x] Captured amount matches order total; stored currency is USD.
 
 #### Estimated effort
 
@@ -663,12 +663,12 @@ Follow the established `Nexus.Test.Integration` pattern (Testcontainers, `TestDa
 - [x] Page tests green (100/100 suite)
 
 ### Phase 4 — PayPal
-- [ ] `IPaymentGateway` + `CodPaymentGateway`
-- [ ] `PayPalOptions` + secrets
-- [ ] `PayPalPaymentGateway` (create + capture, USD)
-- [ ] Return/cancel handlers
-- [ ] Idempotent capture
-- [ ] Fake-gateway tests green
+- [x] `IPaymentGateway` + `CodPaymentGateway`
+- [x] `PayPalOptions` + secrets
+- [x] `PayPalPaymentGateway` (create + capture, USD)
+- [x] Return/cancel handlers
+- [x] Idempotent capture
+- [x] Fake-gateway tests green (7 new; 107/107 suite)
 
 ### Phase 5 — Admin orders
 - [ ] Admin paged query + filters

@@ -101,7 +101,7 @@
                     <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
                         <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Payment Method</div>
 
-                        <label class="flex items-center gap-3 p-4 rounded-xl border border-indigo-500/40 bg-indigo-500/5 cursor-pointer">
+                        <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer @(form.Method == PaymentMethod.Cod ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")">
                             <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.Cod)"
                                    @onchange="@(() => form.Method = PaymentMethod.Cod)" />
                             <span class="flex-1">
@@ -111,13 +111,14 @@
                             <i class="fa-solid fa-money-bill-wave text-accent"></i>
                         </label>
 
-                        <label class="flex items-center gap-3 p-4 rounded-xl border border-white/5 mt-3 opacity-50 cursor-not-allowed">
-                            <input type="radio" name="payment" disabled />
+                        <label class="flex items-center gap-3 p-4 rounded-xl border mt-3 cursor-pointer @(form.Method == PaymentMethod.PayPal ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")">
+                            <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.PayPal)"
+                                   @onchange="@(() => form.Method = PaymentMethod.PayPal)" />
                             <span class="flex-1">
                                 <span class="font-semibold block">PayPal</span>
-                                <span class="text-xs text-text-muted">Coming soon</span>
+                                <span class="text-xs text-text-muted">Pay securely with your PayPal account</span>
                             </span>
-                            <i class="fa-brands fa-paypal"></i>
+                            <i class="fa-brands fa-paypal text-sky-400"></i>
                         </label>
                     </div>
                 </div>
@@ -241,13 +242,21 @@
             ShipState = form.ShipState,
             ShipPostalCode = form.ShipPostalCode,
             ShipCountry = form.ShipCountry,
-            Method = form.Method
+            Method = form.Method,
+            ReturnUrlBase = Navigation.BaseUri
         };
 
         var result = await OrderService.CreateOrderFromCartAsync(userId, request);
 
         if (result.Success && result.Data is not null)
         {
+            if (!string.IsNullOrWhiteSpace(result.Data.RedirectUrl))
+            {
+                // PayPal: hand off to the approval page (full navigation).
+                Navigation.NavigateTo(result.Data.RedirectUrl, forceLoad: true);
+                return;
+            }
+
             CartState.SetCount(0);
             Navigation.NavigateTo($"/orders/{result.Data.OrderNumber}");
             return;

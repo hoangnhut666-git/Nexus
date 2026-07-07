@@ -18,4 +18,14 @@ public interface IOrderService
     Task<IReadOnlyList<OrderSummaryDto>> GetOrderHistoryAsync(
         string userId,
         CancellationToken cancellationToken = default);
+
+    Task<ServiceResult<OrderDto>> CompletePayPalPaymentAsync(
+        string userId,
+        string paypalOrderId,
+        CancellationToken cancellationToken = default);
+
+    Task<ServiceResult<bool>> MarkPayPalCancelledAsync(
+        string userId,
+        string paypalOrderId,
+        CancellationToken cancellationToken = default);
 }

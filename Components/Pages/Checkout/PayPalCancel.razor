@@ -1,0 +1,48 @@
+@page "/checkout/paypal/cancel"
+@layout StorefrontLayout
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Nexus.Data
+@using Nexus.Services.Orders
+
+@attribute [Authorize(Roles = IdentitySeedData.CustomerRole)]
+
+@inject IOrderService OrderService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Payment cancelled — NEXUS</PageTitle>
+
+<div class="max-w-2xl mx-auto px-6 py-16">
+    <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center">
+        <i class="fa-solid fa-ban text-3xl text-amber-400 mb-4"></i>
+        <h1 class="text-xl font-bold mb-2">Payment cancelled</h1>
+        <p class="text-text-secondary text-sm mb-6">You cancelled the PayPal payment. Your cart is still saved, so you can try again anytime.</p>
+        <div class="flex items-center justify-center gap-3">
+            <a href="/cart" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+                <i class="fa-solid fa-cart-shopping"></i> Back to cart
+            </a>
+            <a href="/products" class="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary text-sm py-3 px-6">
+                Continue shopping
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+            return;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+            await OrderService.MarkPayPalCancelledAsync(userId, Token);
+    }
+}
