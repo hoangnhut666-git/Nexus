@@ -254,4 +254,14 @@ public sealed class DbHelper(string connectionString)
         order.CreatedAt = createdAt;
         await db.SaveChangesAsync();
     }
+
+    public async Task<IReadOnlyList<UserAddress>> GetAddressesAsync(string userId)
+    {
+        await using var db = CreateContext();
+        return await db.UserAddresses
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.IsDefault)
+            .ThenByDescending(a => a.Id)
+            .ToListAsync();
+    }
 }

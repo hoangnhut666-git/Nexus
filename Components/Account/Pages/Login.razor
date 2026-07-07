@@ -13,7 +13,7 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>NEXUS // Đăng nhập</PageTitle>
+<PageTitle>NEXUS // Login</PageTitle>
 
 <div class="w-full max-w-[420px] flex flex-col gap-8 my-auto">
     <div class="lg:hidden flex justify-center mb-2">
@@ -23,8 +23,8 @@
     </div>
 
     <div class="text-center lg:text-left">
-        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Chào mừng trở lại!</h2>
-        <p class="text-text-secondary text-sm">Vui lòng đăng nhập để bắt đầu phiên làm việc.</p>
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Welcome Back!</h2>
+        <p class="text-text-secondary text-sm">Please login to start your session.</p>
     </div>
 
     <StatusMessage Message="@errorMessage" />
@@ -33,7 +33,7 @@
         <DataAnnotationsValidator />
 
         <div class="flex flex-col gap-2">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Tài khoản hoặc Email *</label>
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Username or Email *</label>
             <div class="relative flex items-center group">
                 <i class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
                 <InputText @bind-Value="Input.Email"
@@ -47,7 +47,7 @@
         </div>
 
         <div class="flex flex-col gap-2">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Mật khẩu *</label>
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Password *</label>
             <div class="relative flex items-center group">
                 <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
                 <InputText type="@passwordInputType"
@@ -60,7 +60,7 @@
                 <button type="button"
                         @onclick="TogglePasswordVisibility"
                         class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
-                        title="Hiển thị mật khẩu">
+                        title="Show password">
                     <i class="@passwordToggleIconClass"></i>
                 </button>
             </div>
@@ -70,22 +70,22 @@
         <div class="flex items-center justify-between mt-1">
             <label class="flex items-center gap-2.5 text-xs text-text-secondary cursor-pointer select-none">
                 <InputCheckbox @bind-Value="Input.RememberMe" class="custom-checkbox" />
-                Ghi nhớ tài khoản
+                Remember me
             </label>
-            <a href="Account/ForgotPassword" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300">Quên mật khẩu?</a>
+            <a href="Account/ForgotPassword" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300">Forgot password?</a>
         </div>
 
         <button type="submit"
                 disabled="@isSubmitting"
                 class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-            <span>@(isSubmitting ? "Đang xác thực..." : "Đăng nhập vào Hệ thống")</span>
+            <span>@(isSubmitting ? "Authenticating..." : "Sign In to System")</span>
             <i class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
         </button>
     </EditForm>
 
     <div class="text-center text-xs text-text-muted mt-4">
-        Chưa có tài khoản?
-        <a href="@registerUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Đăng ký ngay</a>
+        Don't have an account?
+        <a href="@registerUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Register now</a>
     </div>
 </div>
 
@@ -178,7 +178,7 @@
             if (signedInUser is null)
             {
                 isSubmitting = false;
-                errorMessage = "Error: Tài khoản hoặc mật khẩu không đúng.";
+                errorMessage = "Error: Invalid username or password.";
                 return;
             }
 
@@ -212,17 +212,17 @@
         else
         {
             isSubmitting = false;
-            errorMessage = "Error: Tài khoản hoặc mật khẩu không đúng.";
+            errorMessage = "Error: Invalid username or password.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập tài khoản hoặc email.")]
-        [Display(Name = "Tài khoản hoặc Email")]
+        [Required(ErrorMessage = "Please enter your username or email.")]
+        [Display(Name = "Username or Email")]
         public string Email { get; set; } = "";
 
-        [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
+        [Required(ErrorMessage = "Please enter your password.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 

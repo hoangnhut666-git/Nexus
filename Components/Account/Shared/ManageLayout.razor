@@ -1,17 +1,18 @@
 ﻿@inherits LayoutComponentBase
-@layout Nexus.Components.Layout.MainLayout
+@layout Nexus.Components.Storefront.Layout.StorefrontLayout
 
-<h1>Manage your account</h1>
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="mb-8">
+        <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-1">My Account</h1>
+        <p class="text-text-secondary text-sm">Manage your profile, security and personal data.</p>
+    </div>
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-lg-3">
+    <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 items-start">
+        <aside class="bg-bg-surface border border-white/5 rounded-2xl p-3 lg:sticky lg:top-24">
             <ManageNavMenu />
-        </div>
-        <div class="col-lg-9">
+        </aside>
+        <section class="manage-content bg-bg-surface border border-white/5 rounded-2xl p-6 sm:p-8 min-h-[420px]">
             @Body
-        </div>
+        </section>
     </div>
 </div>
