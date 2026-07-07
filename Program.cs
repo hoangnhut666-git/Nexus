@@ -72,7 +72,16 @@ builder.Services.AddScoped<CartState>();
 
 var app = builder.Build();
 
+// Ensure the database schema exists (applies pending migrations on a fresh database),
+// then seed identity accounts and the product catalog so data survives a database switch.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 await IdentitySeedData.SeedAsync(app.Services);
+await CatalogSeedData.SeedAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

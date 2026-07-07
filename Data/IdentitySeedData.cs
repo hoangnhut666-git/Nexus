@@ -8,6 +8,24 @@ public static class IdentitySeedData
     public const string AdminRole = "Admin";
     public const string CustomerRole = "Customer";
 
+    // Default password applied to every seeded account. Meets the configured
+    // Identity policy (>= 6 chars, upper/lower/digit/non-alphanumeric).
+    public const string DefaultSeedPassword = "Nexus@123";
+
+    private static readonly (string Email, string FullName)[] AdminAccounts =
+    [
+        ("admin1@nexus.com", "Trần Hoàng Nhựt"),
+        ("admin2@nexus.com", "Nguyễn Mỹ Linh"),
+        ("admin3@nexus.com", "Hà Đoan Trang"),
+    ];
+
+    private static readonly (string Email, string FullName)[] CustomerAccounts =
+    [
+        ("customer1@nexus.com", "Nguyễn Thị Thảo"),
+        ("customer2@nexus.com", "Lê Thị Thu Hà"),
+        ("customer3@nexus.com", "Trần Văn Bình"),
+    ];
+
     public static async Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
@@ -18,33 +36,56 @@ public static class IdentitySeedData
         await EnsureRoleAsync(roleManager, AdminRole);
         await EnsureRoleAsync(roleManager, CustomerRole);
 
-        if (string.IsNullOrWhiteSpace(settings.AdminPassword))
+        // Optional administrator configured via IdentitySettings (only when a password is supplied).
+        if (!string.IsNullOrWhiteSpace(settings.AdminPassword))
+        {
+            await EnsureUserAsync(
+                userManager,
+                settings.AdminEmail,
+                settings.AdminFullName,
+                AdminRole,
+                settings.AdminPassword);
+        }
+
+        foreach (var (email, fullName) in AdminAccounts)
+        {
+            await EnsureUserAsync(userManager, email, fullName, AdminRole, DefaultSeedPassword);
+        }
+
+        foreach (var (email, fullName) in CustomerAccounts)
+        {
+            await EnsureUserAsync(userManager, email, fullName, CustomerRole, DefaultSeedPassword);
+        }
+    }
+
+    private static async Task EnsureUserAsync(
+        UserManager<ApplicationUser> userManager,
+        string email,
+        string fullName,
+        string role,
+        string password)
+    {
+        if (await userManager.FindByEmailAsync(email) is not null)
         {
             return;
         }
 
-        var admin = await userManager.FindByEmailAsync(settings.AdminEmail);
-        if (admin is not null)
+        var user = new ApplicationUser
         {
-            return;
-        }
-
-        admin = new ApplicationUser
-        {
-            UserName = settings.AdminEmail,
-            Email = settings.AdminEmail,
-            FullName = settings.AdminFullName,
+            UserName = email,
+            Email = email,
+            FullName = fullName,
             EmailConfirmed = true
         };
 
-        var result = await userManager.CreateAsync(admin, settings.AdminPassword);
+        var result = await userManager.CreateAsync(user, password);
         if (!result.Succeeded)
         {
             throw new InvalidOperationException(
-                $"Failed to seed admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                $"Failed to seed user '{email}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
 
-        await userManager.AddToRoleAsync(admin, AdminRole);
+        await userManager.AddToRoleAsync(user, role);
     }
 
     private static async Task EnsureRoleAsync(RoleManager<IdentityRole> roleManager, string roleName)
