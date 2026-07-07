@@ -79,6 +79,151 @@ public sealed class ProductService(
         };
     }
 
+    public async Task<PagedResult<CatalogProductListItemDto>> GetCatalogPagedAsync(
+        CatalogProductQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? 12 : query.PageSize;
+
+        var products = context.Products
+            .AsNoTracking()
+            .Where(p => p.IsActive && p.Variants.Any(v => v.IsActive));
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search.Trim();
+            products = products.Where(p =>
+                p.Name.Contains(search)
+                || p.Slug.Contains(search)
+                || p.Variants.Any(v => v.IsActive && v.Sku.Contains(search)));
+        }
+
+        if (query.CategoryId.HasValue)
+            products = products.Where(p => p.CategoryId == query.CategoryId.Value);
+
+        var totalCount = await products.CountAsync(cancellationToken);
+
+        var items = await products
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new CatalogProductListItemDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Slug = p.Slug,
+                ThumbnailUrl = p.Images
+                    .OrderBy(i => i.SortOrder)
+                    .ThenBy(i => i.Id)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault(),
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.Name,
+                MinPrice = p.Variants.Where(v => v.IsActive).Min(v => v.Price),
+                TotalStock = p.Variants.Where(v => v.IsActive).Sum(v => v.StockQuantity),
+                InStock = p.Variants.Where(v => v.IsActive).Sum(v => v.StockQuantity) > 0,
+                HasOptions = p.Options.Any()
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<CatalogProductListItemDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<ProductDetailDto?> GetBySlugAsync(
+        string slug,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return null;
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var normalizedSlug = NormalizeSlug(slug);
+        var product = await context.Products
+            .AsNoTracking()
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .Include(p => p.Options)
+                .ThenInclude(o => o.Values)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.OptionValues)
+                    .ThenInclude(ov => ov.ProductOptionValue)
+                        .ThenInclude(pov => pov.ProductOption)
+            .FirstOrDefaultAsync(p => p.Slug == normalizedSlug, cancellationToken);
+
+        if (product is null || !product.IsActive || !product.Variants.Any(v => v.IsActive))
+            return null;
+
+        return MapToCatalogDetailDto(product);
+    }
+
+    public async Task<ProductVariantDto?> ResolveVariantAsync(
+        int productId,
+        IReadOnlyList<int> optionValueIds,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var product = await context.Products
+            .AsNoTracking()
+            .Include(p => p.Options)
+                .ThenInclude(o => o.Values)
+            .Include(p => p.Variants)
+                .ThenInclude(v => v.OptionValues)
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product is null || !product.IsActive)
+            return null;
+
+        var activeVariants = product.Variants.Where(v => v.IsActive).ToList();
+        if (activeVariants.Count == 0)
+            return null;
+
+        var options = product.Options
+            .OrderBy(o => o.SortOrder)
+            .ThenBy(o => o.Id)
+            .Select(o => new ProductOptionDto
+            {
+                Id = o.Id,
+                Name = o.Name,
+                SortOrder = o.SortOrder,
+                Values = o.Values
+                    .OrderBy(v => v.SortOrder)
+                    .ThenBy(v => v.Id)
+                    .Select(v => new ProductOptionValueDto
+                    {
+                        Id = v.Id,
+                        Value = v.Value,
+                        SortOrder = v.SortOrder
+                    })
+                    .ToList()
+            })
+            .ToList();
+
+        if (!VariantResolutionHelper.IsValidSelection(options, optionValueIds))
+            return null;
+
+        var variantDtos = activeVariants
+            .Select(v => MapVariantDto(v, options))
+            .ToList();
+
+        var resolved = VariantResolutionHelper.ResolveFromVariants(
+            variantDtos,
+            optionValueIds,
+            options.Count);
+
+        return resolved;
+    }
+
     public async Task<ServiceResult<ProductDetailDto>> CreateAsync(
         CreateProductRequest request,
         CancellationToken cancellationToken = default)
@@ -615,6 +760,67 @@ public sealed class ProductService(
         return !await query.AnyAsync(cancellationToken);
     }
 
+    private static ProductDetailDto MapToCatalogDetailDto(Product product)
+    {
+        var activeVariants = product.Variants.Where(v => v.IsActive).ToList();
+        var activeValueIds = activeVariants
+            .SelectMany(v => v.OptionValues)
+            .Select(ov => ov.ProductOptionValueId)
+            .ToHashSet();
+
+        var options = product.Options
+            .OrderBy(o => o.SortOrder)
+            .ThenBy(o => o.Id)
+            .Select(o => new ProductOptionDto
+            {
+                Id = o.Id,
+                Name = o.Name,
+                SortOrder = o.SortOrder,
+                Values = o.Values
+                    .Where(v => activeValueIds.Contains(v.Id))
+                    .OrderBy(v => v.SortOrder)
+                    .ThenBy(v => v.Id)
+                    .Select(v => new ProductOptionValueDto
+                    {
+                        Id = v.Id,
+                        Value = v.Value,
+                        SortOrder = v.SortOrder
+                    })
+                    .ToList()
+            })
+            .Where(o => o.Values.Count > 0)
+            .ToList();
+
+        return new ProductDetailDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Slug = product.Slug,
+            Description = product.Description,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category.Name,
+            IsActive = product.IsActive,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            Options = options,
+            Variants = activeVariants
+                .OrderBy(v => v.Id)
+                .Select(v => MapVariantDto(v, options))
+                .ToList(),
+            Images = product.Images
+                .OrderBy(i => i.SortOrder)
+                .ThenBy(i => i.Id)
+                .Select(i => new ProductImageDto
+                {
+                    Id = i.Id,
+                    ImageUrl = i.ImageUrl,
+                    SortOrder = i.SortOrder,
+                    AltText = i.AltText
+                })
+                .ToList()
+        };
+    }
+
     private static ProductDetailDto MapToDetailDto(Product product)
     {
         var options = product.Options
@@ -772,7 +978,7 @@ public sealed class ProductService(
     }
 
     private static string GetOptionValueSignature(IEnumerable<int> optionValueIds) =>
-        string.Join(",", optionValueIds.OrderBy(id => id));
+        VariantResolutionHelper.GetOptionValueSignature(optionValueIds);
 
     private async Task UpsertPrimaryImageAsync(
         ApplicationDbContext context,

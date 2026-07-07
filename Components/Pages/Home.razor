@@ -21,7 +21,7 @@
 
 @code {
     private IReadOnlyList<CategoryListItemDto> categories = [];
-    private IReadOnlyList<ProductListItemDto> products = [];
+    private IReadOnlyList<CatalogProductListItemDto> products = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,9 +32,8 @@
             PageSize = 4
         });
 
-        var productResult = await ProductService.GetPagedAsync(new ProductQuery
+        var productResult = await ProductService.GetCatalogPagedAsync(new CatalogProductQuery
         {
-            Status = ProductStatusFilter.Active,
             Page = 1,
             PageSize = 8
         });

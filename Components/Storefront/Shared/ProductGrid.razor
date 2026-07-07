@@ -4,17 +4,25 @@
     <div class="max-w-7xl mx-auto px-6">
         <div class="flex justify-between items-end mb-10">
             <div>
-                <h2 class="text-3xl font-bold tracking-tight">Hottest Products</h2>
-                <p class="text-text-secondary text-sm">Exclusive limited-edition designs for you</p>
+                <h2 class="text-3xl font-bold tracking-tight">@Title</h2>
+                @if (!string.IsNullOrWhiteSpace(Subtitle))
+                {
+                    <p class="text-text-secondary text-sm">@Subtitle</p>
+                }
             </div>
-            <a href="#" class="text-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">View all <i class="fa-solid fa-chevron-right text-xs"></i></a>
+            @if (ShowViewAll)
+            {
+                <a href="/products" class="text-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">
+                    View all <i class="fa-solid fa-chevron-right text-xs"></i>
+                </a>
+            }
         </div>
 
         @if (Products.Count == 0)
         {
             <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center text-text-secondary">
                 <i class="fa-solid fa-box-open text-3xl mb-4 text-text-muted"></i>
-                <p>No products available yet. New arrivals coming soon.</p>
+                <p>@EmptyMessage</p>
             </div>
         }
         else
@@ -31,5 +39,17 @@
 
 @code {
     [Parameter]
-    public IReadOnlyList<ProductListItemDto> Products { get; set; } = [];
+    public IReadOnlyList<CatalogProductListItemDto> Products { get; set; } = [];
+
+    [Parameter]
+    public string Title { get; set; } = "Hottest Products";
+
+    [Parameter]
+    public string? Subtitle { get; set; } = "Exclusive limited-edition designs for you";
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "No products available yet. New arrivals coming soon.";
+
+    [Parameter]
+    public bool ShowViewAll { get; set; } = true;
 }

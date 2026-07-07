@@ -1,0 +1,61 @@
+@using Nexus.Services.Products.Models
+
+<div class="bg-bg-surface border border-white/5 rounded-2xl p-5 flex flex-col gap-3">
+    @if (ResolvedVariant is not null)
+    {
+        <div>
+            <div class="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Price</div>
+            <div class="text-3xl font-extrabold text-text-primary">@FormatPrice(ResolvedVariant.Price)</div>
+        </div>
+        <div class="text-sm text-text-secondary">
+            SKU: <span class="text-text-primary font-medium">@ResolvedVariant.Sku</span>
+        </div>
+        @if (ResolvedVariant.StockQuantity > 0)
+        {
+            <div class="text-sm text-emerald-400 font-medium">
+                <i class="fa-solid fa-circle text-[6px] mr-1"></i>
+                @ResolvedVariant.StockQuantity in stock
+            </div>
+        }
+        else
+        {
+            <div class="text-sm text-danger font-medium">
+                <i class="fa-solid fa-circle-xmark mr-1"></i>
+                Out of stock
+            </div>
+        }
+    }
+    else if (!string.IsNullOrWhiteSpace(PromptMessage))
+    {
+        <div class="text-sm text-text-muted">@PromptMessage</div>
+    }
+    else if (IsInvalidCombination)
+    {
+        <div class="text-sm text-danger font-medium">This combination is not available.</div>
+    }
+</div>
+
+<div class="flex flex-col gap-4 mt-2">
+    <button type="button"
+            class="w-full py-3 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(CanAddToCart ? "bg-white/5 border border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary" : "bg-white/5 border border-white/5 text-text-muted cursor-not-allowed opacity-60")"
+            disabled="@(!CanAddToCart)">
+        <i class="fa-solid fa-cart-plus @(CanAddToCart ? "text-indigo-400" : "")"></i>
+        @(CanAddToCart ? "Add to cart" : "Unavailable")
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public ProductVariantDto? ResolvedVariant { get; set; }
+
+    [Parameter]
+    public string? PromptMessage { get; set; }
+
+    [Parameter]
+    public bool IsInvalidCombination { get; set; }
+
+    private bool CanAddToCart => ResolvedVariant is not null && ResolvedVariant.StockQuantity > 0;
+
+    private static string FormatPrice(decimal price) =>
+        price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
+}

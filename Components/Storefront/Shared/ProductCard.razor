@@ -10,28 +10,43 @@
         {
             <i class="fa-solid fa-image text-4xl text-text-muted"></i>
         }
+        @if (!Product.InStock)
+        {
+            <span class="absolute top-3 left-3 z-10 bg-danger-bg border border-danger/30 text-danger text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full">
+                Out of stock
+            </span>
+        }
         <button type="button" class="absolute top-3 right-3 z-10 bg-bg-base/60 backdrop-blur-8 border border-white/5 text-text-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition">
             <i class="fa-regular fa-heart"></i>
         </button>
-        <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-bg-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
-            <button type="button" class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg">
-                <i class="fa-solid fa-cart-plus"></i> Add to cart
-            </button>
-        </div>
+        @if (Product.InStock)
+        {
+            <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-bg-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
+                <button type="button"
+                        class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg"
+                        disabled>
+                    <i class="fa-solid fa-cart-plus"></i> Add to cart
+                </button>
+            </div>
+        }
     </div>
     <div class="p-5">
         <div class="text-text-muted text-xs uppercase tracking-wide">@Product.CategoryName</div>
         <h3 class="font-semibold text-base truncate">
-            <a href="#" class="hover:text-accent">@Product.Name</a>
+            <a href="@ProductUrl" class="hover:text-accent">@Product.Name</a>
         </h3>
         <div class="flex justify-between items-center mt-2">
             <div>
-                <span class="font-bold text-lg">@Product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</span>
+                @if (Product.HasOptions)
+                {
+                    <span class="text-text-muted text-xs mr-1">From</span>
+                }
+                <span class="font-bold text-lg">@FormatPrice(Product.MinPrice)</span>
             </div>
-            @if (Product.TotalStock > 0)
+            @if (Product.InStock)
             {
-                <div class="text-yellow-400 text-xs flex items-center gap-1">
-                    <i class="fa-solid fa-star"></i>
+                <div class="text-emerald-400 text-xs flex items-center gap-1">
+                    <i class="fa-solid fa-circle text-[6px]"></i>
                     <span class="text-text-secondary font-medium">In stock</span>
                 </div>
             }
@@ -41,5 +56,10 @@
 
 @code {
     [Parameter, EditorRequired]
-    public ProductListItemDto Product { get; set; } = default!;
+    public CatalogProductListItemDto Product { get; set; } = default!;
+
+    private string ProductUrl => $"/products/{Product.Slug}";
+
+    private static string FormatPrice(decimal price) =>
+        price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
 }

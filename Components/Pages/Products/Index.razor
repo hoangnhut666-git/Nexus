@@ -1,0 +1,176 @@
+@page "/products"
+@layout StorefrontLayout
+@rendermode InteractiveServer
+
+@using Nexus.Components.Storefront.Shared
+@using Nexus.Services.Categories
+@using Nexus.Services.Categories.Models
+@using Nexus.Services.Products
+@using Nexus.Services.Products.Models
+
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@inject NavigationManager Navigation
+
+<PageTitle>Shop — NEXUS</PageTitle>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Shop</h1>
+        <p class="text-text-secondary text-sm">Browse our catalog of active products</p>
+    </div>
+
+    <div class="flex flex-wrap gap-4 mb-8">
+        <div class="relative flex items-center flex-1 min-w-[240px]">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
+            <input type="text"
+                   placeholder="Search by name, slug, or SKU..."
+                   class="w-full bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm outline-none focus:border-indigo-500/40 transition"
+                   value="@searchTerm"
+                   @oninput="OnSearchInput" />
+        </div>
+        <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer min-w-[180px]"
+                value="@categoryFilter"
+                @onchange="OnCategoryFilterChanged">
+            <option value="0">All categories</option>
+            @foreach (var category in categoryOptions)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+    </div>
+
+    @if (pagedResult is null)
+    {
+        <div class="text-text-muted text-sm">Loading products...</div>
+    }
+    else if (pagedResult.Items.Count == 0)
+    {
+        <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center text-text-secondary">
+            <i class="fa-solid fa-box-open text-3xl mb-4 text-text-muted"></i>
+            <p>No products match your filters.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            @foreach (var product in pagedResult.Items)
+            {
+                <ProductCard Product="product" />
+            }
+        </div>
+
+        @if (pagedResult.TotalCount > query.PageSize)
+        {
+            <div class="flex justify-center items-center gap-4 mt-10 text-sm text-text-secondary">
+                <button type="button"
+                        class="px-4 py-2 rounded-lg border border-white/5 disabled:opacity-40"
+                        disabled="@(query.Page <= 1)"
+                        @onclick="() => ChangePageAsync(query.Page - 1)">
+                    Previous
+                </button>
+                <span>Page @query.Page of @TotalPages</span>
+                <button type="button"
+                        class="px-4 py-2 rounded-lg border border-white/5 disabled:opacity-40"
+                        disabled="@(query.Page >= TotalPages)"
+                        @onclick="() => ChangePageAsync(query.Page + 1)">
+                    Next
+                </button>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private readonly CatalogProductQuery query = new();
+    private PagedResult<CatalogProductListItemDto>? pagedResult;
+    private string searchTerm = string.Empty;
+    private int categoryFilter;
+    private List<CategoryOption> categoryOptions = [];
+    private CancellationTokenSource? searchDebounceCts;
+
+    private int TotalPages => pagedResult is null || pagedResult.PageSize < 1
+        ? 1
+        : (int)Math.Ceiling(pagedResult.TotalCount / (double)pagedResult.PageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        ParseQueryString();
+        await LoadCategoryOptionsAsync();
+        await LoadProductsAsync();
+    }
+
+    private void ParseQueryString()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (queryParams.TryGetValue("search", out var search) && !string.IsNullOrWhiteSpace(search))
+            searchTerm = search.ToString();
+
+        if (queryParams.TryGetValue("categoryId", out var category) && int.TryParse(category, out var id))
+            categoryFilter = id;
+    }
+
+    private async Task LoadCategoryOptionsAsync()
+    {
+        var result = await CategoryService.GetPagedAsync(new CategoryQuery
+        {
+            Status = CategoryStatusFilter.Active,
+            Page = 1,
+            PageSize = 100
+        });
+
+        categoryOptions = result.Items
+            .Select(c => new CategoryOption { Id = c.Id, Name = c.Name })
+            .ToList();
+    }
+
+    private async Task LoadProductsAsync()
+    {
+        query.Search = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim();
+        query.CategoryId = categoryFilter > 0 ? categoryFilter : null;
+        pagedResult = await ProductService.GetCatalogPagedAsync(query);
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs args)
+    {
+        searchTerm = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+
+        searchDebounceCts?.Cancel();
+        searchDebounceCts = new CancellationTokenSource();
+        var token = searchDebounceCts.Token;
+
+        try
+        {
+            await Task.Delay(300, token);
+            await LoadProductsAsync();
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnCategoryFilterChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var selected))
+            categoryFilter = selected;
+
+        query.Page = 1;
+        await LoadProductsAsync();
+    }
+
+    private async Task ChangePageAsync(int page)
+    {
+        query.Page = page;
+        await LoadProductsAsync();
+    }
+
+    private sealed class CategoryOption
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+    }
+}

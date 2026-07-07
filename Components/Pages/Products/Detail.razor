@@ -1,0 +1,146 @@
+@page "/products/{Slug}"
+@layout StorefrontLayout
+@rendermode InteractiveServer
+
+@using Nexus.Components.Storefront.Shared
+@using Nexus.Services.Products
+@using Nexus.Services.Products.Models
+
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>@(product?.Name ?? "Product") — NEXUS</PageTitle>
+
+@if (isLoading)
+{
+    <div class="max-w-7xl mx-auto px-6 py-16 text-text-muted">Loading product...</div>
+}
+else if (product is null)
+{
+    <div class="max-w-7xl mx-auto px-6 py-16 text-center">
+        <h1 class="text-2xl font-bold mb-2">Product not found</h1>
+        <p class="text-text-secondary mb-6">This product may be unavailable or no longer exists.</p>
+        <a href="/products" class="text-accent font-semibold hover:underline">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to shop
+        </a>
+    </div>
+}
+else
+{
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <a href="/products" class="text-text-secondary hover:text-text-primary text-sm mb-6 inline-block">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to shop
+        </a>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div class="lg:col-span-6">
+                <ProductImageGallery ProductName="@product.Name"
+                                     Images="@product.Images"
+                                     VariantImageUrl="@resolvedVariant?.ImageUrl"
+                                     InStock="@(resolvedVariant?.StockQuantity > 0)"
+                                     ShowAvailability="@(resolvedVariant is not null)" />
+            </div>
+
+            <div class="lg:col-span-6 flex flex-col gap-6">
+                <div class="space-y-2">
+                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 py-1 px-3 rounded-full">
+                        @product.CategoryName
+                    </span>
+                    <h1 class="text-3xl font-extrabold text-text-primary tracking-tight pt-1">@product.Name</h1>
+                    @if (!string.IsNullOrWhiteSpace(product.Description))
+                    {
+                        <p class="text-sm text-text-secondary leading-relaxed pt-2">@product.Description</p>
+                    }
+                </div>
+
+                @if (product.Options.Count > 0)
+                {
+                    <ProductOptionPickers Options="@product.Options"
+                                          SelectedValues="@selectedValues"
+                                          SelectedValuesChanged="@OnSelectionChanged" />
+                }
+
+                <ProductVariantSummary ResolvedVariant="@resolvedVariant"
+                                       PromptMessage="@promptMessage"
+                                       IsInvalidCombination="@isInvalidCombination" />
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private ProductDetailDto? product;
+    private ProductVariantDto? resolvedVariant;
+    private Dictionary<int, int> selectedValues = new();
+    private string? promptMessage;
+    private bool isInvalidCombination;
+    private bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        product = await ProductService.GetBySlugAsync(Slug);
+        selectedValues = new Dictionary<int, int>();
+        resolvedVariant = null;
+        promptMessage = null;
+        isInvalidCombination = false;
+
+        if (product is not null)
+            ResolveSelection();
+
+        isLoading = false;
+    }
+
+    private Task OnSelectionChanged(IReadOnlyDictionary<int, int> values)
+    {
+        selectedValues = new Dictionary<int, int>(values);
+        ResolveSelection();
+        return Task.CompletedTask;
+    }
+
+    private void ResolveSelection()
+    {
+        if (product is null)
+            return;
+
+        promptMessage = null;
+        isInvalidCombination = false;
+        resolvedVariant = null;
+
+        if (product.Options.Count == 0)
+        {
+            resolvedVariant = product.Variants.Count == 1 ? product.Variants[0] : null;
+            return;
+        }
+
+        var orderedOptions = product.Options.OrderBy(o => o.SortOrder).ThenBy(o => o.Id).ToList();
+
+        foreach (var option in orderedOptions)
+        {
+            if (!selectedValues.ContainsKey(option.Id))
+            {
+                promptMessage = $"Select {option.Name}";
+                return;
+            }
+        }
+
+        var optionValueIds = orderedOptions
+            .Select(o => selectedValues[o.Id])
+            .ToList();
+
+        if (!VariantResolutionHelper.IsValidSelection(product.Options, optionValueIds))
+        {
+            isInvalidCombination = true;
+            return;
+        }
+
+        resolvedVariant = VariantResolutionHelper.ResolveFromVariants(
+            product.Variants,
+            optionValueIds,
+            product.Options.Count);
+        isInvalidCombination = resolvedVariant is null;
+    }
+}

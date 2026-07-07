@@ -354,10 +354,10 @@ Yellow        |  5 @ 22.0M  |  3 @ 24.9M
 
 #### Acceptance criteria
 
-- [ ] Catalog shows only active products with ≥ 1 active variant.
-- [ ] Detail page resolves Yellow + 32GB to correct SKU, price, stock.
-- [ ] Out-of-stock variant shows unavailable state (FR-CAT-05).
-- [ ] URLs use product slug; no variant in URL for v1 (selection client-side).
+- [x] Catalog shows only active products with ≥ 1 active variant.
+- [x] Detail page resolves Yellow + 32GB to correct SKU, price, stock.
+- [x] Out-of-stock variant shows unavailable state (FR-CAT-05).
+- [x] URLs use product slug; no variant in URL for v1 (selection client-side).
 
 #### Estimated effort
 

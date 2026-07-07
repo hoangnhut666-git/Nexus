@@ -1,0 +1,66 @@
+@using Nexus.Services.Products.Models
+
+<div class="flex flex-col gap-5 border-t border-b border-white/5 py-5">
+    @foreach (var option in Options)
+    {
+        <div class="flex flex-col gap-2.5">
+            <div class="flex justify-between text-xs">
+                <span class="font-bold text-text-secondary uppercase tracking-wider">@option.Name</span>
+                @if (TryGetSelectedLabel(option.Id, out var label))
+                {
+                    <span class="text-indigo-400 font-semibold">@label</span>
+                }
+            </div>
+            <div class="flex flex-wrap gap-3">
+                @foreach (var value in option.Values)
+                {
+                    <button type="button"
+                            class="@GetButtonClass(option.Id, value.Id)"
+                            @onclick="() => SelectValue(option.Id, value.Id)">
+                        @value.Value
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ProductOptionDto> Options { get; set; } = [];
+
+    [Parameter]
+    public IReadOnlyDictionary<int, int> SelectedValues { get; set; } = new Dictionary<int, int>();
+
+    [Parameter]
+    public EventCallback<IReadOnlyDictionary<int, int>> SelectedValuesChanged { get; set; }
+
+    private async Task SelectValue(int optionId, int valueId)
+    {
+        var next = new Dictionary<int, int>(SelectedValues) { [optionId] = valueId };
+        await SelectedValuesChanged.InvokeAsync(next);
+    }
+
+    private bool TryGetSelectedLabel(int optionId, out string label)
+    {
+        label = string.Empty;
+        if (!SelectedValues.TryGetValue(optionId, out var valueId))
+            return false;
+
+        var option = Options.FirstOrDefault(o => o.Id == optionId);
+        var value = option?.Values.FirstOrDefault(v => v.Id == valueId);
+        if (value is null)
+            return false;
+
+        label = value.Value;
+        return true;
+    }
+
+    private string GetButtonClass(int optionId, int valueId)
+    {
+        var isSelected = SelectedValues.TryGetValue(optionId, out var selected) && selected == valueId;
+        return isSelected
+            ? "bg-bg-surface border-2 border-indigo-500 text-text-primary px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300"
+            : "bg-bg-surface border border-white/5 text-text-secondary hover:text-text-primary px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300";
+    }
+}

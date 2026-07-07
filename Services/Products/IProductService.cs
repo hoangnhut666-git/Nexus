@@ -9,6 +9,19 @@ public interface IProductService
         ProductQuery query,
         CancellationToken cancellationToken = default);
 
+    Task<PagedResult<CatalogProductListItemDto>> GetCatalogPagedAsync(
+        CatalogProductQuery query,
+        CancellationToken cancellationToken = default);
+
+    Task<ProductDetailDto?> GetBySlugAsync(
+        string slug,
+        CancellationToken cancellationToken = default);
+
+    Task<ProductVariantDto?> ResolveVariantAsync(
+        int productId,
+        IReadOnlyList<int> optionValueIds,
+        CancellationToken cancellationToken = default);
+
     Task<ServiceResult<ProductDetailDto>> CreateAsync(
         CreateProductRequest request,
         CancellationToken cancellationToken = default);

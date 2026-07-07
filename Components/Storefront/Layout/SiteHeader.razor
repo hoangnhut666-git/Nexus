@@ -1,4 +1,8 @@
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using Nexus.Services.Categories.Models
+
+@inject NavigationManager Navigation
 
 <header class="sticky top-0 z-50 bg-bg-surface/85 backdrop-blur-20 border-b border-white/5 transition-all">
     <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
@@ -9,7 +13,7 @@
         <nav class="hidden md:block">
             <ul class="flex gap-9 text-sm font-medium text-text-secondary">
                 <li><a href="/" class="text-text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 hover:text-text-primary transition">Home</a></li>
-                <li><a href="#" class="hover:text-text-primary transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:transition-all">Shop</a></li>
+                <li><a href="/products" class="hover:text-text-primary transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:transition-all">Shop</a></li>
                 <li><a href="#" class="hover:text-text-primary transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:transition-all">Collections</a></li>
                 <li><a href="#" class="hover:text-text-primary transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:transition-all">Limited Offers</a></li>
                 <li><a href="#" class="hover:text-text-primary transition relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:transition-all">Support</a></li>
@@ -19,7 +23,12 @@
         <div class="flex items-center gap-5">
             <div class="relative hidden lg:flex items-center">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 text-text-muted text-sm"></i>
-                <input type="text" placeholder="Search future products..." class="bg-white/5 border border-white/5 rounded-lg py-2.5 pl-10 pr-4 text-sm text-text-primary w-52 focus:w-64 focus:outline-none focus:border-indigo-500/40 focus:bg-white/10 transition-all shadow-[0_0_15px_rgba(99,102,241,0.15)]" />
+                <input type="text"
+                       placeholder="Search products..."
+                       class="bg-white/5 border border-white/5 rounded-lg py-2.5 pl-10 pr-4 text-sm text-text-primary w-52 focus:w-64 focus:outline-none focus:border-indigo-500/40 focus:bg-white/10 transition-all shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+                       value="@searchTerm"
+                       @oninput="OnSearchInput"
+                       @onkeydown="OnSearchKeyDown" />
             </div>
             <button type="button" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition" title="Wishlist">
                 <i class="fa-regular fa-heart text-lg"></i>
@@ -43,3 +52,21 @@
         </div>
     </div>
 </header>
+
+@code {
+    private string searchTerm = string.Empty;
+
+    private void OnSearchInput(ChangeEventArgs args) =>
+        searchTerm = args.Value?.ToString() ?? string.Empty;
+
+    private void OnSearchKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key != "Enter")
+            return;
+
+        var term = searchTerm.Trim();
+        Navigation.NavigateTo(string.IsNullOrWhiteSpace(term)
+            ? "/products"
+            : $"/products?search={Uri.EscapeDataString(term)}");
+    }
+}

@@ -7,7 +7,7 @@
                 <h2 class="text-3xl font-bold tracking-tight">Trending Categories</h2>
                 <p class="text-text-secondary text-sm">Quick-find products by your needs</p>
             </div>
-            <a href="#" class="text-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">All categories <i class="fa-solid fa-chevron-right text-xs"></i></a>
+            <a href="/products" class="text-accent font-semibold flex items-center gap-1.5 hover:gap-3 transition-all">All categories <i class="fa-solid fa-chevron-right text-xs"></i></a>
         </div>
 
         @if (Categories.Count == 0)
@@ -22,13 +22,14 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                 @foreach (var category in Categories)
                 {
-                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-indigo-500/40 hover:bg-bg-card-hover transition shadow-lg hover:shadow-2xl">
+                    <a href="@($"/products?categoryId={category.Id}")"
+                       class="bg-bg-surface border border-white/5 rounded-2xl p-8 text-center hover:-translate-y-1 hover:border-indigo-500/40 hover:bg-bg-card-hover transition shadow-lg hover:shadow-2xl block">
                         <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 hover:text-white hover:scale-110 transition">
                             <i class="@GetCategoryIcon(category.Name)"></i>
                         </div>
                         <h3 class="font-semibold">@category.Name</h3>
                         <p class="text-text-muted text-sm">@category.ProductCount products</p>
-                    </div>
+                    </a>
                 }
             </div>
         }
