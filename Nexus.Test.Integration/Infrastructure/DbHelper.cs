@@ -219,4 +219,39 @@ public sealed class DbHelper(string connectionString)
             .OrderBy(p => p.Id)
             .ToListAsync();
     }
+
+    public async Task<Order?> GetOrderByIdAsync(int orderId)
+    {
+        await using var db = CreateContext();
+        return await db.Orders
+            .Include(o => o.Items)
+            .Include(o => o.Payments)
+            .Include(o => o.Events)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+    }
+
+    public async Task<IReadOnlyList<OrderEvent>> GetOrderEventsAsync(int orderId)
+    {
+        await using var db = CreateContext();
+        return await db.OrderEvents
+            .Where(e => e.OrderId == orderId)
+            .OrderBy(e => e.Id)
+            .ToListAsync();
+    }
+
+    public async Task SetOrderStatusAsync(int orderId, OrderStatus status)
+    {
+        await using var db = CreateContext();
+        var order = await db.Orders.FirstAsync(o => o.Id == orderId);
+        order.Status = status;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task SetOrderCreatedAtAsync(int orderId, DateTime createdAt)
+    {
+        await using var db = CreateContext();
+        var order = await db.Orders.FirstAsync(o => o.Id == orderId);
+        order.CreatedAt = createdAt;
+        await db.SaveChangesAsync();
+    }
 }

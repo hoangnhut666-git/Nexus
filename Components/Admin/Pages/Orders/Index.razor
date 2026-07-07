@@ -1,0 +1,230 @@
+@page "/admin/orders"
+@rendermode InteractiveServer
+
+@using Nexus.Data.Entities
+@using Nexus.Services.Categories.Models
+@using Nexus.Services.Orders
+@using Nexus.Services.Orders.Models
+
+@inject IOrderService OrderService
+@inject NavigationManager Navigation
+
+<CascadingValue Name="AdminPageTitle" Value="@("Order Management")">
+    <div>
+        <div class="flex justify-between items-center mb-6 gap-4 flex-wrap">
+            <div class="flex gap-4 flex-wrap items-center">
+                <div class="relative flex items-center">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
+                    <input type="text"
+                           placeholder="Search order # or customer..."
+                           class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                           value="@searchTerm"
+                           @oninput="OnSearchInput" />
+                </div>
+                <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                        value="@statusFilter"
+                        @onchange="OnStatusFilterChanged">
+                    <option value="">All statuses</option>
+                    @foreach (var status in AllStatuses)
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+                <div class="flex items-center gap-2">
+                    <input type="date"
+                           class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-3 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                           value="@fromDate"
+                           @onchange="OnFromDateChanged" />
+                    <span class="text-text-muted text-sm">to</span>
+                    <input type="date"
+                           class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-3 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                           value="@toDate"
+                           @onchange="OnToDateChanged" />
+                    @if (HasFilters)
+                    {
+                        <button type="button" class="text-text-muted hover:text-text-primary text-sm px-2" @onclick="ClearFilters" title="Clear filters">
+                            <i class="fa-solid fa-xmark"></i> Clear
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            @foreach (var header in Headers)
+                            {
+                                <th class="bg-white/[0.02] px-4 py-3 text-left text-xs uppercase text-text-muted border-b border-white/5 font-semibold">@header</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (pagedResult is null)
+                        {
+                            <tr><td colspan="7" class="px-4 py-10 text-center text-text-muted text-sm">Loading orders...</td></tr>
+                        }
+                        else if (pagedResult.Items.Count == 0)
+                        {
+                            <tr><td colspan="7" class="px-4 py-10 text-center text-text-muted text-sm">No orders match your filters.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var order in pagedResult.Items)
+                            {
+                                <tr class="hover:bg-white/[0.01] cursor-pointer" @onclick="() => OpenDetail(order.OrderNumber)">
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm">
+                                        <span class="font-semibold text-accent">@order.OrderNumber</span>
+                                    </td>
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm">
+                                        <div class="text-text-primary font-medium">@(string.IsNullOrWhiteSpace(order.CustomerName) ? "—" : order.CustomerName)</div>
+                                        <div class="text-text-muted text-xs">@order.CustomerEmail</div>
+                                    </td>
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm text-text-secondary">@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm text-text-secondary">@order.ItemCount</td>
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm font-bold text-text-primary">@MoneyFormatter.Format(order.Total)</td>
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm text-text-secondary">@PaymentLabel(order.PaymentMethod) · @order.PaymentStatus</td>
+                                    <td class="px-4 py-4 border-b border-white/5 text-sm">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold @StatusClass(order.Status)">@order.Status</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (pagedResult is not null && pagedResult.TotalPages > 1)
+            {
+                <div class="flex items-center justify-between px-6 py-4 border-t border-white/5">
+                    <div class="text-xs text-text-muted">
+                        Showing @((query.Page - 1) * query.PageSize + 1)–@(Math.Min(query.Page * query.PageSize, pagedResult.TotalCount)) of @pagedResult.TotalCount
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button"
+                                class="px-3 py-1.5 rounded-lg text-sm border border-white/5 text-text-secondary disabled:opacity-40 hover:border-white/10"
+                                disabled="@(query.Page <= 1)"
+                                @onclick="() => ChangePageAsync(query.Page - 1)">Prev</button>
+                        <span class="text-sm text-text-secondary">Page @query.Page of @pagedResult.TotalPages</span>
+                        <button type="button"
+                                class="px-3 py-1.5 rounded-lg text-sm border border-white/5 text-text-secondary disabled:opacity-40 hover:border-white/10"
+                                disabled="@(query.Page >= pagedResult.TotalPages)"
+                                @onclick="() => ChangePageAsync(query.Page + 1)">Next</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</CascadingValue>
+
+@code {
+    private static readonly OrderStatus[] AllStatuses = Enum.GetValues<OrderStatus>();
+    private static readonly string[] Headers = ["Order #", "Customer", "Date", "Items", "Total", "Payment", "Status"];
+
+    private readonly AdminOrderQuery query = new();
+    private PagedResult<AdminOrderListItemDto>? pagedResult;
+
+    private string searchTerm = string.Empty;
+    private string statusFilter = string.Empty;
+    private string fromDate = string.Empty;
+    private string toDate = string.Empty;
+
+    private CancellationTokenSource? searchDebounceCts;
+
+    private bool HasFilters =>
+        !string.IsNullOrWhiteSpace(searchTerm)
+        || !string.IsNullOrWhiteSpace(statusFilter)
+        || !string.IsNullOrWhiteSpace(fromDate)
+        || !string.IsNullOrWhiteSpace(toDate);
+
+    protected override async Task OnInitializedAsync() => await LoadOrdersAsync();
+
+    private async Task LoadOrdersAsync()
+    {
+        query.Search = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim();
+        query.Status = Enum.TryParse<OrderStatus>(statusFilter, out var status) ? status : null;
+        query.FromDate = DateTime.TryParse(fromDate, out var from) ? from : null;
+        query.ToDate = DateTime.TryParse(toDate, out var to) ? to : null;
+        pagedResult = await OrderService.GetPagedAsync(query);
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs args)
+    {
+        searchTerm = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+
+        searchDebounceCts?.Cancel();
+        searchDebounceCts = new CancellationTokenSource();
+        var token = searchDebounceCts.Token;
+
+        try
+        {
+            await Task.Delay(300, token);
+            await LoadOrdersAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnStatusFilterChanged(ChangeEventArgs args)
+    {
+        statusFilter = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+        await LoadOrdersAsync();
+    }
+
+    private async Task OnFromDateChanged(ChangeEventArgs args)
+    {
+        fromDate = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+        await LoadOrdersAsync();
+    }
+
+    private async Task OnToDateChanged(ChangeEventArgs args)
+    {
+        toDate = args.Value?.ToString() ?? string.Empty;
+        query.Page = 1;
+        await LoadOrdersAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = string.Empty;
+        statusFilter = string.Empty;
+        fromDate = string.Empty;
+        toDate = string.Empty;
+        query.Page = 1;
+        await LoadOrdersAsync();
+    }
+
+    private async Task ChangePageAsync(int page)
+    {
+        query.Page = page;
+        await LoadOrdersAsync();
+    }
+
+    private void OpenDetail(string orderNumber) =>
+        Navigation.NavigateTo($"/admin/orders/{orderNumber}");
+
+    private static string PaymentLabel(PaymentMethod method) => method switch
+    {
+        PaymentMethod.Cod => "COD",
+        PaymentMethod.PayPal => "PayPal",
+        _ => method.ToString()
+    };
+
+    private static string StatusClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "bg-amber-500/15 text-amber-400",
+        OrderStatus.Paid => "bg-emerald-500/15 text-emerald-400",
+        OrderStatus.Processing => "bg-indigo-500/15 text-indigo-400",
+        OrderStatus.Shipped => "bg-sky-500/15 text-sky-400",
+        OrderStatus.Delivered => "bg-emerald-500/15 text-emerald-400",
+        OrderStatus.Cancelled => "bg-danger-bg text-danger",
+        _ => "bg-white/10 text-text-secondary"
+    };
+}

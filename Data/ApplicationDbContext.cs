@@ -28,6 +28,8 @@ namespace Nexus.Data
 
         public DbSet<Payment> Payments => Set<Payment>();
 
+        public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -213,6 +215,22 @@ namespace Nexus.Data
                 entity.HasOne(p => p.Order)
                     .WithMany(o => o.Payments)
                     .HasForeignKey(p => p.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<OrderEvent>(entity =>
+            {
+                entity.Property(e => e.Type).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(e => e.OldStatus).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.NewStatus).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.Message).HasMaxLength(1000);
+                entity.Property(e => e.CreatedByUserId).HasMaxLength(450).IsRequired();
+
+                entity.HasIndex(e => e.OrderId);
+
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.Events)
+                    .HasForeignKey(e => e.OrderId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }
