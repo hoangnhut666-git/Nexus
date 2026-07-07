@@ -1,0 +1,289 @@
+@page "/checkout"
+@layout StorefrontLayout
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Nexus.Data
+@using Nexus.Data.Entities
+@using Nexus.Services.Cart
+@using Nexus.Services.Cart.Models
+@using Nexus.Services.Orders
+@using Nexus.Services.Orders.Models
+
+@attribute [Authorize(Roles = IdentitySeedData.CustomerRole)]
+
+@inject ICartService CartService
+@inject IOrderService OrderService
+@inject CartState CartState
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Checkout — NEXUS</PageTitle>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Checkout</h1>
+        <p class="text-text-secondary text-sm">Enter your shipping details and place your order</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-text-muted py-16">Loading checkout...</div>
+    }
+    else if (cart is null || cart.IsEmpty)
+    {
+        <div class="text-text-muted py-16">Your cart is empty. Redirecting...</div>
+    }
+    else
+    {
+        <EditForm Model="form" OnValidSubmit="PlaceOrder">
+            <DataAnnotationsValidator />
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
+                        <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Shipping Address</div>
+
+                        @if (!string.IsNullOrWhiteSpace(errorMessage))
+                        {
+                            <div class="bg-danger-bg border border-danger/30 text-danger text-sm rounded-lg px-4 py-3 mb-4">
+                                @errorMessage
+                            </div>
+                        }
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex flex-col gap-2 md:col-span-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Full Name *</label>
+                                <InputText @bind-Value="form.ShipFullName" class="@InputClass" placeholder="Jane Doe" />
+                                <ValidationMessage For="() => form.ShipFullName" class="text-danger text-xs" />
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Phone *</label>
+                                <InputText @bind-Value="form.ShipPhone" class="@InputClass" placeholder="+1 555 0100" />
+                                <ValidationMessage For="() => form.ShipPhone" class="text-danger text-xs" />
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Country *</label>
+                                <InputText @bind-Value="form.ShipCountry" class="@InputClass" placeholder="USA" />
+                                <ValidationMessage For="() => form.ShipCountry" class="text-danger text-xs" />
+                            </div>
+
+                            <div class="flex flex-col gap-2 md:col-span-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Street Address *</label>
+                                <InputText @bind-Value="form.ShipStreet" class="@InputClass" placeholder="123 Market St" />
+                                <ValidationMessage For="() => form.ShipStreet" class="text-danger text-xs" />
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">City *</label>
+                                <InputText @bind-Value="form.ShipCity" class="@InputClass" placeholder="Springfield" />
+                                <ValidationMessage For="() => form.ShipCity" class="text-danger text-xs" />
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">State / Province</label>
+                                <InputText @bind-Value="form.ShipState" class="@InputClass" placeholder="IL" />
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Postal Code</label>
+                                <InputText @bind-Value="form.ShipPostalCode" class="@InputClass" placeholder="62701" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
+                        <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Payment Method</div>
+
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-indigo-500/40 bg-indigo-500/5 cursor-pointer">
+                            <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.Cod)"
+                                   @onchange="@(() => form.Method = PaymentMethod.Cod)" />
+                            <span class="flex-1">
+                                <span class="font-semibold block">Cash on Delivery</span>
+                                <span class="text-xs text-text-muted">Pay with cash when your order arrives</span>
+                            </span>
+                            <i class="fa-solid fa-money-bill-wave text-accent"></i>
+                        </label>
+
+                        <label class="flex items-center gap-3 p-4 rounded-xl border border-white/5 mt-3 opacity-50 cursor-not-allowed">
+                            <input type="radio" name="payment" disabled />
+                            <span class="flex-1">
+                                <span class="font-semibold block">PayPal</span>
+                                <span class="text-xs text-text-muted">Coming soon</span>
+                            </span>
+                            <i class="fa-brands fa-paypal"></i>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
+                        <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Order Summary</div>
+
+                        <div class="flex flex-col gap-3 mb-4">
+                            @foreach (var item in cart.Items)
+                            {
+                                <div class="flex justify-between text-sm" @key="item.CartItemId">
+                                    <span class="text-text-secondary truncate mr-2">
+                                        @item.ProductName
+                                        <span class="text-text-muted">x@item.Quantity</span>
+                                    </span>
+                                    <span class="text-text-primary font-medium whitespace-nowrap">@MoneyFormatter.Format(item.LineTotal)</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="border-t border-white/5 pt-4">
+                            <div class="flex justify-between text-sm text-text-secondary mb-4">
+                                <span>Subtotal (@cart.TotalQuantity items)</span>
+                                <span class="text-text-primary font-medium">@MoneyFormatter.Format(cart.Subtotal)</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-text-secondary mb-4">
+                                <span>Shipping</span>
+                                <span class="text-text-primary font-medium">
+                                    @(cart.ShippingFee == 0 ? "Free" : MoneyFormatter.Format(cart.ShippingFee))
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-sm text-text-secondary mb-4">
+                                <span>VAT (8%)</span>
+                                <span class="text-text-primary font-medium">@MoneyFormatter.Format(cart.TaxAmount)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
+                            <span class="text-base font-semibold">Total</span>
+                            <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(cart.Total)</span>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
+                                disabled="@(isSubmitting || cart.Items.Any(i => !i.InStock))">
+                            @if (isSubmitting)
+                            {
+                                <span>Placing order...</span>
+                            }
+                            else
+                            {
+                                <span>Place Order</span>
+                                <i class="fa-solid fa-lock"></i>
+                            }
+                        </button>
+
+                        <a href="/cart" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> Back to cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private const string InputClass = "bg-bg-base border border-white/5 rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-indigo-500/40 w-full";
+
+    private CartDto? cart;
+    private string? userId;
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    private readonly CheckoutFormModel form = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            isLoading = false;
+            return;
+        }
+
+        cart = await CartService.GetCartAsync(userId);
+        CartState.SetCount(cart.TotalQuantity);
+
+        if (cart.IsEmpty)
+        {
+            isLoading = false;
+            Navigation.NavigateTo("/cart");
+            return;
+        }
+
+        var appUser = await UserManager.GetUserAsync(authState.User);
+        if (appUser is not null && !string.IsNullOrWhiteSpace(appUser.FullName))
+            form.ShipFullName = appUser.FullName;
+
+        isLoading = false;
+    }
+
+    private async Task PlaceOrder()
+    {
+        if (isSubmitting || string.IsNullOrWhiteSpace(userId))
+            return;
+
+        isSubmitting = true;
+        errorMessage = null;
+
+        var request = new CheckoutRequest
+        {
+            ShipFullName = form.ShipFullName,
+            ShipPhone = form.ShipPhone,
+            ShipStreet = form.ShipStreet,
+            ShipCity = form.ShipCity,
+            ShipState = form.ShipState,
+            ShipPostalCode = form.ShipPostalCode,
+            ShipCountry = form.ShipCountry,
+            Method = form.Method
+        };
+
+        var result = await OrderService.CreateOrderFromCartAsync(userId, request);
+
+        if (result.Success && result.Data is not null)
+        {
+            CartState.SetCount(0);
+            Navigation.NavigateTo($"/orders/{result.Data.OrderNumber}");
+            return;
+        }
+
+        errorMessage = result.Error ?? "We couldn't place your order. Please try again.";
+        cart = await CartService.GetCartAsync(userId);
+        CartState.SetCount(cart.TotalQuantity);
+
+        if (cart.IsEmpty)
+            Navigation.NavigateTo("/cart");
+
+        isSubmitting = false;
+    }
+
+    private sealed class CheckoutFormModel
+    {
+        [Required(ErrorMessage = "Full name is required.")]
+        public string ShipFullName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Phone is required.")]
+        public string ShipPhone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Street address is required.")]
+        public string ShipStreet { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "City is required.")]
+        public string ShipCity { get; set; } = string.Empty;
+
+        public string? ShipState { get; set; }
+
+        public string? ShipPostalCode { get; set; }
+
+        [Required(ErrorMessage = "Country is required.")]
+        public string ShipCountry { get; set; } = string.Empty;
+
+        public PaymentMethod Method { get; set; } = PaymentMethod.Cod;
+    }
+}

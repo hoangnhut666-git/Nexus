@@ -45,6 +45,7 @@ public sealed class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ["ConnectionStrings:DefaultConnection"] = _connectionString,
                 ["IdentitySettings:AdminPassword"] = "",
                 ["IdentitySettings:RequireConfirmedAccount"] = "false",
+                ["RunStartupMigrations"] = "false",
             });
 
             if (_additionalConfig is not null)

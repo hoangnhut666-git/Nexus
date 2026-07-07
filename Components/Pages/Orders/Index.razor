@@ -1,0 +1,89 @@
+@page "/orders"
+@layout StorefrontLayout
+@rendermode InteractiveServer
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Nexus.Data
+@using Nexus.Data.Entities
+@using Nexus.Services.Orders
+@using Nexus.Services.Orders.Models
+
+@attribute [Authorize(Roles = IdentitySeedData.CustomerRole)]
+
+@inject IOrderService OrderService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Your Orders — NEXUS</PageTitle>
+
+<div class="max-w-5xl mx-auto px-6 py-10">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight mb-2">Your Orders</h1>
+        <p class="text-text-secondary text-sm">Track and review your past orders</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-text-muted py-16">Loading orders...</div>
+    }
+    else if (orders.Count == 0)
+    {
+        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center">
+            <i class="fa-solid fa-box-open text-4xl text-text-muted mb-4"></i>
+            <h2 class="text-xl font-bold mb-2">No orders yet</h2>
+            <p class="text-text-secondary mb-6">When you place an order, it will show up here.</p>
+            <a href="/products" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+                <i class="fa-solid fa-arrow-left"></i> Continue shopping
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="bg-bg-surface border border-white/5 rounded-2xl divide-y divide-white/5">
+            @foreach (var order in orders)
+            {
+                <a href="@($"/orders/{order.OrderNumber}")"
+                   class="flex items-center justify-between gap-4 p-5 hover:bg-white/5 transition first:rounded-t-2xl last:rounded-b-2xl">
+                    <div class="min-w-0">
+                        <div class="font-bold text-text-primary">@order.OrderNumber</div>
+                        <div class="text-xs text-text-muted mt-1">
+                            @order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy") · @order.ItemCount item@(order.ItemCount == 1 ? "" : "s")
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 shrink-0">
+                        <span class="text-xs font-bold px-3 py-1 rounded-full @StatusClass(order.Status)">@order.Status</span>
+                        <span class="text-lg font-extrabold text-accent">@MoneyFormatter.Format(order.Total)</span>
+                        <i class="fa-solid fa-chevron-right text-text-muted"></i>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<OrderSummaryDto> orders = [];
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+            orders = await OrderService.GetOrderHistoryAsync(userId);
+
+        isLoading = false;
+    }
+
+    private static string StatusClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "bg-amber-500/15 text-amber-400",
+        OrderStatus.Paid => "bg-emerald-500/15 text-emerald-400",
+        OrderStatus.Processing => "bg-indigo-500/15 text-indigo-400",
+        OrderStatus.Shipped => "bg-sky-500/15 text-sky-400",
+        OrderStatus.Delivered => "bg-emerald-500/15 text-emerald-400",
+        OrderStatus.Cancelled => "bg-danger-bg text-danger",
+        _ => "bg-white/10 text-text-secondary"
+    };
+}

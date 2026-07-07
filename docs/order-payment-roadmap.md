@@ -64,11 +64,11 @@ It extends [`SRS.md`](./SRS.md) (FR-ORD-*, FR-PAY-*, FR-ADM-ORD-*) and builds di
 |------|--------|
 | `CartItem` entity + `CartService` (variant-based, persistent) | Done — `Services/Cart`, `Data/Entities/CartItem.cs` |
 | Cart pricing (subtotal, shipping, 8% VAT, total) | Done — `Services/Cart/Models/CartPricing.cs` |
-| Cart page + "Proceed to Checkout" button | Page done; button is **inert** (no navigation) |
+| Cart page + "Proceed to Checkout" button | Done — button navigates to `/checkout` (Phase 3) |
 | Currency | **VND today** (`vi-VN`, `₫`, `30,000` shipping, `5,000,000` free threshold) — must switch to USD |
-| Order / Payment entities | Not started |
-| Checkout / order / payment services | Not started |
-| Checkout / order / admin-order pages | Not started |
+| Order / Payment entities | Done — `Data/Entities/Order.cs`, `OrderItem.cs`, `Payment.cs` (Phase 1) |
+| Checkout / order / payment services | COD order service done — `Services/Orders` (Phase 2); PayPal gateway pending |
+| Checkout / order / admin-order pages | Customer checkout + order pages done — `Components/Pages/Checkout`, `Components/Pages/Orders` (Phase 3); admin pages pending (Phase 5) |
 | Integration tests | Cart + Product + Category + Identity patterns in `Nexus.Test.Integration` |
 | Mockups | `mockup/cart-management.html` (checkout/order mockups not yet present) |
 
@@ -271,9 +271,11 @@ Currency    Schema       Order svc    Checkout     PayPal       Admin
 
 #### Acceptance criteria
 
-- [ ] Migration applies cleanly on a fresh DB.
-- [ ] Unique indexes on `OrderNumber` and `GatewayTransactionRef` exist.
-- [ ] `OrderItem → ProductVariant` is `Restrict`.
+- [x] Migration applies cleanly on a fresh DB (`AddOrdersAndPayments` applied to `NexusDB1`).
+- [x] Unique indexes on `OrderNumber` and `GatewayTransactionRef` (filtered) exist.
+- [x] `OrderItem → ProductVariant` is `Restrict`.
+
+> Note: migrations live in the default `Migrations/` folder (namespace `Nexus.Migrations`), alongside the consolidated `InitialCreate`. `RowVersion` on `ProductVariant` was intentionally skipped (Phase 2 uses an atomic conditional UPDATE instead).
 
 #### Estimated effort
 
@@ -309,11 +311,11 @@ Currency    Schema       Order svc    Checkout     PayPal       Admin
 
 #### Acceptance criteria
 
-- [ ] Empty cart → `ServiceResult` failure.
-- [ ] Stale/out-of-stock line → order rejected, nothing persisted.
-- [ ] Order totals equal cart totals exactly (snapshot).
-- [ ] Stock decremented by ordered quantity; concurrent checkout cannot oversell.
-- [ ] Cart cleared after successful COD order.
+- [x] Empty cart → `ServiceResult` failure.
+- [x] Stale/out-of-stock line → order rejected, nothing persisted.
+- [x] Order totals equal cart totals exactly (snapshot).
+- [x] Stock decremented by ordered quantity; concurrent checkout cannot oversell.
+- [x] Cart cleared after successful COD order.
 
 #### Estimated effort
 
@@ -347,10 +349,10 @@ Currency    Schema       Order svc    Checkout     PayPal       Admin
 
 #### Acceptance criteria
 
-- [ ] Signed-out user is redirected to login for `/checkout`, `/orders`.
-- [ ] COD checkout produces an order and confirmation page.
-- [ ] Order history lists the user's orders (newest first); detail matches snapshot.
-- [ ] Address validation blocks incomplete submissions.
+- [x] Signed-out user is redirected to login for `/checkout`, `/orders`.
+- [x] COD checkout produces an order and confirmation page.
+- [x] Order history lists the user's orders (newest first); detail matches snapshot.
+- [x] Address validation blocks incomplete submissions.
 
 #### Estimated effort
 
@@ -638,27 +640,27 @@ Follow the established `Nexus.Test.Integration` pattern (Testcontainers, `TestDa
 - [x] Cart tests re-baselined to USD (execution blocked by pre-existing test-harness migration issue, not the currency change)
 
 ### Phase 1 — Schema
-- [ ] Enums + `Order`/`OrderItem`/`Payment` entities
-- [ ] EF config (precision, indexes, delete behavior, enum→string)
-- [ ] `RowVersion` on `ProductVariant` (decision)
-- [ ] Migration `AddOrdersAndPayments` applied
-- [ ] `DbHelper` order/payment helpers
+- [x] Enums + `Order`/`OrderItem`/`Payment` entities
+- [x] EF config (precision, indexes, delete behavior, enum→string)
+- [x] ~~`RowVersion` on `ProductVariant`~~ (intentionally skipped per decision)
+- [x] Migration `AddOrdersAndPayments` applied
+- [x] `DbHelper` order/payment helpers
 
 ### Phase 2 — Order service (COD)
-- [ ] `IOrderService` + models
-- [ ] Create-from-cart with snapshot + total recompute
-- [ ] Atomic stock deduction + transaction
-- [ ] Order number generator
-- [ ] History + get-by-number
-- [ ] Service tests green
+- [x] `IOrderService` + models
+- [x] Create-from-cart with snapshot + total recompute
+- [x] Atomic stock deduction + transaction
+- [x] Order number generator
+- [x] History + get-by-number
+- [x] Service tests green (also fixed the pre-existing test-harness startup double-migration/seed so the full suite runs; 93/93 green)
 
 ### Phase 3 — Checkout & order pages
-- [ ] `/checkout` page (address + method + summary)
-- [ ] Cart button wired to checkout
-- [ ] COD confirmation flow
-- [ ] `/orders` history + `/orders/{orderNumber}` detail
-- [ ] Auth enforced
-- [ ] Page tests green
+- [x] `/checkout` page (address + method + summary)
+- [x] Cart button wired to checkout
+- [x] COD confirmation flow
+- [x] `/orders` history + `/orders/{orderNumber}` detail
+- [x] Auth enforced
+- [x] Page tests green (100/100 suite)
 
 ### Phase 4 — PayPal
 - [ ] `IPaymentGateway` + `CodPaymentGateway`

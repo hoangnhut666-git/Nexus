@@ -22,6 +22,12 @@ namespace Nexus.Data
 
         public DbSet<CartItem> CartItems => Set<CartItem>();
 
+        public DbSet<Order> Orders => Set<Order>();
+
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
+        public DbSet<Payment> Payments => Set<Payment>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -134,6 +140,79 @@ namespace Nexus.Data
                 entity.HasOne<ApplicationUser>()
                     .WithMany()
                     .HasForeignKey(ci => ci.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Order>(entity =>
+            {
+                entity.Property(o => o.OrderNumber).HasMaxLength(30).IsRequired();
+                entity.Property(o => o.UserId).HasMaxLength(450).IsRequired();
+
+                entity.Property(o => o.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(o => o.PaymentMethod).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(o => o.PaymentStatus).HasConversion<string>().HasMaxLength(20).IsRequired();
+
+                entity.Property(o => o.Subtotal).HasPrecision(18, 2);
+                entity.Property(o => o.ShippingFee).HasPrecision(18, 2);
+                entity.Property(o => o.TaxAmount).HasPrecision(18, 2);
+                entity.Property(o => o.Total).HasPrecision(18, 2);
+                entity.Property(o => o.Currency).HasMaxLength(3).IsRequired();
+
+                entity.Property(o => o.ShipFullName).HasMaxLength(200).IsRequired();
+                entity.Property(o => o.ShipPhone).HasMaxLength(40).IsRequired();
+                entity.Property(o => o.ShipStreet).HasMaxLength(300).IsRequired();
+                entity.Property(o => o.ShipCity).HasMaxLength(120).IsRequired();
+                entity.Property(o => o.ShipState).HasMaxLength(120);
+                entity.Property(o => o.ShipPostalCode).HasMaxLength(20);
+                entity.Property(o => o.ShipCountry).HasMaxLength(120).IsRequired();
+
+                entity.HasIndex(o => o.OrderNumber).IsUnique();
+                entity.HasIndex(o => o.UserId);
+                entity.HasIndex(o => o.Status);
+
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(o => o.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<OrderItem>(entity =>
+            {
+                entity.Property(oi => oi.ProductName).HasMaxLength(200).IsRequired();
+                entity.Property(oi => oi.VariantLabel).HasMaxLength(300);
+                entity.Property(oi => oi.Sku).HasMaxLength(50).IsRequired();
+                entity.Property(oi => oi.UnitPrice).HasPrecision(18, 2);
+                entity.Property(oi => oi.LineTotal).HasPrecision(18, 2);
+
+                entity.HasIndex(oi => oi.OrderId);
+
+                entity.HasOne(oi => oi.Order)
+                    .WithMany(o => o.Items)
+                    .HasForeignKey(oi => oi.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(oi => oi.ProductVariant)
+                    .WithMany()
+                    .HasForeignKey(oi => oi.ProductVariantId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Payment>(entity =>
+            {
+                entity.Property(p => p.Method).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(p => p.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(p => p.Amount).HasPrecision(18, 2);
+                entity.Property(p => p.Currency).HasMaxLength(3).IsRequired();
+                entity.Property(p => p.GatewayTransactionRef).HasMaxLength(100);
+
+                entity.HasIndex(p => p.OrderId);
+                entity.HasIndex(p => p.GatewayTransactionRef)
+                    .IsUnique()
+                    .HasFilter("[GatewayTransactionRef] IS NOT NULL");
+
+                entity.HasOne(p => p.Order)
+                    .WithMany(o => o.Payments)
+                    .HasForeignKey(p => p.OrderId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

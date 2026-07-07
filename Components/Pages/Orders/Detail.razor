@@ -1,0 +1,165 @@
+@page "/orders/{OrderNumber}"
+@layout StorefrontLayout
+@rendermode InteractiveServer
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Nexus.Data
+@using Nexus.Data.Entities
+@using Nexus.Services.Orders
+@using Nexus.Services.Orders.Models
+
+@attribute [Authorize(Roles = IdentitySeedData.CustomerRole)]
+
+@inject IOrderService OrderService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@(order is null ? "Order" : $"Order {order.OrderNumber}") — NEXUS</PageTitle>
+
+<div class="max-w-5xl mx-auto px-6 py-10">
+    @if (isLoading)
+    {
+        <div class="text-text-muted py-16">Loading order...</div>
+    }
+    else if (order is null)
+    {
+        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center">
+            <i class="fa-solid fa-box-open text-4xl text-text-muted mb-4"></i>
+            <h1 class="text-2xl font-bold mb-2">Order not found</h1>
+            <p class="text-text-secondary mb-6">This order may not exist or does not belong to your account.</p>
+            <a href="/orders" class="text-accent font-semibold hover:underline">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to your orders
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 mb-6 flex items-center gap-4">
+            <i class="fa-solid fa-circle-check text-2xl text-emerald-400"></i>
+            <div>
+                <h1 class="text-xl font-bold">Thank you! Your order is confirmed.</h1>
+                <p class="text-text-secondary text-sm">Order <span class="font-semibold text-text-primary">@order.OrderNumber</span> placed on @order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-white/5">
+                        <span class="text-lg font-bold">Items</span>
+                        <span class="text-xs font-bold px-3 py-1 rounded-full @StatusClass(order.Status)">@order.Status</span>
+                    </div>
+
+                    <div class="flex flex-col">
+                        @foreach (var item in order.Items)
+                        {
+                            <div class="flex items-center justify-between py-3 border-b border-dashed border-white/5 last:border-b-0">
+                                <div class="min-w-0 mr-3">
+                                    <div class="font-semibold text-text-primary truncate">@item.ProductName</div>
+                                    <div class="text-xs text-text-muted mt-0.5 flex flex-wrap gap-x-3">
+                                        @if (!string.IsNullOrWhiteSpace(item.VariantLabel))
+                                        {
+                                            <span>@item.VariantLabel</span>
+                                        }
+                                        <span>SKU: @item.Sku</span>
+                                        <span>@MoneyFormatter.Format(item.UnitPrice) x @item.Quantity</span>
+                                    </div>
+                                </div>
+                                <div class="text-base font-bold text-accent whitespace-nowrap">@MoneyFormatter.Format(item.LineTotal)</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
+                    <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Shipping Address</div>
+                    <div class="text-sm text-text-secondary space-y-1">
+                        <div class="text-text-primary font-semibold">@order.ShipFullName</div>
+                        <div>@order.ShipPhone</div>
+                        <div>@order.ShipStreet</div>
+                        <div>
+                            @order.ShipCity@(string.IsNullOrWhiteSpace(order.ShipState) ? "" : $", {order.ShipState}")@(string.IsNullOrWhiteSpace(order.ShipPostalCode) ? "" : $" {order.ShipPostalCode}")
+                        </div>
+                        <div>@order.ShipCountry</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
+                    <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Summary</div>
+
+                    <div class="flex justify-between text-sm text-text-secondary mb-4">
+                        <span>Payment</span>
+                        <span class="text-text-primary font-medium">@PaymentMethodLabel(order.PaymentMethod)</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-text-secondary mb-4">
+                        <span>Payment status</span>
+                        <span class="text-text-primary font-medium">@order.PaymentStatus</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-text-secondary mb-4 border-t border-white/5 pt-4">
+                        <span>Subtotal</span>
+                        <span class="text-text-primary font-medium">@MoneyFormatter.Format(order.Subtotal)</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-text-secondary mb-4">
+                        <span>Shipping</span>
+                        <span class="text-text-primary font-medium">@(order.ShippingFee == 0 ? "Free" : MoneyFormatter.Format(order.ShippingFee))</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-text-secondary mb-4">
+                        <span>VAT (8%)</span>
+                        <span class="text-text-primary font-medium">@MoneyFormatter.Format(order.TaxAmount)</span>
+                    </div>
+
+                    <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
+                        <span class="text-base font-semibold">Total</span>
+                        <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(order.Total)</span>
+                    </div>
+
+                    <a href="/orders" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-6">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Back to your orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string OrderNumber { get; set; } = string.Empty;
+
+    private OrderDto? order;
+    private bool isLoading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        order = null;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+            order = await OrderService.GetOrderAsync(userId, OrderNumber);
+
+        isLoading = false;
+    }
+
+    private static string PaymentMethodLabel(PaymentMethod method) => method switch
+    {
+        PaymentMethod.Cod => "Cash on Delivery",
+        PaymentMethod.PayPal => "PayPal",
+        _ => method.ToString()
+    };
+
+    private static string StatusClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Pending => "bg-amber-500/15 text-amber-400",
+        OrderStatus.Paid => "bg-emerald-500/15 text-emerald-400",
+        OrderStatus.Processing => "bg-indigo-500/15 text-indigo-400",
+        OrderStatus.Shipped => "bg-sky-500/15 text-sky-400",
+        OrderStatus.Delivered => "bg-emerald-500/15 text-emerald-400",
+        OrderStatus.Cancelled => "bg-danger-bg text-danger",
+        _ => "bg-white/10 text-text-secondary"
+    };
+}

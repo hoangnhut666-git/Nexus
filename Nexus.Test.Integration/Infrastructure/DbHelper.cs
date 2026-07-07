@@ -182,4 +182,41 @@ public sealed class DbHelper(string connectionString)
             .OrderBy(ci => ci.Id)
             .ToListAsync();
     }
+
+    public async Task<Order?> GetOrderByNumberAsync(string orderNumber)
+    {
+        await using var db = CreateContext();
+        return await db.Orders
+            .Include(o => o.Items)
+            .Include(o => o.Payments)
+            .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
+    }
+
+    public async Task<IReadOnlyList<Order>> GetOrdersAsync(string userId)
+    {
+        await using var db = CreateContext();
+        return await db.Orders
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenByDescending(o => o.Id)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<OrderItem>> GetOrderItemsAsync(int orderId)
+    {
+        await using var db = CreateContext();
+        return await db.OrderItems
+            .Where(oi => oi.OrderId == orderId)
+            .OrderBy(oi => oi.Id)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<Payment>> GetPaymentsAsync(int orderId)
+    {
+        await using var db = CreateContext();
+        return await db.Payments
+            .Where(p => p.OrderId == orderId)
+            .OrderBy(p => p.Id)
+            .ToListAsync();
+    }
 }

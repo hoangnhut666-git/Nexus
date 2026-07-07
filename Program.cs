@@ -6,6 +6,7 @@ using Nexus.Components.Account;
 using Nexus.Data;
 using Nexus.Services.Cart;
 using Nexus.Services.Categories;
+using Nexus.Services.Orders;
 using Nexus.Services.Products;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,19 +70,25 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<CartState>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 
 // Ensure the database schema exists (applies pending migrations on a fresh database),
 // then seed identity accounts and the product catalog so data survives a database switch.
-using (var scope = app.Services.CreateScope())
+// The integration test harness sets RunStartupMigrations=false and owns schema/seed data
+// via its fixture, so this startup bootstrapping only runs for the real application.
+if (builder.Configuration.GetValue("RunStartupMigrations", true))
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.MigrateAsync();
-}
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.Database.MigrateAsync();
+    }
 
-await IdentitySeedData.SeedAsync(app.Services);
-await CatalogSeedData.SeedAsync(app.Services);
+    await IdentitySeedData.SeedAsync(app.Services);
+    await CatalogSeedData.SeedAsync(app.Services);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

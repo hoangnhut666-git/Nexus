@@ -13,6 +13,7 @@
 @inject ICartService CartService
 @inject CartState CartState
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
 <PageTitle>Your Cart — NEXUS</PageTitle>
 
@@ -164,7 +165,8 @@
 
                     <button type="button"
                             class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
-                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))">
+                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))"
+                            @onclick="@(() => Navigation.NavigateTo("/checkout"))">
                         Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
                     </button>
 
