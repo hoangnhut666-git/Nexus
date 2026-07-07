@@ -1,8 +1,15 @@
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Web
+@using Nexus.Services.Cart
 @using Nexus.Services.Categories.Models
 
+@implements IDisposable
+
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICartService CartService
+@inject CartState CartState
 
 <header class="sticky top-0 z-50 bg-bg-surface/85 backdrop-blur-20 border-b border-white/5 transition-all">
     <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-20">
@@ -33,10 +40,13 @@
             <button type="button" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition" title="Wishlist">
                 <i class="fa-regular fa-heart text-lg"></i>
             </button>
-            <button type="button" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition relative" title="Cart">
+            <a href="/cart" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition relative" title="Cart">
                 <i class="fa-solid fa-bag-shopping text-lg"></i>
-                <span class="absolute -top-1 -right-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[10px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-bg-surface">3</span>
-            </button>
+                @if (CartState.Count > 0)
+                {
+                    <span class="absolute -top-1 -right-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-bg-surface">@CartState.Count</span>
+                }
+            </a>
             <AuthorizeView>
                 <Authorized>
                     <a href="Account/Manage" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition" title="Account">
@@ -55,6 +65,23 @@
 
 @code {
     private string searchTerm = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CartState.OnChange += HandleCartChanged;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!string.IsNullOrWhiteSpace(userId))
+            CartState.SetCount(await CartService.GetItemCountAsync(userId));
+    }
+
+    private async void HandleCartChanged() =>
+        await InvokeAsync(StateHasChanged);
+
+    public void Dispose() =>
+        CartState.OnChange -= HandleCartChanged;
 
     private void OnSearchInput(ChangeEventArgs args) =>
         searchTerm = args.Value?.ToString() ?? string.Empty;

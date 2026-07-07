@@ -2,11 +2,17 @@
 @layout StorefrontLayout
 @rendermode InteractiveServer
 
+@using System.Security.Claims
 @using Nexus.Components.Storefront.Shared
+@using Nexus.Services.Cart
+@using Nexus.Services.Cart.Models
 @using Nexus.Services.Products
 @using Nexus.Services.Products.Models
 
 @inject IProductService ProductService
+@inject ICartService CartService
+@inject CartState CartState
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 
 <PageTitle>@(product?.Name ?? "Product") — NEXUS</PageTitle>
@@ -62,7 +68,11 @@ else
 
                 <ProductVariantSummary ResolvedVariant="@resolvedVariant"
                                        PromptMessage="@promptMessage"
-                                       IsInvalidCombination="@isInvalidCombination" />
+                                       IsInvalidCombination="@isInvalidCombination"
+                                       OnAddToCart="@AddToCart"
+                                       IsAdding="@isAdding"
+                                       StatusMessage="@cartMessage"
+                                       IsError="@cartError" />
             </div>
         </div>
     </div>
@@ -78,6 +88,9 @@ else
     private string? promptMessage;
     private bool isInvalidCombination;
     private bool isLoading = true;
+    private bool isAdding;
+    private string? cartMessage;
+    private bool cartError;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -97,8 +110,46 @@ else
     private Task OnSelectionChanged(IReadOnlyDictionary<int, int> values)
     {
         selectedValues = new Dictionary<int, int>(values);
+        cartMessage = null;
+        cartError = false;
         ResolveSelection();
         return Task.CompletedTask;
+    }
+
+    private async Task AddToCart()
+    {
+        if (resolvedVariant is null || isAdding)
+            return;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            var returnUrl = Uri.EscapeDataString(Navigation.ToBaseRelativePath(Navigation.Uri));
+            Navigation.NavigateTo($"Account/Login?ReturnUrl=/{returnUrl}", forceLoad: true);
+            return;
+        }
+
+        isAdding = true;
+        cartMessage = null;
+        cartError = false;
+
+        var result = await CartService.AddItemAsync(userId, new AddToCartRequest(resolvedVariant.Id, 1));
+
+        if (result.Success && result.Data is not null)
+        {
+            cartError = false;
+            cartMessage = "Added to cart.";
+            CartState.SetCount(result.Data.TotalQuantity);
+        }
+        else
+        {
+            cartError = true;
+            cartMessage = result.Error ?? "Could not add to cart.";
+        }
+
+        isAdding = false;
     }
 
     private void ResolveSelection()

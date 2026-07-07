@@ -147,4 +147,39 @@ public sealed class DbHelper(string connectionString)
             .FirstOrDefaultAsync(v =>
                 v.OptionValues.Select(ov => ov.ProductOptionValueId).OrderBy(id => id).SequenceEqual(sortedIds));
     }
+
+    public async Task<ApplicationUser> EnsureUserAsync(string userId)
+    {
+        await using var db = CreateContext();
+
+        var existing = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (existing is not null)
+            return existing;
+
+        var email = $"{userId}@integration.test";
+        var user = new ApplicationUser
+        {
+            Id = userId,
+            UserName = email,
+            NormalizedUserName = email.ToUpperInvariant(),
+            Email = email,
+            NormalizedEmail = email.ToUpperInvariant(),
+            EmailConfirmed = true,
+            FullName = userId,
+            SecurityStamp = Guid.NewGuid().ToString("N")
+        };
+
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        return user;
+    }
+
+    public async Task<IReadOnlyList<CartItem>> GetCartItemsAsync(string userId)
+    {
+        await using var db = CreateContext();
+        return await db.CartItems
+            .Where(ci => ci.UserId == userId)
+            .OrderBy(ci => ci.Id)
+            .ToListAsync();
+    }
 }

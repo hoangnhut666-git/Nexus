@@ -20,6 +20,8 @@ namespace Nexus.Data
 
         public DbSet<VariantOptionValue> VariantOptionValues => Set<VariantOptionValue>();
 
+        public DbSet<CartItem> CartItems => Set<CartItem>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -115,6 +117,24 @@ namespace Nexus.Data
                     .WithMany(ov => ov.VariantLinks)
                     .HasForeignKey(v => v.ProductOptionValueId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<CartItem>(entity =>
+            {
+                entity.Property(ci => ci.UserId).HasMaxLength(450).IsRequired();
+
+                entity.HasIndex(ci => ci.UserId);
+                entity.HasIndex(ci => new { ci.UserId, ci.ProductVariantId }).IsUnique();
+
+                entity.HasOne(ci => ci.ProductVariant)
+                    .WithMany()
+                    .HasForeignKey(ci => ci.ProductVariantId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(ci => ci.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -37,11 +37,20 @@
 
 <div class="flex flex-col gap-4 mt-2">
     <button type="button"
-            class="w-full py-3 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(CanAddToCart ? "bg-white/5 border border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary" : "bg-white/5 border border-white/5 text-text-muted cursor-not-allowed opacity-60")"
-            disabled="@(!CanAddToCart)">
-        <i class="fa-solid fa-cart-plus @(CanAddToCart ? "text-indigo-400" : "")"></i>
-        @(CanAddToCart ? "Add to cart" : "Unavailable")
+            class="w-full py-3 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(CanAddToCart && !IsAdding ? "bg-white/5 border border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary" : "bg-white/5 border border-white/5 text-text-muted cursor-not-allowed opacity-60")"
+            disabled="@(!CanAddToCart || IsAdding)"
+            @onclick="HandleAddToCart">
+        <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-cart-plus") @(CanAddToCart && !IsAdding ? "text-indigo-400" : "")"></i>
+        @(IsAdding ? "Adding..." : CanAddToCart ? "Add to cart" : "Unavailable")
     </button>
+
+    @if (!string.IsNullOrWhiteSpace(StatusMessage))
+    {
+        <div class="text-sm font-medium @(IsError ? "text-danger" : "text-emerald-400")">
+            <i class="fa-solid @(IsError ? "fa-circle-exclamation" : "fa-circle-check") mr-1"></i>
+            @StatusMessage
+        </div>
+    }
 </div>
 
 @code {
@@ -54,7 +63,25 @@
     [Parameter]
     public bool IsInvalidCombination { get; set; }
 
+    [Parameter]
+    public EventCallback OnAddToCart { get; set; }
+
+    [Parameter]
+    public bool IsAdding { get; set; }
+
+    [Parameter]
+    public string? StatusMessage { get; set; }
+
+    [Parameter]
+    public bool IsError { get; set; }
+
     private bool CanAddToCart => ResolvedVariant is not null && ResolvedVariant.StockQuantity > 0;
+
+    private async Task HandleAddToCart()
+    {
+        if (CanAddToCart && !IsAdding)
+            await OnAddToCart.InvokeAsync();
+    }
 
     private static string FormatPrice(decimal price) =>
         price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";

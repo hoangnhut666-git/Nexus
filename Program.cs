@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Nexus.Components;
 using Nexus.Components.Account;
 using Nexus.Data;
+using Nexus.Services.Cart;
 using Nexus.Services.Categories;
 using Nexus.Services.Products;
 
@@ -56,12 +57,18 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Admin", policy => policy
         .RequireAuthenticatedUser()
         .RequireRole(IdentitySeedData.AdminRole));
+
+    options.AddPolicy("Customer", policy => policy
+        .RequireAuthenticatedUser()
+        .RequireRole(IdentitySeedData.CustomerRole));
 });
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICategoryImageService, CategoryImageService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<CartState>();
 
 var app = builder.Build();
 

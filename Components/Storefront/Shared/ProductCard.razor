@@ -22,11 +22,22 @@
         @if (Product.InStock)
         {
             <div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-bg-base/90 to-transparent translate-y-full group-hover:translate-y-0 transition z-10">
-                <button type="button"
-                        class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg"
-                        disabled>
-                    <i class="fa-solid fa-cart-plus"></i> Add to cart
-                </button>
+                @if (Product.HasOptions)
+                {
+                    <a href="@ProductUrl"
+                       class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg">
+                        <i class="fa-solid fa-sliders"></i> Choose options
+                    </a>
+                }
+                else
+                {
+                    <button type="button"
+                            class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg disabled:opacity-60"
+                            disabled="@isAdding"
+                            @onclick="HandleQuickAdd">
+                        <i class="fa-solid @(isAdding ? "fa-spinner fa-spin" : "fa-cart-plus")"></i> @(isAdding ? "Adding..." : "Add to cart")
+                    </button>
+                }
             </div>
         }
     </div>
@@ -58,7 +69,22 @@
     [Parameter, EditorRequired]
     public CatalogProductListItemDto Product { get; set; } = default!;
 
+    [Parameter]
+    public EventCallback<CatalogProductListItemDto> OnQuickAdd { get; set; }
+
+    private bool isAdding;
+
     private string ProductUrl => $"/products/{Product.Slug}";
+
+    private async Task HandleQuickAdd()
+    {
+        if (isAdding || !OnQuickAdd.HasDelegate)
+            return;
+
+        isAdding = true;
+        await OnQuickAdd.InvokeAsync(Product);
+        isAdding = false;
+    }
 
     private static string FormatPrice(decimal price) =>
         price.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) + " ₫";
