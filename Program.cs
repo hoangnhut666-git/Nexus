@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Nexus.Components;
 using Nexus.Components.Account;
 using Nexus.Data;
+using Nexus.Services.Addresses;
 using Nexus.Services.Cart;
 using Nexus.Services.Categories;
 using Nexus.Services.Orders;
@@ -72,6 +73,7 @@ builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 builder.Services.Configure<PayPalOptions>(builder.Configuration.GetSection(PayPalOptions.SectionName));
 builder.Services.AddScoped<IPaymentGateway, CodPaymentGateway>();
