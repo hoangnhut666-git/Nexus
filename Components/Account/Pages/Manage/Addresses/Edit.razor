@@ -9,6 +9,7 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IAddressService AddressService
+@inject IVietnamAddressUnitService AddressUnits
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>@(IsEdit ? "Edit address" : "Add address")</PageTitle>
@@ -47,14 +48,27 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div class="flex flex-col gap-2">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Ward">Ward / Commune *</label>
-            <InputText @bind-Value="Input.Ward" id="Input.Ward" class="@InputBaseClass" placeholder="Tân An" />
-            <ValidationMessage For="() => Input.Ward" class="text-danger text-xs" />
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Province">Province / City *</label>
+            <InputSelect @bind-Value="Input.Province" id="Input.Province" class="@InputBaseClass"
+                         data-vn-province="true" data-units-url="@Assets["data/vn-admin-units.json"]">
+                <option value="">-- Select province / city --</option>
+                @foreach (var province in provinces)
+                {
+                    <option value="@province">@province</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => Input.Province" class="text-danger text-xs" />
         </div>
         <div class="flex flex-col gap-2">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Province">Province / City *</label>
-            <InputText @bind-Value="Input.Province" id="Input.Province" class="@InputBaseClass" placeholder="Cần Thơ" />
-            <ValidationMessage For="() => Input.Province" class="text-danger text-xs" />
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Ward">Ward / Commune *</label>
+            <InputSelect @bind-Value="Input.Ward" id="Input.Ward" class="@InputBaseClass" data-vn-ward="true">
+                <option value="">-- Select ward / commune --</option>
+                @foreach (var ward in wardOptions)
+                {
+                    <option value="@ward">@ward</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => Input.Ward" class="text-danger text-xs" />
         </div>
     </div>
 
@@ -83,6 +97,9 @@
     private ApplicationUser? user;
     private string? errorMessage;
 
+    private IReadOnlyList<string> provinces = [];
+    private List<string> wardOptions = [];
+
     [Parameter]
     public int? AddressId { get; set; }
 
@@ -97,6 +114,7 @@
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
+        provinces = AddressUnits.GetProvinces();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
@@ -123,6 +141,12 @@
             Input.Label = existing.Label;
             Input.SetAsDefault = existing.IsDefault;
         }
+
+        // Render the ward options for the selected province so the current value stays
+        // selectable (on GET prefill and on POST re-render); JS handles province changes.
+        wardOptions = string.IsNullOrWhiteSpace(Input.Province)
+            ? []
+            : AddressUnits.GetWards(Input.Province).ToList();
     }
 
     private async Task OnValidSubmitAsync()

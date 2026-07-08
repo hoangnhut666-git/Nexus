@@ -78,7 +78,7 @@
                         <div>@order.ShipPhone</div>
                         <div>@order.ShipStreet</div>
                         <div>
-                            @order.ShipCity@(string.IsNullOrWhiteSpace(order.ShipState) ? "" : $", {order.ShipState}")@(string.IsNullOrWhiteSpace(order.ShipPostalCode) ? "" : $" {order.ShipPostalCode}")
+                            @order.ShipState@(string.IsNullOrWhiteSpace(order.ShipState) || string.IsNullOrWhiteSpace(order.ShipCity) ? "" : ", ")@order.ShipCity
                         </div>
                         <div>@order.ShipCountry</div>
                     </div>

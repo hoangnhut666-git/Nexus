@@ -138,14 +138,47 @@ public sealed class AddressServiceTests : IClassFixture<TestDatabaseFixture>, IA
         var result = await service.UpdateAsync(UserA, created.Data!.Id, ValidInput(
             "Alice Updated",
             addressLine: "No. 99, New Street",
-            ward: "New Ward",
-            province: "New Province"));
+            ward: "Phường Ba Đình",
+            province: "Hà Nội"));
 
         result.Success.Should().BeTrue();
         result.Data!.RecipientName.Should().Be("Alice Updated");
         result.Data.AddressLine.Should().Be("No. 99, New Street");
-        result.Data.Ward.Should().Be("New Ward");
-        result.Data.Province.Should().Be("New Province");
+        result.Data.Ward.Should().Be("Phường Ba Đình");
+        result.Data.Province.Should().Be("Hà Nội");
+    }
+
+    [Fact]
+    public async Task AddAsync_InvalidProvinceWard_Fails()
+    {
+        await _dbHelper.EnsureUserAsync(UserA);
+
+        var service = Resolve();
+        var result = await service.AddAsync(UserA, ValidInput(
+            "Alice",
+            ward: "Nowhere Ward",
+            province: "Nowhere Province"));
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().NotBeNullOrWhiteSpace();
+        (await _dbHelper.GetAddressesAsync(UserA)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_InvalidProvinceWard_Fails()
+    {
+        await _dbHelper.EnsureUserAsync(UserA);
+
+        var service = Resolve();
+        var created = await service.AddAsync(UserA, ValidInput("Alice"));
+
+        var result = await service.UpdateAsync(UserA, created.Data!.Id, ValidInput(
+            "Alice",
+            ward: "Phường Tân An",
+            province: "Hà Nội")); // ward does not belong to this province
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -276,12 +309,16 @@ public sealed class AddressServiceTests : IClassFixture<TestDatabaseFixture>, IA
         return scope.ServiceProvider.GetRequiredService<IAddressService>();
     }
 
+    // Canonical province/ward pairs from the bundled dataset (strict validation).
+    private const string ValidProvince = "Tp Cần Thơ";
+    private const string ValidWard = "Phường Tân An";
+
     private static AddressInput ValidInput(
         string recipient,
         bool setAsDefault = false,
         string addressLine = "No. 25, Nguyễn Trãi Street",
-        string ward = "Tân An",
-        string province = "Cần Thơ",
+        string ward = ValidWard,
+        string province = ValidProvince,
         string phone = "0901234567") => new()
     {
         RecipientName = recipient,

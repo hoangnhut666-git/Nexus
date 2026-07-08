@@ -7,7 +7,8 @@ using Nexus.Services.Categories.Models;
 namespace Nexus.Services.Addresses;
 
 public sealed class AddressService(
-    IDbContextFactory<ApplicationDbContext> dbContextFactory) : IAddressService
+    IDbContextFactory<ApplicationDbContext> dbContextFactory,
+    IVietnamAddressUnitService addressUnits) : IAddressService
 {
     public async Task<IReadOnlyList<AddressDto>> GetAddressesAsync(
         string userId,
@@ -73,6 +74,9 @@ public sealed class AddressService(
         if (validationError is not null)
             return ServiceResult<AddressDto>.Fail(validationError);
 
+        if (!addressUnits.IsValid(input.Province, input.Ward))
+            return ServiceResult<AddressDto>.Fail("Please choose a valid province and ward from the list.");
+
         await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
@@ -121,6 +125,9 @@ public sealed class AddressService(
         var validationError = Validate(input);
         if (validationError is not null)
             return ServiceResult<AddressDto>.Fail(validationError);
+
+        if (!addressUnits.IsValid(input.Province, input.Ward))
+            return ServiceResult<AddressDto>.Fail("Please choose a valid province and ward from the list.");
 
         await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);

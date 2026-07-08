@@ -58,8 +58,8 @@ public sealed class AddressPageTests : IClassFixture<TestDatabaseFixture>, IAsyn
         var html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("Shipping Addresses");
         html.Should().Contain("Alice Buyer");
-        html.Should().Contain("Tan An");
-        html.Should().Contain("Can Tho");
+        html.Should().Contain("Phường Tân An");
+        html.Should().Contain("Tp Cần Thơ");
         html.Should().Contain("Default");
     }
 
@@ -112,8 +112,8 @@ public sealed class AddressPageTests : IClassFixture<TestDatabaseFixture>, IAsyn
             RecipientName = recipient,
             Phone = "0901234567",
             AddressLine = "No. 25, Main Street",
-            Ward = "Tan An",
-            Province = "Can Tho",
+            Ward = "Phường Tân An",
+            Province = "Tp Cần Thơ",
             Country = "Vietnam",
             SetAsDefault = setAsDefault
         });
