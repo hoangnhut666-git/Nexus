@@ -434,10 +434,10 @@ Pending ──► Paid ──► Processing ──► Shipped ──► Delivere
 
 #### Acceptance criteria
 
-- [ ] Admin can filter orders by status and date range.
-- [ ] Only valid status transitions are allowed.
-- [ ] Cancelling an order restores variant stock exactly once.
-- [ ] Admin detail shows items, totals, payment status, and shipping address.
+- [x] Admin can filter orders by status and date range.
+- [x] Only valid status transitions are allowed.
+- [x] Cancelling an order restores variant stock exactly once.
+- [x] Admin detail shows items, totals, payment status, and shipping address.
 
 #### Estimated effort
 
@@ -671,8 +671,9 @@ Follow the established `Nexus.Test.Integration` pattern (Testcontainers, `TestDa
 - [x] Fake-gateway tests green (7 new; 107/107 suite)
 
 ### Phase 5 — Admin orders
-- [ ] Admin paged query + filters
-- [ ] Status transition guard
-- [ ] Cancel restores stock
-- [ ] Admin list + detail pages
-- [ ] Admin tests green
+- [x] Admin paged query + filters
+- [x] Status transition guard
+- [x] Cancel restores stock
+- [x] Admin list + detail pages
+- [x] Status history + internal notes (OrderEvent entity + AddOrderEvents migration)
+- [x] Admin tests green (14 new; 121/121 suite)

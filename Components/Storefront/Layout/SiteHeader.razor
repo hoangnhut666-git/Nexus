@@ -4,6 +4,7 @@
 @using Nexus.Services.Cart
 @using Nexus.Services.Categories.Models
 
+@rendermode InteractiveServer
 @implements IDisposable
 
 @inject NavigationManager Navigation
@@ -49,12 +50,53 @@
             </a>
             <AuthorizeView>
                 <Authorized>
-                    <a href="/orders" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition" title="Your Orders">
-                        <i class="fa-solid fa-box text-lg"></i>
-                    </a>
-                    <a href="Account/Manage" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition" title="Account">
-                        <i class="fa-regular fa-user text-lg"></i>
-                    </a>
+                    <div class="relative">
+                        <button type="button"
+                                @onclick="ToggleAccountMenu"
+                                class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition @(accountMenuOpen ? "bg-white/5 text-text-primary" : "")"
+                                title="Account"
+                                aria-haspopup="true"
+                                aria-expanded="@accountMenuOpen">
+                            <i class="fa-regular fa-user text-lg"></i>
+                        </button>
+
+                        @if (accountMenuOpen)
+                        {
+                            <div class="fixed inset-0 z-40" @onclick="CloseAccountMenu"></div>
+
+                            <div class="absolute right-0 mt-2 w-60 z-50 origin-top-right rounded-xl border border-white/10 bg-bg-surface/95 backdrop-blur-20 shadow-[0_10px_40px_rgba(0,0,0,0.45)] py-2">
+                                <div class="px-4 py-2 border-b border-white/5">
+                                    <p class="text-xs text-text-muted">Signed in as</p>
+                                    <p class="text-sm font-semibold text-text-primary truncate">@(context.User.Identity?.Name)</p>
+                                </div>
+
+                                <a href="/orders"
+                                   @onclick="CloseAccountMenu"
+                                   class="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition">
+                                    <i class="fa-solid fa-box w-4 text-center"></i>
+                                    <span>Order History</span>
+                                </a>
+                                <a href="Account/Manage"
+                                   @onclick="CloseAccountMenu"
+                                   class="flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition">
+                                    <i class="fa-solid fa-gear w-4 text-center"></i>
+                                    <span>Account Management</span>
+                                </a>
+
+                                <div class="my-1 border-t border-white/5"></div>
+
+                                <form action="Account/Logout" method="post" class="px-2">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="ReturnUrl" value="" />
+                                    <button type="submit"
+                                            class="flex w-full items-center gap-3 px-2 py-2 rounded-lg text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition">
+                                        <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
                 </Authorized>
                 <NotAuthorized>
                     <a href="Account/Login" class="text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-white/5 transition" title="Account">
@@ -68,6 +110,11 @@
 
 @code {
     private string searchTerm = string.Empty;
+    private bool accountMenuOpen;
+
+    private void ToggleAccountMenu() => accountMenuOpen = !accountMenuOpen;
+
+    private void CloseAccountMenu() => accountMenuOpen = false;
 
     protected override async Task OnInitializedAsync()
     {

@@ -45,4 +45,6 @@ public class Order
     public ICollection<OrderItem> Items { get; set; } = [];
 
     public ICollection<Payment> Payments { get; set; } = [];
+
+    public ICollection<OrderEvent> Events { get; set; } = [];
 }

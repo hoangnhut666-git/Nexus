@@ -309,6 +309,311 @@ public sealed class OrderService(
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<PagedResult<AdminOrderListItemDto>> GetPagedAsync(
+        AdminOrderQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1 ? 10 : query.PageSize;
+
+        var orders = context.Orders.AsNoTracking();
+
+        if (query.Status.HasValue)
+            orders = orders.Where(o => o.Status == query.Status.Value);
+
+        if (query.FromDate.HasValue)
+        {
+            var from = query.FromDate.Value.Date;
+            orders = orders.Where(o => o.CreatedAt >= from);
+        }
+
+        if (query.ToDate.HasValue)
+        {
+            var toExclusive = query.ToDate.Value.Date.AddDays(1);
+            orders = orders.Where(o => o.CreatedAt < toExclusive);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search.Trim();
+            orders = orders.Where(o =>
+                o.OrderNumber.Contains(search)
+                || o.ShipFullName.Contains(search)
+                || context.Users
+                    .Where(u => u.Id == o.UserId)
+                    .Any(u => (u.FullName != null && u.FullName.Contains(search))
+                              || (u.Email != null && u.Email.Contains(search))));
+        }
+
+        var totalCount = await orders.CountAsync(cancellationToken);
+
+        var items = await orders
+            .OrderByDescending(o => o.CreatedAt)
+            .ThenByDescending(o => o.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(o => new AdminOrderListItemDto
+            {
+                Id = o.Id,
+                OrderNumber = o.OrderNumber,
+                CreatedAt = o.CreatedAt,
+                CustomerName = context.Users
+                    .Where(u => u.Id == o.UserId)
+                    .Select(u => u.FullName)
+                    .FirstOrDefault() ?? string.Empty,
+                CustomerEmail = context.Users
+                    .Where(u => u.Id == o.UserId)
+                    .Select(u => u.Email)
+                    .FirstOrDefault() ?? string.Empty,
+                Status = o.Status,
+                PaymentMethod = o.PaymentMethod,
+                PaymentStatus = o.PaymentStatus,
+                Total = o.Total,
+                ItemCount = o.Items.Sum(i => i.Quantity)
+            })
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<AdminOrderListItemDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<AdminOrderDetailDto?> GetByNumberAsync(
+        string orderNumber,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(orderNumber))
+            return null;
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var order = await context.Orders
+            .AsNoTracking()
+            .Include(o => o.Items)
+            .Include(o => o.Payments)
+            .Include(o => o.Events)
+            .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber, cancellationToken);
+
+        if (order is null)
+            return null;
+
+        var customer = await context.Users
+            .AsNoTracking()
+            .Where(u => u.Id == order.UserId)
+            .Select(u => new { u.FullName, u.Email })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return new AdminOrderDetailDto
+        {
+            Id = order.Id,
+            OrderNumber = order.OrderNumber,
+            Status = order.Status,
+            PaymentMethod = order.PaymentMethod,
+            PaymentStatus = order.PaymentStatus,
+            Subtotal = order.Subtotal,
+            ShippingFee = order.ShippingFee,
+            TaxAmount = order.TaxAmount,
+            Total = order.Total,
+            Currency = order.Currency,
+            CustomerName = customer?.FullName ?? string.Empty,
+            CustomerEmail = customer?.Email ?? string.Empty,
+            ShipFullName = order.ShipFullName,
+            ShipPhone = order.ShipPhone,
+            ShipStreet = order.ShipStreet,
+            ShipCity = order.ShipCity,
+            ShipState = order.ShipState,
+            ShipPostalCode = order.ShipPostalCode,
+            ShipCountry = order.ShipCountry,
+            CreatedAt = order.CreatedAt,
+            UpdatedAt = order.UpdatedAt,
+            Items = order.Items
+                .OrderBy(i => i.Id)
+                .Select(i => new OrderLineDto
+                {
+                    ProductVariantId = i.ProductVariantId,
+                    ProductName = i.ProductName,
+                    VariantLabel = i.VariantLabel,
+                    Sku = i.Sku,
+                    UnitPrice = i.UnitPrice,
+                    Quantity = i.Quantity,
+                    LineTotal = i.LineTotal
+                })
+                .ToList(),
+            Payments = order.Payments
+                .OrderBy(p => p.Id)
+                .Select(p => new PaymentDto
+                {
+                    Method = p.Method,
+                    Status = p.Status,
+                    Amount = p.Amount,
+                    Currency = p.Currency,
+                    GatewayTransactionRef = p.GatewayTransactionRef,
+                    CreatedAt = p.CreatedAt,
+                    CompletedAt = p.CompletedAt
+                })
+                .ToList(),
+            Events = order.Events
+                .OrderByDescending(e => e.CreatedAt)
+                .ThenByDescending(e => e.Id)
+                .Select(e => new OrderEventDto
+                {
+                    Type = e.Type,
+                    OldStatus = e.OldStatus,
+                    NewStatus = e.NewStatus,
+                    Message = e.Message,
+                    CreatedAt = e.CreatedAt,
+                    CreatedByUserId = e.CreatedByUserId
+                })
+                .ToList()
+        };
+    }
+
+    public async Task<ServiceResult<OrderDto>> UpdateStatusAsync(
+        int orderId,
+        OrderStatus next,
+        string adminUserId,
+        string? note,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(adminUserId))
+            return ServiceResult<OrderDto>.Fail("Missing administrator identity.");
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var order = await context.Orders
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+
+        if (order is null)
+            return ServiceResult<OrderDto>.Fail("Order not found.");
+
+        if (!OrderStatusRules.AllowedNext(order.Status).Contains(next))
+            return ServiceResult<OrderDto>.Fail(
+                $"Cannot move an order from {order.Status} to {next}.");
+
+        var previous = order.Status;
+        var now = DateTime.UtcNow;
+
+        order.Status = next;
+        order.UpdatedAt = now;
+
+        context.OrderEvents.Add(new OrderEvent
+        {
+            OrderId = order.Id,
+            Type = OrderEventType.StatusChanged,
+            OldStatus = previous,
+            NewStatus = next,
+            Message = string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
+            CreatedByUserId = adminUserId,
+            CreatedAt = now
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return ServiceResult<OrderDto>.Ok(MapOrder(order));
+    }
+
+    public async Task<ServiceResult<OrderDto>> CancelAsync(
+        int orderId,
+        string adminUserId,
+        string? reason,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(adminUserId))
+            return ServiceResult<OrderDto>.Fail("Missing administrator identity.");
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+        var order = await context.Orders
+            .Include(o => o.Items)
+            .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+
+        if (order is null)
+            return ServiceResult<OrderDto>.Fail("Order not found.");
+
+        if (order.Status == OrderStatus.Cancelled)
+            return ServiceResult<OrderDto>.Fail("This order is already cancelled.");
+
+        if (!OrderStatusRules.CanCancel(order.Status))
+            return ServiceResult<OrderDto>.Fail(
+                $"An order in {order.Status} status cannot be cancelled.");
+
+        var previous = order.Status;
+        var now = DateTime.UtcNow;
+
+        // Restore the stock reserved at order creation (deduct-on-create policy).
+        foreach (var item in order.Items)
+        {
+            await context.ProductVariants
+                .Where(v => v.Id == item.ProductVariantId)
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(v => v.StockQuantity, v => v.StockQuantity + item.Quantity),
+                    cancellationToken);
+        }
+
+        order.Status = OrderStatus.Cancelled;
+        order.UpdatedAt = now;
+
+        // Online refunds are out of scope; only mark not-yet-settled payments as failed.
+        if (order.PaymentStatus == PaymentStatus.Pending)
+            order.PaymentStatus = PaymentStatus.Failed;
+
+        context.OrderEvents.Add(new OrderEvent
+        {
+            OrderId = order.Id,
+            Type = OrderEventType.StatusChanged,
+            OldStatus = previous,
+            NewStatus = OrderStatus.Cancelled,
+            Message = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim(),
+            CreatedByUserId = adminUserId,
+            CreatedAt = now
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        return ServiceResult<OrderDto>.Ok(MapOrder(order));
+    }
+
+    public async Task<ServiceResult<bool>> AddNoteAsync(
+        int orderId,
+        string adminUserId,
+        string note,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(adminUserId))
+            return ServiceResult<bool>.Fail("Missing administrator identity.");
+
+        if (string.IsNullOrWhiteSpace(note))
+            return ServiceResult<bool>.Fail("Note cannot be empty.");
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var exists = await context.Orders.AnyAsync(o => o.Id == orderId, cancellationToken);
+        if (!exists)
+            return ServiceResult<bool>.Fail("Order not found.");
+
+        context.OrderEvents.Add(new OrderEvent
+        {
+            OrderId = orderId,
+            Type = OrderEventType.NoteAdded,
+            Message = note.Trim(),
+            CreatedByUserId = adminUserId,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return ServiceResult<bool>.Ok(true);
+    }
+
     private static OrderDto MapOrder(Order order) => new()
     {
         OrderNumber = order.OrderNumber,

@@ -28,6 +28,10 @@ namespace Nexus.Data
 
         public DbSet<Payment> Payments => Set<Payment>();
 
+        public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
+
+        public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -213,6 +217,41 @@ namespace Nexus.Data
                 entity.HasOne(p => p.Order)
                     .WithMany(o => o.Payments)
                     .HasForeignKey(p => p.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<OrderEvent>(entity =>
+            {
+                entity.Property(e => e.Type).HasConversion<string>().HasMaxLength(20).IsRequired();
+                entity.Property(e => e.OldStatus).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.NewStatus).HasConversion<string>().HasMaxLength(20);
+                entity.Property(e => e.Message).HasMaxLength(1000);
+                entity.Property(e => e.CreatedByUserId).HasMaxLength(450).IsRequired();
+
+                entity.HasIndex(e => e.OrderId);
+
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.Events)
+                    .HasForeignKey(e => e.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<UserAddress>(entity =>
+            {
+                entity.Property(a => a.UserId).HasMaxLength(450).IsRequired();
+                entity.Property(a => a.RecipientName).HasMaxLength(200).IsRequired();
+                entity.Property(a => a.Phone).HasMaxLength(40).IsRequired();
+                entity.Property(a => a.AddressLine).HasMaxLength(300).IsRequired();
+                entity.Property(a => a.Ward).HasMaxLength(150).IsRequired();
+                entity.Property(a => a.Province).HasMaxLength(150).IsRequired();
+                entity.Property(a => a.Country).HasMaxLength(120).IsRequired().HasDefaultValue("Vietnam");
+                entity.Property(a => a.Label).HasMaxLength(60);
+
+                entity.HasIndex(a => a.UserId);
+
+                entity.HasOne<ApplicationUser>()
+                    .WithMany()
+                    .HasForeignKey(a => a.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

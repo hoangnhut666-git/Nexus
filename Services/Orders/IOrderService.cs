@@ -1,3 +1,4 @@
+using Nexus.Data.Entities;
 using Nexus.Services.Categories.Models;
 using Nexus.Services.Orders.Models;
 
@@ -27,5 +28,32 @@ public interface IOrderService
     Task<ServiceResult<bool>> MarkPayPalCancelledAsync(
         string userId,
         string paypalOrderId,
+        CancellationToken cancellationToken = default);
+
+    Task<PagedResult<AdminOrderListItemDto>> GetPagedAsync(
+        AdminOrderQuery query,
+        CancellationToken cancellationToken = default);
+
+    Task<AdminOrderDetailDto?> GetByNumberAsync(
+        string orderNumber,
+        CancellationToken cancellationToken = default);
+
+    Task<ServiceResult<OrderDto>> UpdateStatusAsync(
+        int orderId,
+        OrderStatus next,
+        string adminUserId,
+        string? note,
+        CancellationToken cancellationToken = default);
+
+    Task<ServiceResult<OrderDto>> CancelAsync(
+        int orderId,
+        string adminUserId,
+        string? reason,
+        CancellationToken cancellationToken = default);
+
+    Task<ServiceResult<bool>> AddNoteAsync(
+        int orderId,
+        string adminUserId,
+        string note,
         CancellationToken cancellationToken = default);
 }

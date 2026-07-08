@@ -1,0 +1,213 @@
+@page "/Account/Manage/Addresses/Add"
+@page "/Account/Manage/Addresses/Edit/{AddressId:int}"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Nexus.Data
+@using Nexus.Services.Addresses
+@using Nexus.Services.Addresses.Models
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IAddressService AddressService
+@inject IVietnamAddressUnitService AddressUnits
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>@(IsEdit ? "Edit address" : "Add address")</PageTitle>
+
+<div class="mb-6">
+    <a href="Account/Manage/Addresses" class="inline-flex items-center gap-2 text-xs font-bold text-text-secondary hover:text-text-primary transition-colors mb-4">
+        <i class="fa-solid fa-arrow-left text-[10px]"></i><span>Back to addresses</span>
+    </a>
+    <h3 class="text-xl font-bold text-text-primary">@(IsEdit ? "Edit address" : "Add address")</h3>
+    <p class="text-text-secondary text-sm mt-1">Enter the delivery details below.</p>
+</div>
+
+<StatusMessage Message="@errorMessage" />
+
+<EditForm Model="Input" FormName="address" OnValidSubmit="OnValidSubmitAsync" method="post" class="max-w-2xl flex flex-col gap-5">
+    <DataAnnotationsValidator />
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.RecipientName">Recipient name *</label>
+            <InputText @bind-Value="Input.RecipientName" id="Input.RecipientName" class="@InputBaseClass" placeholder="Nguyễn Văn A" />
+            <ValidationMessage For="() => Input.RecipientName" class="text-danger text-xs" />
+        </div>
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Phone">Phone number *</label>
+            <InputText @bind-Value="Input.Phone" id="Input.Phone" class="@InputBaseClass" placeholder="0901234567" />
+            <ValidationMessage For="() => Input.Phone" class="text-danger text-xs" />
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.AddressLine">Street address / detail *</label>
+        <InputText @bind-Value="Input.AddressLine" id="Input.AddressLine" class="@InputBaseClass" placeholder="No. 25, Nguyễn Trãi Street" />
+        <ValidationMessage For="() => Input.AddressLine" class="text-danger text-xs" />
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Province">Province / City *</label>
+            <InputSelect @bind-Value="Input.Province" id="Input.Province" class="@InputBaseClass"
+                         data-vn-province="true" data-units-url="@Assets["data/vn-admin-units.json"]">
+                <option value="">-- Select province / city --</option>
+                @foreach (var province in provinces)
+                {
+                    <option value="@province">@province</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => Input.Province" class="text-danger text-xs" />
+        </div>
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Ward">Ward / Commune *</label>
+            <InputSelect @bind-Value="Input.Ward" id="Input.Ward" class="@InputBaseClass" data-vn-ward="true">
+                <option value="">-- Select ward / commune --</option>
+                @foreach (var ward in wardOptions)
+                {
+                    <option value="@ward">@ward</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => Input.Ward" class="text-danger text-xs" />
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+        <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Label">Label (optional)</label>
+        <InputText @bind-Value="Input.Label" id="Input.Label" class="@InputBaseClass" placeholder="Home, Office…" />
+    </div>
+
+    <label class="flex items-center gap-2.5 text-sm text-text-secondary cursor-pointer select-none">
+        <InputCheckbox @bind-Value="Input.SetAsDefault" class="custom-checkbox" />
+        Set as my default address
+    </label>
+
+    <div class="flex items-center gap-3 mt-1">
+        <button type="submit"
+                class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all duration-300">
+            <i class="fa-solid fa-floppy-disk text-xs"></i><span>@(IsEdit ? "Save changes" : "Save address")</span>
+        </button>
+        <a href="Account/Manage/Addresses" class="text-sm font-bold text-text-secondary hover:text-text-primary transition-colors">Cancel</a>
+    </div>
+</EditForm>
+
+@code {
+    private const string InputBaseClass = "w-full bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
+
+    private ApplicationUser? user;
+    private string? errorMessage;
+
+    private IReadOnlyList<string> provinces = [];
+    private List<string> wardOptions = [];
+
+    [Parameter]
+    public int? AddressId { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = default!;
+
+    private bool IsEdit => AddressId.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        provinces = AddressUnits.GetProvinces();
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
+        if (AddressId is int id && HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            var existing = await AddressService.GetByIdAsync(user.Id, id);
+            if (existing is null)
+            {
+                RedirectManager.RedirectToWithStatus(
+                    "Account/Manage/Addresses", "Error: Address not found.", HttpContext);
+                return;
+            }
+
+            Input.RecipientName = existing.RecipientName;
+            Input.Phone = existing.Phone;
+            Input.AddressLine = existing.AddressLine;
+            Input.Ward = existing.Ward;
+            Input.Province = existing.Province;
+            Input.Label = existing.Label;
+            Input.SetAsDefault = existing.IsDefault;
+        }
+
+        // Render the ward options for the selected province so the current value stays
+        // selectable (on GET prefill and on POST re-render); JS handles province changes.
+        wardOptions = string.IsNullOrWhiteSpace(Input.Province)
+            ? []
+            : AddressUnits.GetWards(Input.Province).ToList();
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
+        var input = new AddressInput
+        {
+            RecipientName = Input.RecipientName,
+            Phone = Input.Phone,
+            AddressLine = Input.AddressLine,
+            Ward = Input.Ward,
+            Province = Input.Province,
+            Country = "Vietnam",
+            Label = Input.Label,
+            SetAsDefault = Input.SetAsDefault
+        };
+
+        var result = IsEdit
+            ? await AddressService.UpdateAsync(user.Id, AddressId!.Value, input)
+            : await AddressService.AddAsync(user.Id, input);
+
+        if (result.Success)
+            RedirectManager.RedirectToWithStatus(
+                "Account/Manage/Addresses",
+                IsEdit ? "Address updated." : "Address added.",
+                HttpContext);
+
+        errorMessage = $"Error: {result.Error}";
+    }
+
+    private sealed class InputModel
+    {
+        [Required(ErrorMessage = "Recipient name is required.")]
+        [Display(Name = "Recipient name")]
+        public string RecipientName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Phone number is required.")]
+        [Display(Name = "Phone number")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Street address is required.")]
+        [Display(Name = "Street address")]
+        public string AddressLine { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ward / commune is required.")]
+        [Display(Name = "Ward / Commune")]
+        public string Ward { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Province / city is required.")]
+        [Display(Name = "Province / City")]
+        public string Province { get; set; } = string.Empty;
+
+        [Display(Name = "Label")]
+        public string? Label { get; set; }
+
+        [Display(Name = "Set as default")]
+        public bool SetAsDefault { get; set; }
+    }
+}

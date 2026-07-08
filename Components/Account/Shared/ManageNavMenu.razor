@@ -3,32 +3,35 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Profile</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">Email</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Password</NavLink>
-    </li>
+<nav class="flex flex-col gap-1">
+    <NavLink class="manage-nav-link" href="Account/Manage" Match="NavLinkMatch.All">
+        <i class="fa-regular fa-user w-4 text-center"></i><span>Profile</span>
+    </NavLink>
+    <NavLink class="manage-nav-link" href="Account/Manage/Addresses">
+        <i class="fa-solid fa-location-dot w-4 text-center"></i><span>Addresses</span>
+    </NavLink>
+    <NavLink class="manage-nav-link" href="Account/Manage/Email">
+        <i class="fa-regular fa-envelope w-4 text-center"></i><span>Email</span>
+    </NavLink>
+    <NavLink class="manage-nav-link" href="Account/Manage/ChangePassword">
+        <i class="fa-solid fa-key w-4 text-center"></i><span>Password</span>
+    </NavLink>
     @if (hasExternalLogins)
     {
-        <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">External logins</NavLink>
-        </li>
+        <NavLink class="manage-nav-link" href="Account/Manage/ExternalLogins">
+            <i class="fa-solid fa-link w-4 text-center"></i><span>External logins</span>
+        </NavLink>
     }
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Passkeys">Passkeys</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">Personal data</NavLink>
-    </li>
-</ul>
+    <NavLink class="manage-nav-link" href="Account/Manage/TwoFactorAuthentication">
+        <i class="fa-solid fa-shield-halved w-4 text-center"></i><span>Two-factor auth</span>
+    </NavLink>
+    <NavLink class="manage-nav-link" href="Account/Manage/Passkeys">
+        <i class="fa-solid fa-fingerprint w-4 text-center"></i><span>Passkeys</span>
+    </NavLink>
+    <NavLink class="manage-nav-link" href="Account/Manage/PersonalData">
+        <i class="fa-solid fa-database w-4 text-center"></i><span>Personal data</span>
+    </NavLink>
+</nav>
 
 @code {
     private bool hasExternalLogins;

@@ -8,6 +8,8 @@
 @using Microsoft.AspNetCore.Identity
 @using Nexus.Data
 @using Nexus.Data.Entities
+@using Nexus.Services.Addresses
+@using Nexus.Services.Addresses.Models
 @using Nexus.Services.Cart
 @using Nexus.Services.Cart.Models
 @using Nexus.Services.Orders
@@ -17,6 +19,8 @@
 
 @inject ICartService CartService
 @inject IOrderService OrderService
+@inject IAddressService AddressService
+@inject IVietnamAddressUnitService AddressUnits
 @inject CartState CartState
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -46,7 +50,16 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 flex flex-col gap-6">
                     <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                        <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Shipping Address</div>
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-white/5">
+                            <div class="text-lg font-bold">Shipping Address</div>
+                            @if (savedAddresses.Count > 0 && !useNewAddress)
+                            {
+                                <button type="button" @onclick="StartNewAddress"
+                                        class="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+                                    <i class="fa-solid fa-plus mr-1 text-[10px]"></i> Use a new address
+                                </button>
+                            }
+                        </div>
 
                         @if (!string.IsNullOrWhiteSpace(errorMessage))
                         {
@@ -55,47 +68,94 @@
                             </div>
                         }
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex flex-col gap-2 md:col-span-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Full Name *</label>
-                                <InputText @bind-Value="form.ShipFullName" class="@InputClass" placeholder="Jane Doe" />
-                                <ValidationMessage For="() => form.ShipFullName" class="text-danger text-xs" />
+                        @if (savedAddresses.Count > 0 && !useNewAddress)
+                        {
+                            <div class="flex flex-col gap-3">
+                                @foreach (var address in savedAddresses)
+                                {
+                                    <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer @(selectedAddressId == address.Id ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")"
+                                           @key="address.Id">
+                                        <input type="radio" name="saved-address" class="mt-1"
+                                               checked="@(selectedAddressId == address.Id)"
+                                               @onchange="@(() => SelectAddress(address))" />
+                                        <span class="flex-1 min-w-0">
+                                            <span class="flex items-center gap-2 flex-wrap">
+                                                <span class="font-semibold">@address.RecipientName</span>
+                                                @if (!string.IsNullOrWhiteSpace(address.Label))
+                                                {
+                                                    <span class="text-[10px] uppercase tracking-wider font-bold text-text-secondary bg-white/5 px-2 py-0.5 rounded-full">@address.Label</span>
+                                                }
+                                                @if (address.IsDefault)
+                                                {
+                                                    <span class="text-[10px] uppercase tracking-wider font-bold text-success bg-success/10 px-2 py-0.5 rounded-full">Default</span>
+                                                }
+                                            </span>
+                                            <span class="block text-xs text-text-muted mt-0.5">@address.Phone</span>
+                                            <span class="block text-xs text-text-secondary">@AddressFormatter.OneLine(address)</span>
+                                        </span>
+                                    </label>
+                                }
                             </div>
+                        }
+                        else
+                        {
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-2 md:col-span-2">
+                                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Recipient Name *</label>
+                                    <InputText @bind-Value="form.RecipientName" class="@InputClass" placeholder="Nguyễn Văn A" />
+                                    <ValidationMessage For="() => form.RecipientName" class="text-danger text-xs" />
+                                </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Phone *</label>
-                                <InputText @bind-Value="form.ShipPhone" class="@InputClass" placeholder="+1 555 0100" />
-                                <ValidationMessage For="() => form.ShipPhone" class="text-danger text-xs" />
-                            </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Phone *</label>
+                                    <InputText @bind-Value="form.Phone" class="@InputClass" placeholder="0901234567" />
+                                    <ValidationMessage For="() => form.Phone" class="text-danger text-xs" />
+                                </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Country *</label>
-                                <InputText @bind-Value="form.ShipCountry" class="@InputClass" placeholder="USA" />
-                                <ValidationMessage For="() => form.ShipCountry" class="text-danger text-xs" />
-                            </div>
+                                <div class="flex flex-col gap-2 md:col-span-2">
+                                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Street Address / Detail *</label>
+                                    <InputText @bind-Value="form.AddressLine" class="@InputClass" placeholder="No. 25, Nguyễn Trãi Street" />
+                                    <ValidationMessage For="() => form.AddressLine" class="text-danger text-xs" />
+                                </div>
 
-                            <div class="flex flex-col gap-2 md:col-span-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Street Address *</label>
-                                <InputText @bind-Value="form.ShipStreet" class="@InputClass" placeholder="123 Market St" />
-                                <ValidationMessage For="() => form.ShipStreet" class="text-danger text-xs" />
-                            </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Province / City *</label>
+                                    <select value="@form.Province" @onchange="OnProvinceChanged" class="@InputClass">
+                                        <option value="">-- Select province / city --</option>
+                                        @foreach (var province in provinces)
+                                        {
+                                            <option value="@province">@province</option>
+                                        }
+                                    </select>
+                                    <ValidationMessage For="() => form.Province" class="text-danger text-xs" />
+                                </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">City *</label>
-                                <InputText @bind-Value="form.ShipCity" class="@InputClass" placeholder="Springfield" />
-                                <ValidationMessage For="() => form.ShipCity" class="text-danger text-xs" />
-                            </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Ward / Commune *</label>
+                                    <select value="@form.Ward" @onchange="OnWardChanged" class="@InputClass" disabled="@(wardOptions.Count == 0)">
+                                        <option value="">@(wardOptions.Count == 0 ? "-- Select a province first --" : "-- Select ward / commune --")</option>
+                                        @foreach (var ward in wardOptions)
+                                        {
+                                            <option value="@ward">@ward</option>
+                                        }
+                                    </select>
+                                    <ValidationMessage For="() => form.Ward" class="text-danger text-xs" />
+                                </div>
 
-                            <div class="flex flex-col gap-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">State / Province</label>
-                                <InputText @bind-Value="form.ShipState" class="@InputClass" placeholder="IL" />
-                            </div>
+                                <label class="flex items-center gap-2.5 text-sm text-text-secondary cursor-pointer select-none md:col-span-2 mt-1">
+                                    <InputCheckbox @bind-Value="saveNewAddress" class="custom-checkbox" />
+                                    Save this address to my account
+                                </label>
 
-                            <div class="flex flex-col gap-2">
-                                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Postal Code</label>
-                                <InputText @bind-Value="form.ShipPostalCode" class="@InputClass" placeholder="62701" />
+                                @if (savedAddresses.Count > 0)
+                                {
+                                    <button type="button" @onclick="UseSavedAddresses"
+                                            class="text-xs font-bold text-text-secondary hover:text-text-primary transition-colors text-left md:col-span-2">
+                                        <i class="fa-solid fa-arrow-left mr-1 text-[10px]"></i> Choose a saved address instead
+                                    </button>
+                                }
                             </div>
-                        </div>
+                        }
                     </div>
 
                     <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
@@ -195,6 +255,15 @@
     private bool isSubmitting;
     private string? errorMessage;
 
+    private IReadOnlyList<AddressDto> savedAddresses = [];
+    private int? selectedAddressId;
+    private bool useNewAddress;
+    private bool saveNewAddress = true;
+    private string? profileFullName;
+
+    private IReadOnlyList<string> provinces = [];
+    private List<string> wardOptions = [];
+
     private readonly CheckoutFormModel form = new();
 
     protected override async Task OnInitializedAsync()
@@ -219,10 +288,77 @@
         }
 
         var appUser = await UserManager.GetUserAsync(authState.User);
-        if (appUser is not null && !string.IsNullOrWhiteSpace(appUser.FullName))
-            form.ShipFullName = appUser.FullName;
+        profileFullName = appUser?.FullName;
+
+        provinces = AddressUnits.GetProvinces();
+        savedAddresses = await AddressService.GetAddressesAsync(userId);
+
+        if (savedAddresses.Count > 0)
+        {
+            var initial = savedAddresses.FirstOrDefault(a => a.IsDefault) ?? savedAddresses[0];
+            SelectAddress(initial);
+        }
+        else
+        {
+            useNewAddress = true;
+            if (!string.IsNullOrWhiteSpace(profileFullName))
+                form.RecipientName = profileFullName;
+        }
 
         isLoading = false;
+    }
+
+    private void OnProvinceChanged(ChangeEventArgs e)
+    {
+        form.Province = e.Value?.ToString() ?? string.Empty;
+        wardOptions = AddressUnits.GetWards(form.Province).ToList();
+        form.Ward = string.Empty;
+    }
+
+    private void OnWardChanged(ChangeEventArgs e)
+    {
+        form.Ward = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private void SelectAddress(AddressDto address)
+    {
+        selectedAddressId = address.Id;
+        useNewAddress = false;
+        ApplyAddress(address);
+    }
+
+    private void UseSavedAddresses()
+    {
+        useNewAddress = false;
+        var current = savedAddresses.FirstOrDefault(a => a.Id == selectedAddressId)
+                      ?? savedAddresses.FirstOrDefault(a => a.IsDefault)
+                      ?? savedAddresses.FirstOrDefault();
+        if (current is not null)
+            SelectAddress(current);
+    }
+
+    private void StartNewAddress()
+    {
+        useNewAddress = true;
+        selectedAddressId = null;
+        saveNewAddress = true;
+        form.RecipientName = profileFullName ?? string.Empty;
+        form.Phone = string.Empty;
+        form.AddressLine = string.Empty;
+        form.Ward = string.Empty;
+        form.Province = string.Empty;
+        form.Country = "Vietnam";
+        wardOptions = [];
+    }
+
+    private void ApplyAddress(AddressDto a)
+    {
+        form.RecipientName = a.RecipientName;
+        form.Phone = a.Phone;
+        form.AddressLine = a.AddressLine;
+        form.Ward = a.Ward;
+        form.Province = a.Province;
+        form.Country = string.IsNullOrWhiteSpace(a.Country) ? "Vietnam" : a.Country;
     }
 
     private async Task PlaceOrder()
@@ -233,15 +369,43 @@
         isSubmitting = true;
         errorMessage = null;
 
+        if (useNewAddress && !AddressUnits.IsValid(form.Province, form.Ward))
+        {
+            errorMessage = "Please choose a valid province and ward from the list.";
+            isSubmitting = false;
+            return;
+        }
+
+        if (useNewAddress && saveNewAddress)
+        {
+            var saveResult = await AddressService.AddAsync(userId, new AddressInput
+            {
+                RecipientName = form.RecipientName,
+                Phone = form.Phone,
+                AddressLine = form.AddressLine,
+                Ward = form.Ward,
+                Province = form.Province,
+                Country = "Vietnam",
+                SetAsDefault = savedAddresses.Count == 0
+            });
+
+            if (!saveResult.Success)
+            {
+                errorMessage = saveResult.Error ?? "We couldn't save your address. Please try again.";
+                isSubmitting = false;
+                return;
+            }
+        }
+
         var request = new CheckoutRequest
         {
-            ShipFullName = form.ShipFullName,
-            ShipPhone = form.ShipPhone,
-            ShipStreet = form.ShipStreet,
-            ShipCity = form.ShipCity,
-            ShipState = form.ShipState,
-            ShipPostalCode = form.ShipPostalCode,
-            ShipCountry = form.ShipCountry,
+            ShipFullName = form.RecipientName,
+            ShipPhone = form.Phone,
+            ShipStreet = form.AddressLine,
+            ShipCity = form.Province,
+            ShipState = form.Ward,
+            ShipPostalCode = null,
+            ShipCountry = form.Country,
             Method = form.Method,
             ReturnUrlBase = Navigation.BaseUri
         };
@@ -274,24 +438,22 @@
 
     private sealed class CheckoutFormModel
     {
-        [Required(ErrorMessage = "Full name is required.")]
-        public string ShipFullName { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Recipient name is required.")]
+        public string RecipientName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Phone is required.")]
-        public string ShipPhone { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Street address is required.")]
-        public string ShipStreet { get; set; } = string.Empty;
+        public string AddressLine { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "City is required.")]
-        public string ShipCity { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Ward / commune is required.")]
+        public string Ward { get; set; } = string.Empty;
 
-        public string? ShipState { get; set; }
+        [Required(ErrorMessage = "Province / city is required.")]
+        public string Province { get; set; } = string.Empty;
 
-        public string? ShipPostalCode { get; set; }
-
-        [Required(ErrorMessage = "Country is required.")]
-        public string ShipCountry { get; set; } = string.Empty;
+        public string Country { get; set; } = "Vietnam";
 
         public PaymentMethod Method { get; set; } = PaymentMethod.Cod;
     }

@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexus.Data;
 
 #nullable disable
 
-namespace Nexus.Migrations
+namespace Nexus.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260707181252_AddUserAddresses")]
+    partial class AddUserAddresses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -430,6 +433,49 @@ namespace Nexus.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("Nexus.Data.Entities.OrderEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("NewStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("OldStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderEvents");
+                });
+
             modelBuilder.Entity("Nexus.Data.Entities.OrderItem", b =>
                 {
                     b.Property<int>("Id")
@@ -699,6 +745,71 @@ namespace Nexus.Migrations
                     b.ToTable("ProductVariants");
                 });
 
+            modelBuilder.Entity("Nexus.Data.Entities.UserAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AddressLine")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)")
+                        .HasDefaultValue("Vietnam");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Province")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("RecipientName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Ward")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserAddresses");
+                });
+
             modelBuilder.Entity("Nexus.Data.Entities.VariantOptionValue", b =>
                 {
                     b.Property<int>("ProductVariantId")
@@ -844,6 +955,17 @@ namespace Nexus.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Nexus.Data.Entities.OrderEvent", b =>
+                {
+                    b.HasOne("Nexus.Data.Entities.Order", "Order")
+                        .WithMany("Events")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("Nexus.Data.Entities.OrderItem", b =>
                 {
                     b.HasOne("Nexus.Data.Entities.Order", "Order")
@@ -929,6 +1051,15 @@ namespace Nexus.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Nexus.Data.Entities.UserAddress", b =>
+                {
+                    b.HasOne("Nexus.Data.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Nexus.Data.Entities.VariantOptionValue", b =>
                 {
                     b.HasOne("Nexus.Data.Entities.ProductOptionValue", "ProductOptionValue")
@@ -955,6 +1086,8 @@ namespace Nexus.Migrations
 
             modelBuilder.Entity("Nexus.Data.Entities.Order", b =>
                 {
+                    b.Navigation("Events");
+
                     b.Navigation("Items");
 
                     b.Navigation("Payments");

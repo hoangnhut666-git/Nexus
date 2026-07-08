@@ -1,9 +1,13 @@
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.WebEncoders;
 using Nexus.Components;
 using Nexus.Components.Account;
 using Nexus.Data;
+using Nexus.Services.Addresses;
 using Nexus.Services.Cart;
 using Nexus.Services.Categories;
 using Nexus.Services.Orders;
@@ -18,6 +22,11 @@ var identitySettings = builder.Configuration
 
 builder.Services.Configure<IdentitySettings>(
     builder.Configuration.GetSection(IdentitySettings.SectionName));
+
+// Render non-ASCII text (e.g. Vietnamese place names) as UTF-8 rather than HTML numeric
+// entities, keeping the markup readable and compact.
+builder.Services.Configure<WebEncoderOptions>(options =>
+    options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -72,6 +81,8 @@ builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddSingleton<IVietnamAddressUnitService, VietnamAddressUnitService>();
 
 builder.Services.Configure<PayPalOptions>(builder.Configuration.GetSection(PayPalOptions.SectionName));
 builder.Services.AddScoped<IPaymentGateway, CodPaymentGateway>();

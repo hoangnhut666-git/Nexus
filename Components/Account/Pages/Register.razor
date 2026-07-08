@@ -18,7 +18,7 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>NEXUS // Đăng ký</PageTitle>
+<PageTitle>NEXUS // Register</PageTitle>
 
 <div class="w-full max-w-[420px] flex flex-col gap-6 my-auto">
     <div class="lg:hidden flex justify-center mb-2">
@@ -28,8 +28,8 @@
     </div>
 
     <div class="text-center lg:text-left">
-        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-1.5">Tạo tài khoản mới</h2>
-        <p class="text-text-secondary text-sm">Điền thông tin bên dưới để đăng ký tài khoản khách hàng.</p>
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-1.5">Create New Account</h2>
+        <p class="text-text-secondary text-sm">Fill in the information below to register a customer account.</p>
     </div>
 
     <StatusMessage Message="@Message" />
@@ -38,7 +38,7 @@
         <DataAnnotationsValidator />
 
         <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.FullName">Họ và tên *</label>
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.FullName">Full Name *</label>
             <div class="relative flex items-center group">
                 <i class="fa-regular fa-user absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
                 <InputText @bind-Value="Input.FullName"
@@ -46,13 +46,13 @@
                            class="@GetInputClass(() => Input.FullName)"
                            autocomplete="name"
                            aria-required="true"
-                           placeholder="Ví dụ: Nguyễn Văn A" />
+                           placeholder="e.g. John Doe" />
             </div>
             <ValidationMessage For="() => Input.FullName" class="text-danger text-xs" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Địa chỉ Email *</label>
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Email Address *</label>
             <div class="relative flex items-center group">
                 <i class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
                 <InputText @bind-Value="Input.Email"
@@ -66,7 +66,7 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Mật khẩu *</label>
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Password *</label>
             <div class="relative flex items-center group">
                 <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
                 <InputText type="@passwordInputType"
@@ -75,11 +75,11 @@
                            class="@($"{GetInputClass(() => Input.Password)} pr-12")"
                            autocomplete="new-password"
                            aria-required="true"
-                           placeholder="Tối thiểu 6 ký tự" />
+                           placeholder="Minimum 6 characters" />
                 <button type="button"
                         @onclick="TogglePasswordVisibility"
                         class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
-                        title="Hiển thị mật khẩu">
+                        title="Show password">
                     <i class="@passwordToggleIconClass"></i>
                 </button>
             </div>
@@ -87,7 +87,7 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.ConfirmPassword">Xác nhận mật khẩu *</label>
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.ConfirmPassword">Confirm Password *</label>
             <div class="relative flex items-center group">
                 <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
                 <InputText type="@confirmPasswordInputType"
@@ -96,11 +96,11 @@
                            class="@($"{GetInputClass(() => Input.ConfirmPassword)} pr-12")"
                            autocomplete="new-password"
                            aria-required="true"
-                           placeholder="Nhập lại mật khẩu" />
+                           placeholder="Re-enter your password" />
                 <button type="button"
                         @onclick="ToggleConfirmPasswordVisibility"
                         class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
-                        title="Hiển thị mật khẩu">
+                        title="Show password">
                     <i class="@confirmPasswordToggleIconClass"></i>
                 </button>
             </div>
@@ -110,7 +110,7 @@
         <div class="flex items-start gap-2.5 mt-1 select-none">
             <InputCheckbox @bind-Value="Input.AcceptTerms" id="Input.AcceptTerms" class="custom-checkbox mt-0.5" />
             <label for="Input.AcceptTerms" class="text-xs text-text-secondary cursor-pointer leading-tight">
-                Tôi đồng ý với <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Điều khoản dịch vụ</a> và <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Chính sách bảo mật</a>.
+                I agree to the <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Terms of Service</a> and <a href="#" class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors">Privacy Policy</a>.
             </label>
         </div>
         <ValidationMessage For="() => Input.AcceptTerms" class="text-danger text-xs" />
@@ -118,14 +118,14 @@
         <button type="submit"
                 disabled="@isSubmitting"
                 class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group mt-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-            <span>@(isSubmitting ? "Đang khởi tạo tài khoản..." : "Đăng ký Tài khoản")</span>
+            <span>@(isSubmitting ? "Creating account..." : "Register Account")</span>
             <i class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
         </button>
     </EditForm>
 
     <div class="text-center text-xs text-text-muted mt-2">
-        Đã có tài khoản?
-        <a href="@loginUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Đăng nhập ngay</a>
+        Already have an account?
+        <a href="@loginUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Sign in now</a>
     </div>
 </div>
 
@@ -277,29 +277,29 @@
 
     private sealed class InputModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập họ và tên.")]
-        [Display(Name = "Họ và tên")]
+        [Required(ErrorMessage = "Please enter your full name.")]
+        [Display(Name = "Full Name")]
         public string FullName { get; set; } = "";
 
-        [Required(ErrorMessage = "Vui lòng nhập địa chỉ email.")]
-        [EmailAddress(ErrorMessage = "Vui lòng nhập địa chỉ email hợp lệ.")]
+        [Required(ErrorMessage = "Please enter your email address.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         [Display(Name = "Email")]
         public string Email { get; set; } = "";
 
-        [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
-        [StringLength(100, ErrorMessage = "Mật khẩu phải có độ dài tối thiểu {2} ký tự.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Please enter your password.")]
+        [StringLength(100, ErrorMessage = "Password must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Mật khẩu")]
+        [Display(Name = "Password")]
         public string Password { get; set; } = "";
 
-        [Required(ErrorMessage = "Vui lòng xác nhận mật khẩu.")]
+        [Required(ErrorMessage = "Please confirm your password.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Xác nhận mật khẩu")]
-        [Compare(nameof(Password), ErrorMessage = "Xác nhận mật khẩu không khớp với mật khẩu đã nhập.")]
+        [Display(Name = "Confirm Password")]
+        [Compare(nameof(Password), ErrorMessage = "Password confirmation does not match the entered password.")]
         public string ConfirmPassword { get; set; } = "";
 
-        [Display(Name = "Điều khoản dịch vụ")]
-        [Range(typeof(bool), "true", "true", ErrorMessage = "Bạn phải đồng ý với Điều khoản dịch vụ để tạo tài khoản.")]
+        [Display(Name = "Terms of Service")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "You must agree to the Terms of Service to create an account.")]
         public bool AcceptTerms { get; set; }
     }
 }

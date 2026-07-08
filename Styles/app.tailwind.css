@@ -184,3 +184,342 @@ h1:focus {
     padding: 1rem;
     color: white;
 }
+
+/* ===================================================================
+   Account Management (ASP.NET Identity) — themed to match storefront
+   The scaffolded pages use Bootstrap-style classes that don't exist in
+   this Tailwind build. These rules re-theme them. Everything except the
+   nav link is scoped under .manage-content so no other pages change.
+   =================================================================== */
+
+/* Sidebar navigation */
+.manage-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.manage-nav-link:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.manage-nav-link.active {
+    color: #fff;
+    background: linear-gradient(to right, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.12));
+    border-color: rgba(99, 102, 241, 0.25);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+}
+
+/* Typography inside the content card */
+.manage-content h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+}
+
+.manage-content h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 1.5rem 0 0.75rem;
+}
+
+.manage-content p {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+}
+
+.manage-content a:not(.btn) {
+    color: #818cf8;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.manage-content a:not(.btn):hover {
+    color: #a5b4fc;
+    text-decoration: underline;
+}
+
+.manage-content hr {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 1.25rem 0;
+}
+
+.manage-content ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.manage-content ol li {
+    margin-bottom: 0.75rem;
+}
+
+.manage-content kbd {
+    display: inline-block;
+    background: var(--color-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.375rem;
+    padding: 0.15rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: #a5b4fc;
+}
+
+.manage-content .recovery-code {
+    display: inline-block;
+    background: var(--color-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.375rem;
+    padding: 0.35rem 0.65rem;
+    margin: 0.2rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    color: var(--color-text-primary);
+}
+
+.manage-content .text-info {
+    color: #7dd3fc;
+    font-size: 0.875rem;
+}
+
+.manage-content .text-success {
+    color: var(--color-success);
+}
+
+.manage-content .font-weight-bold {
+    font-weight: 700;
+}
+
+/* Layout grid shims */
+.manage-content .row {
+    display: block;
+}
+
+.manage-content .col-xl-6,
+.manage-content .col-md-6,
+.manage-content .col-md-12,
+.manage-content .col-lg-3,
+.manage-content .col-lg-9 {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .manage-content .col-md-6 { max-width: 32rem; }
+}
+
+@media (min-width: 1280px) {
+    .manage-content .col-xl-6 { max-width: 32rem; }
+}
+
+/* Form controls */
+.manage-content .form-floating {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.manage-content .form-floating.input-group {
+    flex-wrap: wrap;
+}
+
+.manage-content .form-floating > label {
+    order: -1;
+}
+
+.manage-content .form-label,
+.manage-content .control-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+}
+
+.manage-content .form-control {
+    width: 100%;
+    background: var(--color-bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.manage-content .form-control::placeholder {
+    color: var(--color-text-muted);
+}
+
+.manage-content .form-control:focus {
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.12);
+}
+
+.manage-content .form-control:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.manage-content .validation-message {
+    color: var(--color-danger);
+    font-size: 0.75rem;
+    margin-top: 0.35rem;
+}
+
+.manage-content .input-group-text {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    color: var(--color-success);
+}
+
+/* Buttons */
+.manage-content .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.manage-content .btn + .btn {
+    margin-left: 0.5rem;
+}
+
+.manage-content .btn-lg {
+    padding: 0.9rem 1.5rem;
+    font-size: 0.9rem;
+}
+
+.manage-content .w-100 {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.manage-content .w-100 + .btn,
+.manage-content .btn + .w-100 {
+    margin-left: 0;
+}
+
+.manage-content .btn-primary {
+    background-image: linear-gradient(to right, #6366f1, #a855f7);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
+}
+
+.manage-content .btn-primary:hover {
+    color: #fff;
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+}
+
+.manage-content .btn-danger {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.manage-content .btn-danger:hover {
+    background: var(--color-danger);
+    color: #fff;
+}
+
+.manage-content .btn-link {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #818cf8;
+    padding: 0.25rem 0;
+}
+
+.manage-content .btn-link:hover {
+    color: #a5b4fc;
+    text-decoration: underline;
+    transform: none;
+}
+
+/* Alerts */
+.manage-content .alert {
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    border: 1px solid transparent;
+    border-left-width: 4px;
+}
+
+.manage-content .alert p {
+    margin-bottom: 0.25rem;
+    color: inherit;
+}
+
+.manage-content .alert p:last-child {
+    margin-bottom: 0;
+}
+
+.manage-content .alert a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.manage-content .alert-danger {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+}
+
+.manage-content .alert-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #fcd34d;
+}
+
+.manage-content .alert-info {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: #a5b4fc;
+}
+
+/* Tables */
+.manage-content .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 1rem;
+}
+
+.manage-content .table td {
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    vertical-align: middle;
+}
+
+.manage-content .table tr:last-child td {
+    border-bottom: 0;
+}
