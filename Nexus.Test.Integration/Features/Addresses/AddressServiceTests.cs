@@ -237,6 +237,24 @@ public sealed class AddressServiceTests : IClassFixture<TestDatabaseFixture>, IA
     }
 
     [Fact]
+    public async Task GetByIdAsync_ReturnsOwn_AndNullForForeignUser()
+    {
+        await _dbHelper.EnsureUserAsync(UserA);
+        await _dbHelper.EnsureUserAsync(UserB);
+
+        var service = Resolve();
+        var created = await service.AddAsync(UserA, ValidInput("Alice"));
+
+        var own = await service.GetByIdAsync(UserA, created.Data!.Id);
+        own.Should().NotBeNull();
+        own!.Id.Should().Be(created.Data!.Id);
+        own.RecipientName.Should().Be("Alice");
+
+        var foreign = await service.GetByIdAsync(UserB, created.Data!.Id);
+        foreign.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetDefaultAsync_ReturnsDefaultOrNull()
     {
         await _dbHelper.EnsureUserAsync(UserA);

@@ -44,6 +44,23 @@ public sealed class AddressService(
         return address is null ? null : MapDto(address);
     }
 
+    public async Task<AddressDto?> GetByIdAsync(
+        string userId,
+        int addressId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return null;
+
+        await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var address = await context.UserAddresses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == addressId && a.UserId == userId, cancellationToken);
+
+        return address is null ? null : MapDto(address);
+    }
+
     public async Task<ServiceResult<AddressDto>> AddAsync(
         string userId,
         AddressInput input,

@@ -13,6 +13,11 @@ public interface IAddressService
         string userId,
         CancellationToken cancellationToken = default);
 
+    Task<AddressDto?> GetByIdAsync(
+        string userId,
+        int addressId,
+        CancellationToken cancellationToken = default);
+
     Task<ServiceResult<AddressDto>> AddAsync(
         string userId,
         AddressInput input,
