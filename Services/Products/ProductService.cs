@@ -43,7 +43,8 @@ public sealed class ProductService(
         var totalCount = await products.CountAsync(cancellationToken);
 
         var items = await products
-            .OrderBy(p => p.Name)
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(p => new ProductListItemDto

@@ -350,6 +350,47 @@ public sealed class ProductServiceTests : IClassFixture<TestDatabaseFixture>, IA
     }
 
     [Fact]
+    public async Task GetPagedAsync_ReturnsSecondPage()
+    {
+        var category = await _dbHelper.InsertCategoryAsync(
+            TestDataBuilders.ValidCategoryWithSlug("Pag Cat", "pag-cat"));
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IProductService>();
+
+        for (var i = 1; i <= 8; i++)
+        {
+            await service.CreateAsync(new CreateProductRequest
+            {
+                Name = $"Product {i:D2}",
+                Slug = $"product-{i:D2}",
+                CategoryId = category.Id,
+                Sku = $"NX-P{i:D2}",
+                Price = 100_000m,
+                StockQuantity = 1,
+                IsActive = true
+            });
+        }
+
+        var page1 = await service.GetPagedAsync(new ProductQuery
+        {
+            Page = 1,
+            PageSize = 6,
+            Status = ProductStatusFilter.All
+        });
+        var page2 = await service.GetPagedAsync(new ProductQuery
+        {
+            Page = 2,
+            PageSize = 6,
+            Status = ProductStatusFilter.All
+        });
+
+        page1.Items.Should().HaveCount(6);
+        page2.Items.Should().HaveCount(2);
+        page2.TotalCount.Should().Be(8);
+    }
+
+    [Fact]
     public async Task GetPagedAsync_AggregatesPriceAndStock()
     {
         var category = await _dbHelper.InsertCategoryAsync(

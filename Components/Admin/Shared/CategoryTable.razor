@@ -89,9 +89,10 @@
                 {
                     if (pageNumber == 1 || pageNumber == TotalPages || (pageNumber >= Page - 1 && pageNumber <= Page + 1))
                     {
+                        var targetPage = pageNumber;
                         <button type="button"
                                 class="@GetPageButtonClass(pageNumber == Page, false)"
-                                @onclick="() => OnPageChanged.InvokeAsync(pageNumber)">
+                                @onclick="() => OnPageChanged.InvokeAsync(targetPage)">
                             @pageNumber
                         </button>
                     }
