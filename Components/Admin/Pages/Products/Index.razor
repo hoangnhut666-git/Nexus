@@ -215,7 +215,7 @@
         }
 
         drawerOpen = false;
-        Navigation.NavigateTo($"/admin/products/{result.Data!.Id}");
+        Navigation.NavigateTo($"/admin/products/{result.Data!.Id}?created=1");
     }
 
     private async Task ToggleActiveAsync(ProductListItemDto item)

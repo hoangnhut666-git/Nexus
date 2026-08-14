@@ -10,89 +10,221 @@
         <h3 class="text-lg font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">@Title</h3>
         <button type="button"
                 class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-white/5 hover:rotate-90"
-                title="Close"
-                @onclick="Close">
+                title="Close" @onclick="Close">
             <i class="fa-solid fa-xmark"></i>
         </button>
     </div>
 
-    <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+    <EditForm EditContext="@editContext" OnValidSubmit="@HandleSubmit"
+              class="flex flex-col flex-1 min-h-0 overflow-hidden">
         <DataAnnotationsValidator />
 
         <div class="p-8 overflow-y-auto flex-1 flex flex-col gap-6">
-            <p class="text-xs text-text-muted">Create the product shell first. You can add options and variants on the detail page.</p>
+            <p class="text-xs text-text-muted">Create the product shell first. You can add options and variants on the
+                detail page.</p>
 
-            <div class="flex flex-col gap-2">
-                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-name">Product Name *</label>
-                <InputText id="product-name"
-                           @bind-Value="Model.Name"
-                           class="@GetInputClass(() => Model.Name)"
-                           placeholder="e.g. iPhone 16" />
-                <ValidationMessage For="() => Model.Name" class="text-danger text-xs" />
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider"
+                           for="product-name">Product Name *</label>
+                    <InputText id="product-name" @bind-Value="Model.Name" class="@GetInputClass(() => Model.Name)"
+                               placeholder="e.g. iPhone 16" />
+                    <ValidationMessage For="() => Model.Name" class="text-danger text-xs" />
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider"
+                           for="product-category">Category *</label>
+                    <select id="product-category" class="@GetInputClass(() => Model.CategoryId)" value="@Model.CategoryId"
+                            @onchange="OnCategoryChanged">
+                        <option value="0">Select category</option>
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                    <ValidationMessage For="() => Model.CategoryId" class="text-danger text-xs" />
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider"
+                           for="product-slug">Slug *</label>
+                    <div class="flex gap-2">
+                        <InputText id="product-slug" @bind-Value="Model.Slug"
+                                   class="@($"{GetInputClass(() => Model.Slug)} flex-1")" placeholder="iphone-16" />
+                        @* <button type="button"
+                                class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center
+                    justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500
+                    hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
+                                title="Generate" @onclick="GenerateSlug">
+                            <i aria-hidden="true" class="fa-solid fa-bolt mr-2"></i> Generate
+                        </button> *@
+
+                        <button type="button"
+                                class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
+                                title="Generate slug" @onclick="GenerateSlug">
+                            <i aria-hidden="true" class="fa-solid fa-bolt mr-2"></i> Generate slug
+                        </button>
+                    </div>
+                    <ValidationMessage For="() => Model.Slug" class="text-danger text-xs" />
+                </div>
+
+                <StatusRadioCards @bind-IsActive="Model.IsActive" />
+
+                <ProductImageUpload @bind-ImageUrl="Model.PrimaryImageUrl" @bind-PreviewUrl="previewUrl"
+                                    OnFileSelected="@HandleFileSelected" InputClass="@InputBaseClass" />
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider"
+                           for="product-description">Description</label>
+                    <InputTextArea id="product-description" @bind-Value="Model.Description"
+                                   class="@($"{InputBaseClass} resize-y min-h-[90px] font-sans")"
+                                   placeholder="Brief description of this product..." />
+                </div>
             </div>
 
-            <div class="flex flex-col gap-2">
-                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-category">Category *</label>
-                <select id="product-category"
-                        class="@GetInputClass(() => Model.CategoryId)"
-                        value="@Model.CategoryId"
-                        @onchange="OnCategoryChanged">
-                    <option value="0">Select category</option>
-                    @foreach (var category in Categories)
-                    {
-                        <option value="@category.Id">@category.Name</option>
-                    }
-                </select>
-                <ValidationMessage For="() => Model.CategoryId" class="text-danger text-xs" />
-            </div>
+            <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
+                <button type="button"
+                        class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary"
+                        @onclick="Close">
+                    Cancel
+                </button>
 
-            <div class="flex flex-col gap-2">
-                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-slug">Slug *</label>
-                <div class="flex gap-2">
-                    <InputText id="product-slug"
-                               @bind-Value="Model.Slug"
-                               class="@($"{GetInputClass(() => Model.Slug)} flex-1")"
-                               placeholder="iphone-16" />
-                    <button type="button"
-                            class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
-                            title="Generate"
-                            @onclick="GenerateSlug">
-                        <i aria-hidden="true" class="fa-solid fa-bolt mr-2"></i> Generate
+                @*
+                <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5
+                    text-sm font-semibold
+                    rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+                        disabled="@isSaving">
+                    <i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Creating..." : "Create New
+            Product")
+                </button> *@
+
+                @* <button
+                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5
+                    text-sm font-semibold
+                    rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+                    disabled="@isSaving">
+                    <i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Creating..." : "Publish Product")
+                </button> *@
+
+              
+
+                @* <div class="inline-block">
+                    <div> <a id="btn-publish-item" data-testid="publish-item-btn" data-action="publish" role="button"
+                             aria-label="Publish Item Action" class="cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500
+                        text-white py-2.5 px-5 text-sm
+                        font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center
+                        gap-2 @(isSaving ? "opacity-50 pointer-events-none" : "")"
+                             @onclick="async () => { if (!isSaving) await HandleSubmit(); }">
+
+                        @if (isSaving)
+                        {
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                            <span>Publishing...</span>
+                        }
+                        else
+                        {
+                            <i aria-hidden="true" class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>Publish Item</span>
+                        }
+                    </a></div>
+                </div> *@
+
+
+                @* <div class="inline-block">
+                    <button type="button" id="item-submission-anchor" data-testid="submit-for-publication"
+                            aria-label="Finalize and publish the current item" class="cursor-pointer bg-gradient-to-r from-emerald-500
+            to-teal-500 text-white py-2.5 px-5 text-sm
+                        font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center
+                        gap-2 @(isSaving ? "opacity-50 pointer-events-none" : "")"
+                            @onclick="async () => { if (!isSaving) await HandleSubmit(); }">
+
+                        @if (isSaving)
+                        {
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                            <span>Wait, saving...</span>
+                        }
+                        else
+                        {
+                            <i aria-hidden="true" class="fa-solid fa-paper-plane"></i>
+                            <span>Create Item Now</span>
+                        }
+                    </button>
+                </div> *@
+
+
+
+                @* <div class="inline-block">
+                    <a href="javascript:void(0)" id="btn-publish-action" data-testid="publish-item-action"
+                       aria-label="Confirm and publish item" role="button" class="cursor-pointer bg-gradient-to-r from-emerald-500
+            to-teal-500 text-white py-2.5 px-5 text-sm
+                        font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center
+                        gap-2 @(isSaving ? "opacity-50 pointer-events-none" : "")"
+                       @onclick="async () => { if (!isSaving) await HandleSubmit(); }">
+
+                        @if (isSaving)
+                        {
+                            <!-- 5. Đổi icon và text trạng thái loading -->
+                            <i class="fa-solid fa-spinner animate-spin"></i>
+                            <span>Processing...</span>
+                        }
+                        else
+                        {
+                            <!-- 6. Đổi icon và text hiển thị chính -->
+                            <i aria-hidden="true" class="fa-solid fa-rocket"></i>
+                            <span>Publish Item</span>
+                        }
+                    </a>
+                </div> *@
+                
+
+
+                <div class="inline-block publish-wrapper-v2">
+                    <button type="button" id="action-btn-publish" data-test-id="publish-btn-v2"
+                            aria-label="Confirm and publish item"
+                            class="cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2 px-4 text-sm font-bold
+            rounded-md shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 @(isSaving ?
+            "opacity-50 pointer-events-none" : "")"
+                            @onclick="async () => { if (!isSaving) await HandleSubmit(); }">
+
+                        @if (isSaving)
+                        {
+                            <!-- Đổi icon sang circle-notch thay vì spinner để test AI visual (nếu có) -->
+                            <i class="fa-solid fa-circle-notch animate-spin"></i>
+                            <span>Processing...</span>
+                        }
+                        else
+                        {
+                            <!-- Đổi icon sang upload -->
+                            <i aria-hidden="true" class="fa-solid fa-upload"></i>
+                            <span>Thêm sản phẩm</span>
+                        }
                     </button>
                 </div>
-                <ValidationMessage For="() => Model.Slug" class="text-danger text-xs" />
+                
+                @* <div class="my-3">
+                    <button type="button" id="submit-action-trigger" data-testid="submit-action-btn" data-action="deploy"
+                            aria-label="Submit and Deploy Action"
+                            class="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 @(isSaving ? "opacity-60 pointer-events-none" : "cursor-pointer")"
+                            @onclick="async () => { if (!isSaving) await HandleSubmit(); }" disabled="@isSaving">
+                        <span
+                            class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-gray-900/40 rounded-md w-full h-full flex items-center justify-center gap-2">
+                            @if (isSaving)
+                            {
+                                <i class="fa-solid fa-spinner animate-spin"></i>
+                                <span>Đang xử lý...</span>
+                            }
+                            else
+                            {
+                                <i aria-hidden="true" class="fa-solid fa-paper-plane"></i>
+                                <span>Xuất bản ngay</span>
+                            }
+                        </span>
+                    </button>
+                </div> *@
+
             </div>
-
-            <StatusRadioCards @bind-IsActive="Model.IsActive" />
-
-            <ProductImageUpload @bind-ImageUrl="Model.PrimaryImageUrl"
-                                @bind-PreviewUrl="previewUrl"
-                                OnFileSelected="@HandleFileSelected"
-                                InputClass="@InputBaseClass" />
-
-            <div class="flex flex-col gap-2">
-                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="product-description">Description</label>
-                <InputTextArea id="product-description"
-                               @bind-Value="Model.Description"
-                               class="@($"{InputBaseClass} resize-y min-h-[90px] font-sans")"
-                               placeholder="Brief description of this product..." />
-            </div>
-        </div>
-
-        <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
-            <button type="button"
-                    class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary"
-                    @onclick="Close">
-                Cancel
-            </button>
-            <button type="submit"
-                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
-                    disabled="@isSaving">
-                <i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Creating..." : "Create Product")
-            </button>
-        </div>
-    </EditForm>
-</div>
+        </EditForm>
+    </div>
 
 @code {
     [Parameter]

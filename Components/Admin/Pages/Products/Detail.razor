@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.WebUtilities
 @using Nexus.Components.Admin.Shared
 @using Nexus.Services.Categories
 @using Nexus.Services.Categories.Models
@@ -25,7 +26,7 @@
         <div class="flex flex-col gap-6">
             <div class="flex items-center gap-4">
                 <a href="/admin/products" class="text-text-secondary hover:text-text-primary text-sm">
-                    <i class="fa-solid fa-arrow-left mr-2"></i> Back to products
+                    <i aria-hidden="true" class="fa-solid fa-arrow-left mr-2"></i> Back to products
                 </a>
                 <h2 class="text-lg font-bold text-text-primary">@product.Name</h2>
             </div>
@@ -223,6 +224,17 @@
         await LoadCategoriesAsync();
         await LoadProductAsync();
         isLoading = false;
+        TryShowCreatedToast();
+    }
+
+    private void TryShowCreatedToast()
+    {
+        var query = QueryHelpers.ParseQuery(Navigation.ToAbsoluteUri(Navigation.Uri).Query);
+        if (!query.TryGetValue("created", out var created) || created != "1")
+            return;
+
+        ShowToast("Success", "New product added.", AdminToastType.Success);
+        Navigation.NavigateTo($"/admin/products/{ProductId}", replace: true);
     }
 
     private async Task LoadCategoriesAsync()

@@ -10,20 +10,20 @@ public static class IdentitySeedData
 
     // Default password applied to every seeded account. Meets the configured
     // Identity policy (>= 6 chars, upper/lower/digit/non-alphanumeric).
-    public const string DefaultSeedPassword = "Nexus@123";
+    public const string DefaultSeedPassword = "Abc123456@";
 
     private static readonly (string Email, string FullName)[] AdminAccounts =
     [
-        ("admin1@nexus.com", "Trần Hoàng Nhựt"),
-        ("admin2@nexus.com", "Nguyễn Mỹ Linh"),
-        ("admin3@nexus.com", "Hà Đoan Trang"),
+        ("admin1@test.com", "Trần Hoàng Nhựt"),
+        ("admin2@test.com", "Nguyễn Mỹ Linh"),
+        ("admin3@test.com", "Hà Đoan Trang"),
     ];
 
     private static readonly (string Email, string FullName)[] CustomerAccounts =
     [
-        ("customer1@nexus.com", "Nguyễn Thị Thảo"),
-        ("customer2@nexus.com", "Lê Thị Thu Hà"),
-        ("customer3@nexus.com", "Trần Văn Bình"),
+        ("customer1@test.com", "Nguyễn Thị Thảo"),
+        ("customer2@test.com", "Lê Thị Thu Hà"),
+        ("customer3@test.com", "Trần Văn Bình"),
     ];
 
     public static async Task SeedAsync(IServiceProvider services)

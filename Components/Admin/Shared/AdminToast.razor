@@ -1,13 +1,16 @@
 @using Nexus.Components.Admin.Shared
 
-<div class="toast-container fixed bottom-6 right-6 flex flex-col gap-3 z-[9999] pointer-events-none">
+<div class="toast-container fixed bottom-6 right-6 flex flex-col gap-3 z-[9999] pointer-events-none" data-testid="toast-container">
     @foreach (var toast in Messages)
     {
-        <div class="@GetToastClass(toast)">
+        <div class="@GetToastClass(toast)" 
+             data-testid="toast-item" 
+             data-toast-type="@toast.Type.ToString().ToLower()">
+             
             <i class="@GetIconClass(toast) text-base"></i>
             <div class="flex flex-col gap-0.5">
-                <div class="text-xs font-bold">@toast.Title</div>
-                <div class="text-xs text-text-secondary">@toast.Description</div>
+                <div class="text-xs font-bold" data-testid="toast-title">@toast.Title</div>
+                <div class="text-xs text-text-secondary" data-testid="toast-description">@toast.Description</div>
             </div>
         </div>
     }
