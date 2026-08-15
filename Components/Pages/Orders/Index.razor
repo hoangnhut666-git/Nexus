@@ -16,7 +16,7 @@
 
 <PageTitle>Your Orders — NEXUS</PageTitle>
 
-<div class="max-w-5xl mx-auto px-6 py-10">
+<div class="max-w-5xl mx-auto px-6 py-10" data-testid="orders-page">
     <div class="mb-8">
         <h1 class="text-3xl font-bold tracking-tight mb-2">Your Orders</h1>
         <p class="text-text-secondary text-sm">Track and review your past orders</p>
@@ -32,7 +32,7 @@
             <i class="fa-solid fa-box-open text-4xl text-text-muted mb-4"></i>
             <h2 class="text-xl font-bold mb-2">No orders yet</h2>
             <p class="text-text-secondary mb-6">When you place an order, it will show up here.</p>
-            <a href="/products" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+            <a href="/products" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition" data-testid="orders-continue-shopping">
                 <i class="fa-solid fa-arrow-left"></i> Continue shopping
             </a>
         </div>
@@ -43,6 +43,8 @@
             @foreach (var order in orders)
             {
                 <a href="@($"/orders/{order.OrderNumber}")"
+                   data-testid="order-row"
+                   data-order-number="@order.OrderNumber"
                    class="flex items-center justify-between gap-4 p-5 hover:bg-white/5 transition first:rounded-t-2xl last:rounded-b-2xl">
                     <div class="min-w-0">
                         <div class="font-bold text-text-primary">@order.OrderNumber</div>

@@ -10,6 +10,7 @@
 
 <PageTitle>Reset authenticator key</PageTitle>
 
+<div data-testid="manage-reset-authenticator-page">
 <StatusMessage />
 <h3>Reset authenticator key</h3>
 <div class="alert alert-warning" role="alert">
@@ -25,8 +26,9 @@
 <div>
     <form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
         <AntiforgeryToken />
-        <button class="btn btn-danger" type="submit">Reset authenticator key</button>
+        <button class="btn btn-danger" type="submit" data-testid="manage-reset-authenticator-submit">Reset authenticator key</button>
     </form>
+</div>
 </div>
 
 @code {

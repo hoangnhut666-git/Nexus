@@ -88,25 +88,8 @@
                         @onclick="Close">
                     Cancel
                 </button>
-
-                @*
-                <button type="submit" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5
-                    text-sm font-semibold
-                    rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
-                        disabled="@isSaving">
-                    <i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Creating..." : "Create New
-            Product")
-                </button> *@
-
-                @* <button
-                    class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5
-                    text-sm font-semibold
-                    rounded-lg shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
-                    disabled="@isSaving">
-                    <i aria-hidden="true" class="fa-solid fa-floppy-disk"></i> @(isSaving ? "Creating..." : "Publish Product")
-                </button> *@
-
-              
+ 
+                @* Orinal element *@
 
                 @* <div class="inline-block">
                     <div> <a id="btn-publish-item" data-testid="publish-item-btn" data-action="publish" role="button"
@@ -153,7 +136,7 @@
 
 
 
-                @* <div class="inline-block">
+                <div class="inline-block">
                     <a href="javascript:void(0)" id="btn-publish-action" data-testid="publish-item-action"
                        aria-label="Confirm and publish item" role="button" class="cursor-pointer bg-gradient-to-r from-emerald-500
             to-teal-500 text-white py-2.5 px-5 text-sm
@@ -174,17 +157,14 @@
                             <span>Publish Item</span>
                         }
                     </a>
-                </div> *@
+                </div>
                 
 
-
-                <div class="inline-block publish-wrapper-v2">
+                @* <div class="inline-block publish-wrapper-v2">
                     <button type="button" id="action-btn-publish" data-test-id="publish-btn-v2"
-                            aria-label="Confirm and publish item"
-                            class="cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2 px-4 text-sm font-bold
-            rounded-md shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 @(isSaving ?
-            "opacity-50 pointer-events-none" : "")"
-                            @onclick="async () => { if (!isSaving) await HandleSubmit(); }">
+                            aria-label="Confirm and publish item" class="cursor-pointer bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2 px-4 text-sm font-bold
+                        rounded-md shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-center gap-2 @(isSaving ?
+                                        "opacity-50 pointer-events-none" : "")" @onclick="async () => { if (!isSaving) await HandleSubmit(); }">
 
                         @if (isSaving)
                         {
@@ -199,15 +179,19 @@
                             <span>Thêm sản phẩm</span>
                         }
                     </button>
-                </div>
-                
+                </div> *@
+
                 @* <div class="my-3">
                     <button type="button" id="submit-action-trigger" data-testid="submit-action-btn" data-action="deploy"
                             aria-label="Submit and Deploy Action"
-                            class="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 @(isSaving ? "opacity-60 pointer-events-none" : "cursor-pointer")"
+                            class="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium rounded-lg
+            group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500
+            text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 @(isSaving ?
+            "opacity-60 pointer-events-none" : "cursor-pointer")"
                             @onclick="async () => { if (!isSaving) await HandleSubmit(); }" disabled="@isSaving">
                         <span
-                            class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-gray-900/40 rounded-md w-full h-full flex items-center justify-center gap-2">
+                            class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-gray-900/40 rounded-md w-full h-full flex
+            items-center justify-center gap-2">
                             @if (isSaving)
                             {
                                 <i class="fa-solid fa-spinner animate-spin"></i>

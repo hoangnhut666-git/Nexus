@@ -14,23 +14,25 @@
 
 <PageTitle>Resend email confirmation</PageTitle>
 
+<div data-testid="resend-email-confirmation-page">
 <h1>Resend email confirmation</h1>
 <h2>Enter your email.</h2>
 <hr />
 <StatusMessage Message="@message" />
 <div class="row">
     <div class="col-md-4">
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post" data-testid="resend-email-confirmation-form">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
+                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" data-testid="resend-email-input" />
                 <label for="Input.Email" class="form-label">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
+            <button type="submit" class="w-100 btn btn-lg btn-primary" data-testid="resend-email-submit-button">Resend</button>
         </EditForm>
     </div>
+</div>
 </div>
 
 @code {

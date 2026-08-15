@@ -1,12 +1,12 @@
 @inherits LayoutComponentBase
 
-<main class="w-full flex min-h-screen overflow-hidden">
+<main class="w-full flex min-h-screen overflow-hidden" data-testid="auth-layout">
     <section class="hidden lg:flex lg:w-1/2 bg-bg-surface border-r border-white/5 flex-col justify-between p-16 relative overflow-hidden">
         <div class="absolute -top-[10%] -left-[10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(99,102,241,0.12)_0%,rgba(0,0,0,0)_70%)] z-0 pointer-events-none animate-pulse" style="animation-duration: 8s;"></div>
         <div class="absolute -bottom-[15%] -right-[5%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(0,242,254,0.06)_0%,rgba(0,0,0,0)_70%)] z-0 pointer-events-none animate-pulse" style="animation-duration: 12s;"></div>
 
         <div class="z-10">
-            <a href="/" class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+            <a href="/" data-testid="auth-home-link" class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
                 <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
             </a>
         </div>

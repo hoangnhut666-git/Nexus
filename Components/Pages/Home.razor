@@ -12,12 +12,14 @@
 
 <PageTitle>NEXUS // Premium E-Commerce</PageTitle>
 
+<div data-testid="home-page">
 <HeroSection />
 <CategoryGrid Categories="categories" />
 <ProductGrid Products="products" />
 <PromoBanner />
 <FeaturesSection />
 <NewsletterSection />
+</div>
 
 @code {
     private IReadOnlyList<CategoryListItemDto> categories = [];

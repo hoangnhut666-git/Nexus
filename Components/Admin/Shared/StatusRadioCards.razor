@@ -4,6 +4,7 @@
         <button type="button"
                 class="@GetCardClass(true)"
                 data-status="active"
+                data-testid="status-active"
                 @onclick="() => SetActive(true)">
             <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
             <span class="text-xs font-semibold">Active</span>
@@ -11,6 +12,7 @@
         <button type="button"
                 class="@GetCardClass(false)"
                 data-status="hidden"
+                data-testid="status-hidden"
                 @onclick="() => SetActive(false)">
             <span class="status-dot w-2 h-2 rounded-full bg-text-muted"></span>
             <span class="text-xs font-semibold">Hidden</span>

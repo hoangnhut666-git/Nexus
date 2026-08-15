@@ -10,7 +10,7 @@
 @inject NavigationManager Navigation
 
 <CascadingValue Name="AdminPageTitle" Value="@("Order Management")">
-    <div>
+    <div data-testid="admin-orders-page">
         <div class="flex justify-between items-center mb-6 gap-4 flex-wrap">
             <div class="flex gap-4 flex-wrap items-center">
                 <div class="relative flex items-center">
@@ -19,10 +19,12 @@
                            placeholder="Search order # or customer..."
                            class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
                            value="@searchTerm"
+                           data-testid="admin-orders-search"
                            @oninput="OnSearchInput" />
                 </div>
                 <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
                         value="@statusFilter"
+                        data-testid="admin-orders-status-filter"
                         @onchange="OnStatusFilterChanged">
                     <option value="">All statuses</option>
                     @foreach (var status in AllStatuses)
@@ -74,7 +76,7 @@
                         {
                             @foreach (var order in pagedResult.Items)
                             {
-                                <tr class="hover:bg-white/[0.01] cursor-pointer" @onclick="() => OpenDetail(order.OrderNumber)">
+                                <tr class="hover:bg-white/[0.01] cursor-pointer" data-testid="admin-order-row" data-order-number="@order.OrderNumber" @onclick="() => OpenDetail(order.OrderNumber)">
                                     <td class="px-4 py-4 border-b border-white/5 text-sm">
                                         <span class="font-semibold text-accent">@order.OrderNumber</span>
                                     </td>
@@ -106,11 +108,13 @@
                         <button type="button"
                                 class="px-3 py-1.5 rounded-lg text-sm border border-white/5 text-text-secondary disabled:opacity-40 hover:border-white/10"
                                 disabled="@(query.Page <= 1)"
+                                data-testid="admin-orders-page-prev"
                                 @onclick="() => ChangePageAsync(query.Page - 1)">Prev</button>
                         <span class="text-sm text-text-secondary">Page @query.Page of @pagedResult.TotalPages</span>
                         <button type="button"
                                 class="px-3 py-1.5 rounded-lg text-sm border border-white/5 text-text-secondary disabled:opacity-40 hover:border-white/10"
                                 disabled="@(query.Page >= pagedResult.TotalPages)"
+                                data-testid="admin-orders-page-next"
                                 @onclick="() => ChangePageAsync(query.Page + 1)">Next</button>
                     </div>
                 </div>

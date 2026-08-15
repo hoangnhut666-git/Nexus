@@ -5,9 +5,9 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceScopeFactory ScopeFactory
 
-<aside class="w-[260px] bg-bg-surface border-r border-white/5 flex flex-col transition-all duration-300 z-10 flex-shrink-0">
+<aside class="w-[260px] bg-bg-surface border-r border-white/5 flex flex-col transition-all duration-300 z-10 flex-shrink-0" data-testid="admin-nav">
     <div class="h-20 flex items-center px-6 border-b border-white/5">
-        <a href="/" class="text-[22px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+        <a href="/" data-testid="admin-nav-logo" class="text-[22px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
             <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
         </a>
     </div>
@@ -18,16 +18,17 @@
         <NavLink href="/admin"
                  class="@NavLinkClass"
                  ActiveClass="@NavLinkActiveClass"
-                 Match="NavLinkMatch.All">
+                 Match="NavLinkMatch.All"
+                 data-testid="admin-nav-dashboard">
             <i class="fa-solid fa-chart-pie text-base w-5 text-center"></i> Dashboard
         </NavLink>
-        <NavLink href="/admin/products" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+        <NavLink href="/admin/products" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass" data-testid="admin-nav-products">
             <i class="fa-solid fa-box-open text-base w-5 text-center"></i> Products
         </NavLink>
-        <NavLink href="/admin/categories" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+        <NavLink href="/admin/categories" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass" data-testid="admin-nav-categories">
             <i class="fa-solid fa-layer-group text-base w-5 text-center"></i> Categories
         </NavLink>
-        <NavLink href="/admin/orders" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">
+        <NavLink href="/admin/orders" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass" data-testid="admin-nav-orders">
             <i class="fa-solid fa-cart-shopping text-base w-5 text-center"></i> Orders
         </NavLink>
         <NavLink href="/admin/customers" class="@NavLinkClass" ActiveClass="@NavLinkActiveClass">

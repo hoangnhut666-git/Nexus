@@ -11,6 +11,7 @@
 
 <PageTitle>Manage your external logins</PageTitle>
 
+<div data-testid="manage-external-logins-page">
 <StatusMessage />
 @if (currentLogins?.Count > 0)
 {
@@ -29,7 +30,7 @@
                                 <div>
                                     <input type="hidden" name="@nameof(LoginProvider)" value="@login.LoginProvider" />
                                     <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey" />
-                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
+                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account" data-testid="manage-external-login-remove">Remove</button>
                                 </div>
                             </form>
                         }
@@ -53,7 +54,7 @@
             <p>
                 @foreach (var provider in otherLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account" data-testid="@($"manage-external-login-add-{provider.Name.ToLowerInvariant()}")">
                         @provider.DisplayName
                     </button>
                 }
@@ -61,6 +62,7 @@
         </div>
     </form>
 }
+</div>
 
 @code {
     public const string LinkLoginCallbackAction = "LinkLoginCallback";

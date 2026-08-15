@@ -28,7 +28,7 @@
 
 <PageTitle>Checkout — NEXUS</PageTitle>
 
-<div class="max-w-7xl mx-auto px-6 py-10">
+<div class="max-w-7xl mx-auto px-6 py-10" data-testid="checkout-page">
     <div class="mb-8">
         <h1 class="text-3xl font-bold tracking-tight mb-2">Checkout</h1>
         <p class="text-text-secondary text-sm">Enter your shipping details and place your order</p>
@@ -44,7 +44,7 @@
     }
     else
     {
-        <EditForm Model="form" OnValidSubmit="PlaceOrder">
+        <EditForm Model="form" OnValidSubmit="PlaceOrder" data-testid="checkout-form">
             <DataAnnotationsValidator />
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -55,6 +55,7 @@
                             @if (savedAddresses.Count > 0 && !useNewAddress)
                             {
                                 <button type="button" @onclick="StartNewAddress"
+                                        data-testid="checkout-use-new-address"
                                         class="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
                                     <i class="fa-solid fa-plus mr-1 text-[10px]"></i> Use a new address
                                 </button>
@@ -76,6 +77,8 @@
                                     <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer @(selectedAddressId == address.Id ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")"
                                            @key="address.Id">
                                         <input type="radio" name="saved-address" class="mt-1"
+                                               data-testid="checkout-saved-address"
+                                               data-name="@address.RecipientName"
                                                checked="@(selectedAddressId == address.Id)"
                                                @onchange="@(() => SelectAddress(address))" />
                                         <span class="flex-1 min-w-0">
@@ -102,25 +105,25 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex flex-col gap-2 md:col-span-2">
                                     <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Recipient Name *</label>
-                                    <InputText @bind-Value="form.RecipientName" class="@InputClass" placeholder="Nguyễn Văn A" />
+                                    <InputText @bind-Value="form.RecipientName" class="@InputClass" placeholder="Nguyễn Văn A" data-testid="checkout-recipient-input" />
                                     <ValidationMessage For="() => form.RecipientName" class="text-danger text-xs" />
                                 </div>
 
                                 <div class="flex flex-col gap-2">
                                     <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Phone *</label>
-                                    <InputText @bind-Value="form.Phone" class="@InputClass" placeholder="0901234567" />
+                                    <InputText @bind-Value="form.Phone" class="@InputClass" placeholder="0901234567" data-testid="checkout-phone-input" />
                                     <ValidationMessage For="() => form.Phone" class="text-danger text-xs" />
                                 </div>
 
                                 <div class="flex flex-col gap-2 md:col-span-2">
                                     <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Street Address / Detail *</label>
-                                    <InputText @bind-Value="form.AddressLine" class="@InputClass" placeholder="No. 25, Nguyễn Trãi Street" />
+                                    <InputText @bind-Value="form.AddressLine" class="@InputClass" placeholder="No. 25, Nguyễn Trãi Street" data-testid="checkout-address-input" />
                                     <ValidationMessage For="() => form.AddressLine" class="text-danger text-xs" />
                                 </div>
 
                                 <div class="flex flex-col gap-2">
                                     <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Province / City *</label>
-                                    <select value="@form.Province" @onchange="OnProvinceChanged" class="@InputClass">
+                                    <select value="@form.Province" @onchange="OnProvinceChanged" class="@InputClass" data-testid="checkout-province-select">
                                         <option value="">-- Select province / city --</option>
                                         @foreach (var province in provinces)
                                         {
@@ -132,7 +135,7 @@
 
                                 <div class="flex flex-col gap-2">
                                     <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Ward / Commune *</label>
-                                    <select value="@form.Ward" @onchange="OnWardChanged" class="@InputClass" disabled="@(wardOptions.Count == 0)">
+                                    <select value="@form.Ward" @onchange="OnWardChanged" class="@InputClass" disabled="@(wardOptions.Count == 0)" data-testid="checkout-ward-select">
                                         <option value="">@(wardOptions.Count == 0 ? "-- Select a province first --" : "-- Select ward / commune --")</option>
                                         @foreach (var ward in wardOptions)
                                         {
@@ -143,7 +146,7 @@
                                 </div>
 
                                 <label class="flex items-center gap-2.5 text-sm text-text-secondary cursor-pointer select-none md:col-span-2 mt-1">
-                                    <InputCheckbox @bind-Value="saveNewAddress" class="custom-checkbox" />
+                                    <InputCheckbox @bind-Value="saveNewAddress" class="custom-checkbox" data-testid="checkout-save-address" />
                                     Save this address to my account
                                 </label>
 
@@ -163,6 +166,7 @@
 
                         <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer @(form.Method == PaymentMethod.Cod ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")">
                             <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.Cod)"
+                                   data-testid="checkout-payment-cod"
                                    @onchange="@(() => form.Method = PaymentMethod.Cod)" />
                             <span class="flex-1">
                                 <span class="font-semibold block">Cash on Delivery</span>
@@ -173,6 +177,7 @@
 
                         <label class="flex items-center gap-3 p-4 rounded-xl border mt-3 cursor-pointer @(form.Method == PaymentMethod.PayPal ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")">
                             <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.PayPal)"
+                                   data-testid="checkout-payment-paypal"
                                    @onchange="@(() => form.Method = PaymentMethod.PayPal)" />
                             <span class="flex-1">
                                 <span class="font-semibold block">PayPal</span>
@@ -224,7 +229,8 @@
 
                         <button type="submit"
                                 class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
-                                disabled="@(isSubmitting || cart.Items.Any(i => !i.InStock))">
+                                disabled="@(isSubmitting || cart.Items.Any(i => !i.InStock))"
+                                data-testid="checkout-place-order-button">
                             @if (isSubmitting)
                             {
                                 <span>Placing order...</span>
@@ -236,7 +242,7 @@
                             }
                         </button>
 
-                        <a href="/cart" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4">
+                        <a href="/cart" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4" data-testid="checkout-back-to-cart">
                             <i class="fa-solid fa-arrow-left mr-1"></i> Back to cart
                         </a>
                     </div>

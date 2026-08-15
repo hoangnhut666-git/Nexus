@@ -8,6 +8,7 @@
 
 <PageTitle>Personal Data</PageTitle>
 
+<div data-testid="manage-personal-data-page">
 <StatusMessage />
 <h3>Personal Data</h3>
 
@@ -19,12 +20,13 @@
         </p>
         <form action="Account/Manage/DownloadPersonalData" method="post">
             <AntiforgeryToken />
-            <button class="btn btn-primary" type="submit">Download</button>
+        <button class="btn btn-primary" type="submit" data-testid="manage-personal-data-download">Download</button>
         </form>
         <p>
-            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
+            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger" data-testid="manage-personal-data-delete">Delete</a>
         </p>
     </div>
+</div>
 </div>
 
 @code {

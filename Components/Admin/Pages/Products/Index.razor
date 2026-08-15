@@ -14,7 +14,7 @@
 @inject NavigationManager Navigation
 
 <CascadingValue Name="AdminPageTitle" Value="@("Product Management")">
-    <div>
+    <div data-testid="admin-products-page">
         <div class="flex justify-between items-center mb-6">
             <div class="flex gap-4 flex-wrap">
                 <div class="relative flex items-center">
@@ -23,10 +23,12 @@
                            placeholder="Search by name, SKU..."
                            class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
                            value="@searchTerm"
+                           data-testid="admin-products-search"
                            @oninput="OnSearchInput" />
                 </div>
                 <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
                         value="@statusFilter"
+                        data-testid="admin-products-status-filter"
                         @onchange="OnStatusFilterChanged">
                     <option value="@ProductStatusFilter.All">All statuses</option>
                     <option value="@ProductStatusFilter.Active">Active</option>
@@ -34,6 +36,7 @@
                 </select>
                 <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
                         value="@categoryFilter"
+                        data-testid="admin-products-category-filter"
                         @onchange="OnCategoryFilterChanged">
                     <option value="0">All categories</option>
                     @foreach (var category in categoryOptions)
@@ -45,6 +48,7 @@
 
             <button type="button"
                     class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg shadow-[0_4px_15px_rgba(99,102,241,0.2)] flex items-center gap-2 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(99,102,241,0.4)]"
+                    data-testid="btn-add-product"
                     @onclick="OpenCreateDrawer">
                 <i aria-hidden="true" class="fa-solid fa-plus"></i> Add Product
             </button>

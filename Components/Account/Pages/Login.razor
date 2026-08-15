@@ -80,25 +80,13 @@
                    data-testid="login-forgot-password-link">Forgot password?</a>
             </div>
 
-            @* <button type="submit" disabled="@isSubmitting"
+            <button type="submit" disabled="@isSubmitting"
                     class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                     data-testid="login-submit-button">
                 <span>@(isSubmitting ? "Authenticating..." : "Sign In to System")</span>
                 <i
                 class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
-            </button> *@
-
-            <div class="login-action-wrapper mt-2">
-                <button id="action-btn-auth" data-test-id="signin-submit-v2" disabled="@isSubmitting"
-                        aria-label="Submit login credentials"
-                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-5 rounded-lg font-bold text-base shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-wait">
-
-                    <span class="auth-label">@(isSubmitting ? "Verifying..." : "Log In to System")</span>
-
-                    <i
-                    class="@(isSubmitting ? "fa-solid fa-circle-notch animate-spin text-sm" : "fa-solid fa-chevron-right text-sm transition-transform duration-300 group-hover:translate-x-1.5")"></i>
-                </button>
-            </div>
+            </button>
         </EditForm>
 
         <div class="text-center text-xs text-text-muted mt-4" data-testid="login-register-prompt">

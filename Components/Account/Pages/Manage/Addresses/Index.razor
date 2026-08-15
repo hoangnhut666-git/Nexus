@@ -11,12 +11,14 @@
 
 <PageTitle>My Addresses</PageTitle>
 
+<div data-testid="manage-addresses-page">
 <div class="flex items-center justify-between gap-4 mb-6">
     <div>
         <h3 class="text-xl font-bold text-text-primary">Shipping Addresses</h3>
         <p class="text-text-secondary text-sm mt-1">Manage where your orders are delivered.</p>
     </div>
     <a href="Account/Manage/Addresses/Add"
+       data-testid="btn-add-address"
        class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-4 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 transition-all duration-300">
         <i class="fa-solid fa-plus text-xs"></i><span>Add address</span>
     </a>
@@ -29,7 +31,7 @@
     <div class="border border-dashed border-white/10 rounded-2xl p-10 text-center">
         <i class="fa-solid fa-location-dot text-3xl text-text-muted mb-3"></i>
         <p class="text-text-secondary text-sm mb-4">You have no saved addresses yet.</p>
-        <a href="Account/Manage/Addresses/Add" class="text-indigo-400 hover:text-indigo-300 font-bold text-sm transition-colors">Add your first address</a>
+        <a href="Account/Manage/Addresses/Add" class="text-indigo-400 hover:text-indigo-300 font-bold text-sm transition-colors" data-testid="btn-add-first-address">Add your first address</a>
     </div>
 }
 else
@@ -37,7 +39,7 @@ else
     <div class="flex flex-col gap-4">
         @foreach (var address in addresses)
         {
-            <div class="bg-bg-card border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div class="bg-bg-card border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4" data-testid="manage-address-card" data-name="@address.RecipientName">
                 <div class="min-w-0">
                     <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
                         <span class="font-bold text-text-primary">@address.RecipientName</span>
@@ -55,6 +57,7 @@ else
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <a href="@($"Account/Manage/Addresses/Edit/{address.Id}")"
+                       data-testid="manage-address-edit"
                        class="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-text-primary border border-white/10 hover:border-white/20 px-3 py-2 rounded-lg transition-colors">
                         <i class="fa-solid fa-pen text-[10px]"></i><span>Edit</span>
                     </a>
@@ -63,6 +66,7 @@ else
                         <form method="post" @formname="@($"set-default-{address.Id}")" @onsubmit="() => SetDefaultAsync(address.Id)">
                             <AntiforgeryToken />
                             <button type="submit"
+                                    data-testid="manage-address-set-default"
                                     class="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 hover:border-indigo-500/40 px-3 py-2 rounded-lg transition-colors">
                                 <i class="fa-solid fa-star text-[10px]"></i><span>Set default</span>
                             </button>
@@ -71,6 +75,7 @@ else
                     <form method="post" @formname="@($"delete-{address.Id}")" @onsubmit="() => DeleteAsync(address.Id)">
                         <AntiforgeryToken />
                         <button type="submit"
+                                data-testid="manage-address-delete"
                                 class="inline-flex items-center gap-1.5 text-xs font-bold text-danger hover:text-red-400 border border-danger/20 hover:border-danger/40 px-3 py-2 rounded-lg transition-colors">
                             <i class="fa-solid fa-trash text-[10px]"></i><span>Delete</span>
                         </button>
@@ -80,6 +85,7 @@ else
         }
     </div>
 }
+</div>
 
 @code {
     private ApplicationUser? user;

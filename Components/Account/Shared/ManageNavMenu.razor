@@ -3,32 +3,32 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 
-<nav class="flex flex-col gap-1">
-    <NavLink class="manage-nav-link" href="Account/Manage" Match="NavLinkMatch.All">
+<nav class="flex flex-col gap-1" data-testid="manage-nav">
+    <NavLink class="manage-nav-link" href="Account/Manage" Match="NavLinkMatch.All" data-testid="manage-nav-profile">
         <i class="fa-regular fa-user w-4 text-center"></i><span>Profile</span>
     </NavLink>
-    <NavLink class="manage-nav-link" href="Account/Manage/Addresses">
+    <NavLink class="manage-nav-link" href="Account/Manage/Addresses" data-testid="manage-nav-addresses">
         <i class="fa-solid fa-location-dot w-4 text-center"></i><span>Addresses</span>
     </NavLink>
-    <NavLink class="manage-nav-link" href="Account/Manage/Email">
+    <NavLink class="manage-nav-link" href="Account/Manage/Email" data-testid="manage-nav-email">
         <i class="fa-regular fa-envelope w-4 text-center"></i><span>Email</span>
     </NavLink>
-    <NavLink class="manage-nav-link" href="Account/Manage/ChangePassword">
+    <NavLink class="manage-nav-link" href="Account/Manage/ChangePassword" data-testid="manage-nav-password">
         <i class="fa-solid fa-key w-4 text-center"></i><span>Password</span>
     </NavLink>
     @if (hasExternalLogins)
     {
-        <NavLink class="manage-nav-link" href="Account/Manage/ExternalLogins">
+        <NavLink class="manage-nav-link" href="Account/Manage/ExternalLogins" data-testid="manage-nav-external-logins">
             <i class="fa-solid fa-link w-4 text-center"></i><span>External logins</span>
         </NavLink>
     }
-    <NavLink class="manage-nav-link" href="Account/Manage/TwoFactorAuthentication">
+    <NavLink class="manage-nav-link" href="Account/Manage/TwoFactorAuthentication" data-testid="manage-nav-2fa">
         <i class="fa-solid fa-shield-halved w-4 text-center"></i><span>Two-factor auth</span>
     </NavLink>
-    <NavLink class="manage-nav-link" href="Account/Manage/Passkeys">
+    <NavLink class="manage-nav-link" href="Account/Manage/Passkeys" data-testid="manage-nav-passkeys">
         <i class="fa-solid fa-fingerprint w-4 text-center"></i><span>Passkeys</span>
     </NavLink>
-    <NavLink class="manage-nav-link" href="Account/Manage/PersonalData">
+    <NavLink class="manage-nav-link" href="Account/Manage/PersonalData" data-testid="manage-nav-personal-data">
         <i class="fa-solid fa-database w-4 text-center"></i><span>Personal data</span>
     </NavLink>
 </nav>

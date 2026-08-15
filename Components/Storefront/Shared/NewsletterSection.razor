@@ -4,17 +4,18 @@
         <p class="text-text-secondary mt-3 mb-8">Subscribe to never miss exclusive drops and get a $10 voucher for your first order.</p>
         @if (subscribed)
         {
-            <p class="text-success font-medium">Thank you for subscribing!</p>
+            <p class="text-success font-medium" data-testid="newsletter-success">Thank you for subscribing!</p>
         }
         else
         {
-            <form class="flex gap-3 bg-white/5 border border-white/5 p-1.5 rounded-lg" @onsubmit="HandleSubmit" @onsubmit:preventDefault>
+            <form class="flex gap-3 bg-white/5 border border-white/5 p-1.5 rounded-lg" @onsubmit="HandleSubmit" @onsubmit:preventDefault data-testid="newsletter-form">
                 <input type="email"
                        @bind="email"
                        placeholder="Enter your email..."
                        class="flex-1 bg-transparent border-none px-4 py-3 text-sm text-text-primary focus:outline-none"
-                       required />
-                <button type="submit" class="bg-white text-black px-6 py-3 font-semibold text-sm rounded-lg hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 hover:text-white transition">Subscribe</button>
+                       required
+                       data-testid="newsletter-email-input" />
+                <button type="submit" class="bg-white text-black px-6 py-3 font-semibold text-sm rounded-lg hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 hover:text-white transition" data-testid="newsletter-submit-button">Subscribe</button>
             </form>
         }
     </div>

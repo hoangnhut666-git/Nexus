@@ -3,7 +3,7 @@
         <div class="text-base font-bold text-text-primary">@Title</div>
         @if (!string.IsNullOrWhiteSpace(ActionLabel))
         {
-            <a href="@ActionHref" class="text-accent text-[13px] font-semibold hover:underline">@ActionLabel</a>
+            <a href="@ActionHref" class="text-accent text-[13px] font-semibold hover:underline" data-testid="admin-dashboard-view-orders">@ActionLabel</a>
         }
     </div>
     <div class="overflow-x-auto">

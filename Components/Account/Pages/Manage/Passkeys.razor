@@ -11,6 +11,7 @@
 
 <PageTitle>Manage your passkeys</PageTitle>
 
+<div data-testid="manage-passkeys-page">
 <h3>Manage your passkeys</h3>
 
 <StatusMessage />
@@ -31,8 +32,8 @@
                             <AntiforgeryToken />
                             <div>
                                 <input type="hidden" name="CredentialId" value="@credentialId" />
-                                <button type="submit" name="Action" value="rename" class="btn btn-primary" title="Rename this passkey">Rename</button>
-                                <button type="submit" name="Action" value="delete" class="btn btn-danger" title="Remove this passkey from your account">Delete</button>
+                                <button type="submit" name="Action" value="rename" class="btn btn-primary" title="Rename this passkey" data-testid="manage-passkey-rename">Rename</button>
+                                <button type="submit" name="Action" value="delete" class="btn btn-danger" title="Remove this passkey from your account" data-testid="manage-passkey-delete">Delete</button>
                             </div>
                         </form>
                     </td>
@@ -54,10 +55,11 @@ else
     }
     else
     {
-        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary" data-testid="manage-passkey-add">Add a new passkey</PasskeySubmit>
     }
 
 </form>
+</div>
 
 @code {
     private const int MaxPasskeyCount = 100;

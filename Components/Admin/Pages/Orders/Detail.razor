@@ -21,16 +21,16 @@
         <div class="bg-bg-surface border border-white/5 rounded-xl p-16 text-center">
             <i class="fa-solid fa-box-open text-4xl text-text-muted mb-4"></i>
             <h1 class="text-xl font-bold mb-2">Order not found</h1>
-            <a href="/admin/orders" class="text-accent font-semibold hover:underline">
+            <a href="/admin/orders" class="text-accent font-semibold hover:underline" data-testid="admin-order-back">
                 <i class="fa-solid fa-arrow-left mr-2"></i> Back to orders
             </a>
         </div>
     }
     else
     {
-        <div class="mb-6 flex items-center justify-between flex-wrap gap-4">
+        <div class="mb-6 flex items-center justify-between flex-wrap gap-4" data-testid="admin-order-detail">
             <div>
-                <a href="/admin/orders" class="text-text-muted hover:text-text-primary text-sm">
+                <a href="/admin/orders" class="text-text-muted hover:text-text-primary text-sm" data-testid="admin-order-back">
                     <i class="fa-solid fa-arrow-left mr-1"></i> Back to orders
                 </a>
                 <div class="flex items-center gap-3 mt-2">
@@ -95,10 +95,12 @@
                                placeholder="Add an internal note..."
                                class="flex-1 bg-bg-card border border-white/5 py-2.5 px-4 rounded-lg text-text-primary text-sm outline-none focus:border-indigo-500/40"
                                value="@noteText"
+                               data-testid="admin-order-note-input"
                                @oninput="@(e => noteText = e.Value?.ToString() ?? string.Empty)" />
                         <button type="button"
                                 class="bg-bg-card border border-white/5 text-text-primary py-2.5 px-4 rounded-lg text-sm font-semibold hover:border-white/10 disabled:opacity-40"
                                 disabled="@(string.IsNullOrWhiteSpace(noteText) || isBusy)"
+                                data-testid="admin-order-add-note"
                                 @onclick="AddNoteAsync">Add note</button>
                     </div>
 
@@ -166,6 +168,7 @@
                             <label class="text-xs text-text-muted uppercase mb-1 block">Advance to</label>
                             <select class="w-full bg-bg-card border border-white/5 text-text-primary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer mb-3 focus:border-indigo-500/40"
                                     value="@selectedNext"
+                                    data-testid="admin-order-status-select"
                                     @onchange="@(e => selectedNext = e.Value?.ToString() ?? string.Empty)">
                                 @foreach (var status in allowedNext)
                                 {
@@ -175,6 +178,7 @@
                             <button type="button"
                                     class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-4 rounded-lg text-sm font-semibold shadow-[0_4px_15px_rgba(99,102,241,0.2)] transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0 mb-2"
                                     disabled="@isBusy"
+                                    data-testid="admin-order-apply-status"
                                     @onclick="UpdateStatusAsync">
                                 <i class="fa-solid fa-arrow-right mr-1"></i> Apply
                             </button>
@@ -185,6 +189,7 @@
                             <button type="button"
                                     class="w-full bg-danger-bg text-danger border border-danger/20 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-300 hover:bg-danger/10 disabled:opacity-40"
                                     disabled="@isBusy"
+                                    data-testid="admin-order-cancel"
                                     @onclick="CancelAsync">
                                 <i class="fa-solid fa-ban mr-1"></i> Cancel order (restores stock)
                             </button>

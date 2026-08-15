@@ -17,7 +17,7 @@
 
 <PageTitle>Your Cart — NEXUS</PageTitle>
 
-<div class="max-w-7xl mx-auto px-6 py-10">
+<div class="max-w-7xl mx-auto px-6 py-10" data-testid="cart-page">
     <div class="mb-8">
         <h1 class="text-3xl font-bold tracking-tight mb-2">Your Cart</h1>
         <p class="text-text-secondary text-sm">Review your items before checkout</p>
@@ -29,11 +29,11 @@
     }
     else if (cart is null || cart.IsEmpty)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center">
+        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center" data-testid="cart-empty">
             <i class="fa-solid fa-cart-shopping text-4xl text-text-muted mb-4"></i>
             <h2 class="text-xl font-bold mb-2">Your cart is empty</h2>
             <p class="text-text-secondary mb-6">Browse the catalog and add products to get started.</p>
-            <a href="/products" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+            <a href="/products" data-testid="cart-continue-shopping" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
                 <i class="fa-solid fa-arrow-left"></i> Continue shopping
             </a>
         </div>
@@ -50,6 +50,7 @@
                     <button type="button"
                             class="text-danger text-sm hover:underline disabled:opacity-50"
                             disabled="@isBusy"
+                            data-testid="cart-clear-all"
                             @onclick="ClearCart">
                         <i class="fa-solid fa-trash-can mr-1"></i> Clear all
                     </button>
@@ -65,7 +66,7 @@
                 <div class="flex flex-col">
                     @foreach (var item in cart.Items)
                     {
-                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-white/5 last:border-b-0" @key="item.CartItemId">
+                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-white/5 last:border-b-0" @key="item.CartItemId" data-testid="cart-line" data-slug="@item.Slug">
                             <div class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-white/5 flex items-center justify-center overflow-hidden">
                                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                 {
@@ -99,13 +100,15 @@
                                     <button type="button"
                                             class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition disabled:opacity-40"
                                             disabled="@isBusy"
+                                            data-testid="cart-qty-decrease"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity - 1))">
                                         <i class="fa-solid fa-minus text-xs"></i>
                                     </button>
-                                    <span class="w-9 text-center text-sm font-semibold">@item.Quantity</span>
+                                    <span class="w-9 text-center text-sm font-semibold" data-testid="cart-qty-value">@item.Quantity</span>
                                     <button type="button"
                                             class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition disabled:opacity-40"
                                             disabled="@(isBusy || item.Quantity >= item.StockQuantity)"
+                                            data-testid="cart-qty-increase"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity + 1))">
                                         <i class="fa-solid fa-plus text-xs"></i>
                                     </button>
@@ -118,6 +121,7 @@
                                 <button type="button"
                                         class="w-8 h-8 rounded-lg bg-danger-bg border border-danger/20 text-danger flex items-center justify-center hover:bg-danger hover:text-white transition disabled:opacity-40"
                                         disabled="@isBusy"
+                                        data-testid="cart-remove-item"
                                         @onclick="@(() => RemoveItem(item))">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
@@ -166,11 +170,12 @@
                     <button type="button"
                             class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
                             disabled="@(isBusy || cart.Items.Any(i => !i.InStock))"
+                            data-testid="cart-checkout-button"
                             @onclick="@(() => Navigation.NavigateTo("/checkout"))">
                         Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
                     </button>
 
-                    <a href="/products" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4">
+                    <a href="/products" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4" data-testid="cart-continue-shopping">
                         <i class="fa-solid fa-arrow-left mr-1"></i> Continue shopping
                     </a>
                 </div>

@@ -16,6 +16,9 @@
                 {
                     <button type="button"
                             class="@GetButtonClass(option.Id, value.Id)"
+                            data-testid="pdp-option"
+                            data-name="@option.Name"
+                            data-value="@value.Value"
                             @onclick="() => SelectValue(option.Id, value.Id)">
                         @value.Value
                     </button>

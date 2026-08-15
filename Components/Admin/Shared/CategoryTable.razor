@@ -28,7 +28,7 @@
             {
                 @foreach (var item in Items)
                 {
-                    <tr class="hover:bg-white/[0.01] hover:text-text-primary transition-colors duration-300">
+                    <tr class="hover:bg-white/[0.01] hover:text-text-primary transition-colors duration-300" data-testid="admin-category-row" data-slug="@item.Slug">
                         <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
                             <input type="checkbox" class="custom-checkbox" checked="@IsSelected(item.Id)" @onchange="(e) => ToggleSelection(item.Id, e)" />
                         </td>
@@ -55,6 +55,7 @@
                                 <button type="button"
                                         class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500 hover:text-white hover:border-indigo-500"
                                         title="Edit"
+                                        data-testid="admin-category-edit"
                                         @onclick="() => OnEdit.InvokeAsync(item.Id)">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
@@ -62,6 +63,7 @@
                                         class="@GetDeleteButtonClass(item.ProductCount > 0)"
                                         title="Delete"
                                         disabled="@(item.ProductCount > 0)"
+                                        data-testid="admin-category-delete"
                                         @onclick="() => OnDelete.InvokeAsync(item)">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
@@ -81,6 +83,7 @@
                 <button type="button"
                         class="@GetPageButtonClass(false, Page == 1)"
                         disabled="@(Page == 1)"
+                        data-testid="admin-category-page-prev"
                         @onclick="() => OnPageChanged.InvokeAsync(Page - 1)">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
@@ -105,6 +108,7 @@
                 <button type="button"
                         class="@GetPageButtonClass(false, Page == TotalPages)"
                         disabled="@(Page == TotalPages)"
+                        data-testid="admin-category-page-next"
                         @onclick="() => OnPageChanged.InvokeAsync(Page + 1)">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
