@@ -18,14 +18,14 @@
 <div class="w-full max-w-[420px] flex flex-col gap-8 my-auto" data-testid="login-page">
     <div class="lg:hidden flex justify-center mb-2">
         <span
-            class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+            class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-text-primary to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
             <i
             class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
         </span>
     </div>
 
     <div class="text-center lg:text-left">
-        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2"
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-text-primary to-slate-300 bg-clip-text text-transparent mb-2"
             data-testid="login-title">Welcome Back!</h2>
         <p class="text-text-secondary text-sm" data-testid="login-subtitle">Please login to start your session.</p>
     </div>
@@ -97,7 +97,7 @@
     </div>
 
 @code {
-    private const string InputBaseClass = "w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
+    private const string InputBaseClass = "w-full bg-bg-card border border-border text-text-primary pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
 
     private string? errorMessage;
     private EditContext editContext = default!;

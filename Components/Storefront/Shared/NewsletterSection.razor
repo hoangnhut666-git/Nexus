@@ -1,4 +1,4 @@
-<section class="py-20 bg-bg-surface border-t border-white/5 text-center">
+<section class="py-20 bg-bg-surface border-t border-border text-center">
     <div class="max-w-xl mx-auto px-6">
         <h2 class="text-3xl font-bold">Join the NEXUS Club</h2>
         <p class="text-text-secondary mt-3 mb-8">Subscribe to never miss exclusive drops and get a $10 voucher for your first order.</p>
@@ -8,7 +8,7 @@
         }
         else
         {
-            <form class="flex gap-3 bg-white/5 border border-white/5 p-1.5 rounded-lg" @onsubmit="HandleSubmit" @onsubmit:preventDefault data-testid="newsletter-form">
+            <form class="flex gap-3 bg-overlay border border-border p-1.5 rounded-lg" @onsubmit="HandleSubmit" @onsubmit:preventDefault data-testid="newsletter-form">
                 <input type="email"
                        @bind="email"
                        placeholder="Enter your email..."

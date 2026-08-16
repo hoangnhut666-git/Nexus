@@ -31,7 +31,7 @@
                 <h2 class="text-lg font-bold text-text-primary">@product.Name</h2>
             </div>
 
-            <div class="flex gap-2 border-b border-white/5">
+            <div class="flex gap-2 border-b border-border">
                 <button type="button" class="@GetTabClass("info")" data-testid="admin-product-tab-info" @onclick='() => activeTab = "info"'>Info</button>
                 <button type="button" class="@GetTabClass("variants")" data-testid="admin-product-tab-variants" @onclick='() => activeTab = "variants"'>Variants</button>
             </div>
@@ -48,7 +48,7 @@
                         <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Slug *</label>
                         <div class="flex gap-2">
                             <InputText @bind-Value="infoModel.Slug" class="@($"{InputBaseClass} flex-1")" data-testid="input-product-detail-slug" />
-                            <button type="button" class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg text-xs font-semibold" data-testid="btn-generate-product-detail-slug" @onclick="GenerateSlug">
+                            <button type="button" class="bg-bg-card border border-border text-text-secondary px-4 rounded-lg text-xs font-semibold" data-testid="btn-generate-product-detail-slug" @onclick="GenerateSlug">
                                 <i class="fa-solid fa-bolt mr-1"></i> Generate
                             </button>
                         </div>
@@ -81,7 +81,7 @@
             {
                 <ProductOptionsEditor Options="@optionModels" OnSave="@SaveOptionsAsync" />
 
-                <div class="bg-bg-card border border-white/5 rounded-xl p-6 flex flex-col gap-4">
+                <div class="bg-bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
                     <h4 class="text-sm font-bold text-text-primary">Generate Variants</h4>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="flex flex-col gap-1">
@@ -110,14 +110,14 @@
 
                 @if (selectedVariantIds.Count > 0)
                 {
-                    <div class="bg-bg-card border border-white/5 rounded-xl p-4 flex flex-wrap gap-3 items-end">
+                    <div class="bg-bg-card border border-border rounded-xl p-4 flex flex-wrap gap-3 items-end">
                         <span class="text-sm text-text-secondary">@selectedVariantIds.Count selected</span>
                         <input type="number" class="@($"{InputBaseClass} w-32")" placeholder="Price" value="@bulkPrice" @onchange="(e) => bulkPrice = ParseDecimal(e.Value)" />
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkSetPriceAsync">Set Price</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkSetPriceAsync">Set Price</button>
                         <input type="number" class="@($"{InputBaseClass} w-24")" placeholder="Stock +/-" value="@bulkStockDelta" @onchange="(e) => bulkStockDelta = ParseInt(e.Value)" />
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkAdjustStockAsync">Adjust Stock</button>
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(true)">Activate</button>
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(false)">Deactivate</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkAdjustStockAsync">Adjust Stock</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(true)">Activate</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(false)">Deactivate</button>
                     </div>
                 }
 
@@ -143,8 +143,8 @@
 
 @if (variantEditorOpen)
 {
-    <div class="fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4">
-        <div class="bg-bg-surface border border-white/5 rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4">
+    <div class="fixed inset-0 bg-bg-base/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4">
+        <div class="bg-bg-surface border border-border rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4">
             <h3 class="text-lg font-bold">@(editingVariantId.HasValue ? "Edit Variant" : "Add Variant")</h3>
             @if (!string.IsNullOrWhiteSpace(variantEditorLabel))
             {
@@ -173,7 +173,7 @@
                 {
                     <button type="button" class="text-rose-400 text-sm font-semibold mr-auto" data-testid="btn-delete-variant" @onclick="DeleteEditingVariantAsync">Delete</button>
                 }
-                <button type="button" class="bg-transparent border border-white/5 text-text-secondary py-2 px-4 text-sm rounded-lg" data-testid="btn-cancel-variant" @onclick="CloseVariantEditor">Cancel</button>
+                <button type="button" class="bg-transparent border border-border text-text-secondary py-2 px-4 text-sm rounded-lg" data-testid="btn-cancel-variant" @onclick="CloseVariantEditor">Cancel</button>
                 <button type="button" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 text-sm font-semibold rounded-lg" data-testid="btn-save-variant" @onclick="SaveVariantAsync">Save</button>
             </div>
         </div>
@@ -217,7 +217,7 @@
     private List<int> pendingOptionValueIds = [];
 
     private readonly List<AdminToastMessage> toasts = [];
-    private const string InputBaseClass = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 placeholder-text-muted w-full";
+    private const string InputBaseClass = "bg-bg-card border border-border text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 placeholder-text-muted w-full";
 
     protected override async Task OnParametersSetAsync()
     {

@@ -6,10 +6,10 @@
 <div class="@backdropClass" @onclick="Close"></div>
 
 <div class="@drawerClass">
-    <div class="h-20 px-8 flex items-center justify-between border-b border-white/5">
-        <h3 class="text-lg font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">@Title</h3>
+    <div class="h-20 px-8 flex items-center justify-between border-b border-border">
+        <h3 class="text-lg font-bold bg-gradient-to-r from-text-primary to-slate-400 bg-clip-text text-transparent">@Title</h3>
         <button type="button"
-                class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-white/5 hover:rotate-90"
+                class="bg-transparent border-none text-text-secondary text-xl cursor-pointer w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:text-text-primary hover:bg-overlay hover:rotate-90"
                 title="Close" @onclick="Close">
             <i class="fa-solid fa-xmark"></i>
         </button>
@@ -52,7 +52,7 @@
                         <InputText id="product-slug" @bind-Value="Model.Slug"
                                    class="@($"{GetInputClass(() => Model.Slug)} flex-1")" placeholder="iphone-16" />
                         @* <button type="button"
-                                class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center
+                                class="bg-bg-card border border-border text-text-secondary px-4 rounded-lg flex items-center
                     justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500
                     hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
                                 title="Generate" @onclick="GenerateSlug">
@@ -60,7 +60,7 @@
                         </button> *@
 
                         <button type="button"
-                                class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
+                                class="bg-bg-card border border-border text-text-secondary px-4 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-indigo-500 hover:text-text-primary hover:bg-indigo-500/10 text-xs font-semibold whitespace-nowrap"
                                 title="Generate slug" @onclick="GenerateSlug">
                             <i aria-hidden="true" class="fa-solid fa-bolt mr-2"></i> Generate slug
                         </button>
@@ -82,16 +82,16 @@
                 </div>
             </div>
 
-            <div class="px-8 py-6 border-t border-white/5 bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
+            <div class="px-8 py-6 border-t border-border bg-bg-surface/85 backdrop-blur-md flex justify-end gap-4">
                 <button type="button"
-                        class="bg-transparent border border-white/5 text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-white/5 hover:text-text-primary hover:border-text-secondary"
+                        class="bg-transparent border border-border text-text-secondary py-2.5 px-5 text-sm font-semibold rounded-lg cursor-pointer transition-all duration-300 hover:bg-overlay hover:text-text-primary hover:border-text-secondary"
                         @onclick="Close">
                     Cancel
                 </button>
  
                 @* Orinal element *@
 
-                @* <div class="inline-block">
+                <div class="inline-block">
                     <div> <a id="btn-publish-item" data-testid="publish-item-btn" data-action="publish" role="button"
                              aria-label="Publish Item Action" class="cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500
                         text-white py-2.5 px-5 text-sm
@@ -110,7 +110,7 @@
                             <span>Publish Item</span>
                         }
                     </a></div>
-                </div> *@
+                </div>
 
 
                 @* <div class="inline-block">
@@ -136,7 +136,7 @@
 
 
 
-                <div class="inline-block">
+                @* <div class="inline-block">
                     <a href="javascript:void(0)" id="btn-publish-action" data-testid="publish-item-action"
                        aria-label="Confirm and publish item" role="button" class="cursor-pointer bg-gradient-to-r from-emerald-500
             to-teal-500 text-white py-2.5 px-5 text-sm
@@ -157,7 +157,7 @@
                             <span>Publish Item</span>
                         }
                     </a>
-                </div>
+                </div> *@
                 
 
                 @* <div class="inline-block publish-wrapper-v2">
@@ -234,15 +234,15 @@
     private IBrowserFile? pendingFile;
     private bool isSaving;
 
-    private const string InputBaseClass = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
+    private const string InputBaseClass = "bg-bg-card border border-border text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
 
     private string backdropClass => IsOpen
-        ? "drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none active"
-        : "drawer-backdrop fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none";
+        ? "drawer-backdrop fixed inset-0 bg-bg-base/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none active"
+        : "drawer-backdrop fixed inset-0 bg-bg-base/70 backdrop-blur-md z-[999] opacity-0 pointer-events-none";
 
     private string drawerClass => IsOpen
-        ? "drawer active fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col"
-        : "drawer fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-white/5 shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col";
+        ? "drawer active fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-border shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col"
+        : "drawer fixed top-0 bottom-0 -right-[520px] w-[500px] h-screen bg-bg-surface border-l border-border shadow-[-10px_0_40px_rgba(0,0,0,0.6)] z-[1000] flex flex-col";
 
     protected override void OnParametersSet()
     {

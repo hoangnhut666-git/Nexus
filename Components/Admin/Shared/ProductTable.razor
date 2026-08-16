@@ -1,19 +1,19 @@
 @using Nexus.Services.Products.Models
 
-<div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+<div class="bg-bg-surface border border-border rounded-xl overflow-hidden">
     <table class="w-full border-collapse">
         <thead>
             <tr>
-                <th class="w-10 py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">
+                <th class="w-10 py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">
                     <input type="checkbox" class="custom-checkbox" @bind="@selectAll" @bind:after="OnSelectAllChanged" />
                 </th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Product</th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Category</th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">SKU</th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Price</th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Stock</th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Status</th>
-                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5 font-semibold">Actions</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">Product</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">Category</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">SKU</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">Price</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">Stock</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">Status</th>
+                <th class="py-4 px-5 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border font-semibold">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -30,39 +30,39 @@
             {
                 @foreach (var item in Items)
                 {
-                    <tr class="hover:bg-white/[0.01] hover:text-text-primary transition-colors duration-300" data-testid="admin-product-row" data-slug="@item.Slug">
-                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                    <tr class="hover:bg-overlay hover:text-text-primary transition-colors duration-300" data-testid="admin-product-row" data-slug="@item.Slug">
+                        <td class="py-4 px-5 border-b border-border text-sm align-middle">
                             <input type="checkbox" class="custom-checkbox" checked="@IsSelected(item.Id)" @onchange="(e) => ToggleSelection(item.Id, e)" />
                         </td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                        <td class="py-4 px-5 border-b border-border text-sm align-middle">
                             <div class="flex items-center gap-4">
                                 <img src="@GetImageSrc(item.ThumbnailUrl)"
                                      alt="@item.Name"
-                                     class="w-10 h-10 rounded-lg object-cover bg-bg-base border border-white/5 p-1" />
+                                     class="w-10 h-10 rounded-lg object-cover bg-bg-base border border-border p-1" />
                                 <div>
                                     <div class="font-semibold text-text-primary">@item.Name</div>
                                     <div class="text-[11px] text-text-muted">/@item.Slug</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle">@item.CategoryName</td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-secondary align-middle font-mono text-xs">@item.Sku</td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">@MoneyFormatter.Format(item.Price)</td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm text-text-primary font-semibold align-middle">@item.TotalStock</td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                        <td class="py-4 px-5 border-b border-border text-sm text-text-secondary align-middle">@item.CategoryName</td>
+                        <td class="py-4 px-5 border-b border-border text-sm text-text-secondary align-middle font-mono text-xs">@item.Sku</td>
+                        <td class="py-4 px-5 border-b border-border text-sm text-text-primary font-semibold align-middle">@MoneyFormatter.Format(item.Price)</td>
+                        <td class="py-4 px-5 border-b border-border text-sm text-text-primary font-semibold align-middle">@item.TotalStock</td>
+                        <td class="py-4 px-5 border-b border-border text-sm align-middle">
                             <span class="@GetStatusBadgeClass(item.IsActive)">@(item.IsActive ? "Active" : "Hidden")</span>
                         </td>
-                        <td class="py-4 px-5 border-b border-white/5 text-sm align-middle">
+                        <td class="py-4 px-5 border-b border-border text-sm align-middle">
                             <div class="flex gap-2">
                                 <button type="button"
-                                        class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500 hover:text-white hover:border-indigo-500"
+                                        class="bg-bg-card border border-border text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500 hover:text-white hover:border-indigo-500"
                                         title="Edit"
                                         data-testid="admin-product-edit"
                                         @onclick="() => OnEdit.InvokeAsync(item.Id)">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
                                 <button type="button"
-                                        class="bg-bg-card border border-white/5 text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-amber-500 hover:text-white hover:border-amber-500"
+                                        class="bg-bg-card border border-border text-text-secondary w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-amber-500 hover:text-white hover:border-amber-500"
                                         title="@(item.IsActive ? "Hide product" : "Show product")"
                                         data-testid="admin-product-toggle-active"
                                         @onclick="() => OnToggleActive.InvokeAsync(item)">
@@ -76,7 +76,7 @@
         </tbody>
     </table>
 
-    <div class="flex justify-between items-center py-5 px-8 border-t border-white/5 text-sm text-text-muted">
+    <div class="flex justify-between items-center py-5 px-8 border-t border-border text-sm text-text-muted">
         <div>@paginationText</div>
         <div class="flex gap-2">
             @if (TotalPages > 1)
@@ -166,15 +166,15 @@
     private static string GetStatusBadgeClass(bool isActive) =>
         isActive
             ? "inline-block px-3 py-1.5 rounded-full text-xs font-semibold border bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-            : "inline-block px-3 py-1.5 rounded-full text-xs font-semibold border bg-white/5 text-text-secondary border-white/5";
+            : "inline-block px-3 py-1.5 rounded-full text-xs font-semibold border bg-overlay text-text-secondary border-border";
 
     private static string GetPageButtonClass(bool isCurrent, bool isDisabled)
     {
         if (isCurrent)
             return "w-8 h-8 rounded-md flex items-center justify-center font-medium transition-all duration-300 bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none";
 
-        var baseClass = "w-8 h-8 rounded-md flex items-center justify-center font-medium transition-all duration-300 bg-bg-card border border-white/5 text-text-secondary";
-        return isDisabled ? $"{baseClass} opacity-40 cursor-not-allowed" : $"{baseClass} hover:bg-white/5 hover:text-text-primary cursor-pointer";
+        var baseClass = "w-8 h-8 rounded-md flex items-center justify-center font-medium transition-all duration-300 bg-bg-card border border-border text-text-secondary";
+        return isDisabled ? $"{baseClass} opacity-40 cursor-not-allowed" : $"{baseClass} hover:bg-overlay hover:text-text-primary cursor-pointer";
     }
 
     private bool IsSelected(int id) => selectedIds.Contains(id);

@@ -17,12 +17,12 @@
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
                     <input type="text"
                            placeholder="Search order # or customer..."
-                           class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                           class="bg-bg-card border border-border py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
                            value="@searchTerm"
                            data-testid="admin-orders-search"
                            @oninput="OnSearchInput" />
                 </div>
-                <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                <select class="bg-bg-card border border-border text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-border-strong focus:border-indigo-500/40"
                         value="@statusFilter"
                         data-testid="admin-orders-status-filter"
                         @onchange="OnStatusFilterChanged">
@@ -34,12 +34,12 @@
                 </select>
                 <div class="flex items-center gap-2">
                     <input type="date"
-                           class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-3 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                           class="bg-bg-card border border-border text-text-secondary py-2.5 px-3 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-border-strong focus:border-indigo-500/40"
                            value="@fromDate"
                            @onchange="OnFromDateChanged" />
                     <span class="text-text-muted text-sm">to</span>
                     <input type="date"
-                           class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-3 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                           class="bg-bg-card border border-border text-text-secondary py-2.5 px-3 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-border-strong focus:border-indigo-500/40"
                            value="@toDate"
                            @onchange="OnToDateChanged" />
                     @if (HasFilters)
@@ -52,14 +52,14 @@
             </div>
         </div>
 
-        <div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+        <div class="bg-bg-surface border border-border rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
                             @foreach (var header in Headers)
                             {
-                                <th class="bg-white/[0.02] px-4 py-3 text-left text-xs uppercase text-text-muted border-b border-white/5 font-semibold">@header</th>
+                                <th class="bg-overlay px-4 py-3 text-left text-xs uppercase text-text-muted border-b border-border font-semibold">@header</th>
                             }
                         </tr>
                     </thead>
@@ -76,19 +76,19 @@
                         {
                             @foreach (var order in pagedResult.Items)
                             {
-                                <tr class="hover:bg-white/[0.01] cursor-pointer" data-testid="admin-order-row" data-order-number="@order.OrderNumber" @onclick="() => OpenDetail(order.OrderNumber)">
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm">
+                                <tr class="hover:bg-overlay cursor-pointer" data-testid="admin-order-row" data-order-number="@order.OrderNumber" @onclick="() => OpenDetail(order.OrderNumber)">
+                                    <td class="px-4 py-4 border-b border-border text-sm">
                                         <span class="font-semibold text-accent">@order.OrderNumber</span>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm">
+                                    <td class="px-4 py-4 border-b border-border text-sm">
                                         <div class="text-text-primary font-medium">@(string.IsNullOrWhiteSpace(order.CustomerName) ? "—" : order.CustomerName)</div>
                                         <div class="text-text-muted text-xs">@order.CustomerEmail</div>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm text-text-secondary">@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm text-text-secondary">@order.ItemCount</td>
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm font-bold text-text-primary">@MoneyFormatter.Format(order.Total)</td>
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm text-text-secondary">@PaymentLabel(order.PaymentMethod) · @order.PaymentStatus</td>
-                                    <td class="px-4 py-4 border-b border-white/5 text-sm">
+                                    <td class="px-4 py-4 border-b border-border text-sm text-text-secondary">@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                                    <td class="px-4 py-4 border-b border-border text-sm text-text-secondary">@order.ItemCount</td>
+                                    <td class="px-4 py-4 border-b border-border text-sm font-bold text-text-primary">@MoneyFormatter.Format(order.Total)</td>
+                                    <td class="px-4 py-4 border-b border-border text-sm text-text-secondary">@PaymentLabel(order.PaymentMethod) · @order.PaymentStatus</td>
+                                    <td class="px-4 py-4 border-b border-border text-sm">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold @StatusClass(order.Status)">@order.Status</span>
                                     </td>
                                 </tr>
@@ -100,19 +100,19 @@
 
             @if (pagedResult is not null && pagedResult.TotalPages > 1)
             {
-                <div class="flex items-center justify-between px-6 py-4 border-t border-white/5">
+                <div class="flex items-center justify-between px-6 py-4 border-t border-border">
                     <div class="text-xs text-text-muted">
                         Showing @((query.Page - 1) * query.PageSize + 1)–@(Math.Min(query.Page * query.PageSize, pagedResult.TotalCount)) of @pagedResult.TotalCount
                     </div>
                     <div class="flex items-center gap-2">
                         <button type="button"
-                                class="px-3 py-1.5 rounded-lg text-sm border border-white/5 text-text-secondary disabled:opacity-40 hover:border-white/10"
+                                class="px-3 py-1.5 rounded-lg text-sm border border-border text-text-secondary disabled:opacity-40 hover:border-border-strong"
                                 disabled="@(query.Page <= 1)"
                                 data-testid="admin-orders-page-prev"
                                 @onclick="() => ChangePageAsync(query.Page - 1)">Prev</button>
                         <span class="text-sm text-text-secondary">Page @query.Page of @pagedResult.TotalPages</span>
                         <button type="button"
-                                class="px-3 py-1.5 rounded-lg text-sm border border-white/5 text-text-secondary disabled:opacity-40 hover:border-white/10"
+                                class="px-3 py-1.5 rounded-lg text-sm border border-border text-text-secondary disabled:opacity-40 hover:border-border-strong"
                                 disabled="@(query.Page >= pagedResult.TotalPages)"
                                 data-testid="admin-orders-page-next"
                                 @onclick="() => ChangePageAsync(query.Page + 1)">Next</button>
@@ -229,6 +229,6 @@
         OrderStatus.Shipped => "bg-sky-500/15 text-sky-400",
         OrderStatus.Delivered => "bg-emerald-500/15 text-emerald-400",
         OrderStatus.Cancelled => "bg-danger-bg text-danger",
-        _ => "bg-white/10 text-text-secondary"
+        _ => "bg-overlay-hover text-text-secondary"
     };
 }

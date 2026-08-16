@@ -14,12 +14,23 @@
     <link rel="stylesheet" href="@Assets["Nexus.styles.css"]" />
     <ImportMap />
     <HeadOutlet />
+    <script>
+        (function () {
+            var match = document.cookie.match(/(?:^|; )nexus-theme=(light|dark)/);
+            var theme = match ? match[1] : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            var root = document.documentElement;
+            root.classList.remove('light', 'dark');
+            root.classList.add(theme);
+            root.style.colorScheme = theme;
+        })();
+    </script>
 </head>
 
 <body class="bg-bg-base text-text-primary antialiased font-sans min-h-screen">
     <Routes />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["js/theme.js"]"></script>
     <script src="@Assets["Components/Account/Shared/PasskeySubmit.razor.js"]" type="module"></script>
     <script src="@Assets["Components/Account/Pages/Manage/Addresses/Edit.razor.js"]" type="module"></script>
 </body>

@@ -1,18 +1,18 @@
 @using Nexus.Services.Products.Models
 
-<div class="bg-bg-surface border border-white/5 rounded-xl overflow-hidden">
+<div class="bg-bg-surface border border-border rounded-xl overflow-hidden">
     <table class="w-full border-collapse">
         <thead>
             <tr>
-                <th class="w-10 py-3 px-4 border-b border-white/5">
+                <th class="w-10 py-3 px-4 border-b border-border">
                     <input type="checkbox" class="custom-checkbox" @bind="@selectAll" @bind:after="OnSelectAllChanged" />
                 </th>
-                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5">Variant</th>
-                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5">SKU</th>
-                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5">Price</th>
-                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5">Stock</th>
-                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5">Status</th>
-                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-white/5">Actions</th>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border">Variant</th>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border">SKU</th>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border">Price</th>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border">Stock</th>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border">Status</th>
+                <th class="py-3 px-4 text-left text-xs uppercase tracking-wider text-text-muted border-b border-border">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -26,18 +26,18 @@
             {
                 @foreach (var variant in Variants)
                 {
-                    <tr class="hover:bg-white/[0.01]" data-testid="admin-variant-row" data-name="@(string.IsNullOrWhiteSpace(variant.Sku) ? variant.OptionLabel : variant.Sku)">
-                        <td class="py-3 px-4 border-b border-white/5">
+                    <tr class="hover:bg-overlay" data-testid="admin-variant-row" data-name="@(string.IsNullOrWhiteSpace(variant.Sku) ? variant.OptionLabel : variant.Sku)">
+                        <td class="py-3 px-4 border-b border-border">
                             <input type="checkbox" class="custom-checkbox" checked="@IsSelected(variant.Id)" @onchange="(e) => ToggleSelection(variant.Id, e)" />
                         </td>
-                        <td class="py-3 px-4 border-b border-white/5 text-sm text-text-primary">@(string.IsNullOrWhiteSpace(variant.OptionLabel) ? "Default" : variant.OptionLabel)</td>
-                        <td class="py-3 px-4 border-b border-white/5 text-xs font-mono text-text-secondary">@variant.Sku</td>
-                        <td class="py-3 px-4 border-b border-white/5 text-sm font-semibold">@MoneyFormatter.Format(variant.Price)</td>
-                        <td class="py-3 px-4 border-b border-white/5 text-sm">@variant.StockQuantity</td>
-                        <td class="py-3 px-4 border-b border-white/5 text-sm">
+                        <td class="py-3 px-4 border-b border-border text-sm text-text-primary">@(string.IsNullOrWhiteSpace(variant.OptionLabel) ? "Default" : variant.OptionLabel)</td>
+                        <td class="py-3 px-4 border-b border-border text-xs font-mono text-text-secondary">@variant.Sku</td>
+                        <td class="py-3 px-4 border-b border-border text-sm font-semibold">@MoneyFormatter.Format(variant.Price)</td>
+                        <td class="py-3 px-4 border-b border-border text-sm">@variant.StockQuantity</td>
+                        <td class="py-3 px-4 border-b border-border text-sm">
                             <span class="@GetStatusClass(variant.IsActive)">@(variant.IsActive ? "Active" : "Hidden")</span>
                         </td>
-                        <td class="py-3 px-4 border-b border-white/5">
+                        <td class="py-3 px-4 border-b border-border">
                             <div class="flex gap-2">
                                 <button type="button" class="text-text-secondary hover:text-indigo-400" title="Edit" data-testid="admin-variant-edit" @onclick="() => OnEdit.InvokeAsync(variant)">
                                     <i class="fa-regular fa-pen-to-square"></i>
@@ -73,7 +73,7 @@
     private static string GetStatusClass(bool isActive) =>
         isActive
             ? "inline-block px-2 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-500"
-            : "inline-block px-2 py-1 rounded-full text-xs bg-white/5 text-text-secondary";
+            : "inline-block px-2 py-1 rounded-full text-xs bg-overlay text-text-secondary";
 
     private bool IsSelected(int id) => selectedIds.Contains(id);
 

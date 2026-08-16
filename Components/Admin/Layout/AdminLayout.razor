@@ -6,7 +6,7 @@
     <main class="flex-1 flex flex-col overflow-hidden relative">
         <div class="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(99,102,241,0.08)_0%,rgba(0,0,0,0)_70%)] z-[-1] pointer-events-none"></div>
 
-        <header class="h-20 flex items-center justify-between px-8 border-b border-white/5 bg-bg-base/80 backdrop-blur-md">
+        <header class="h-20 flex items-center justify-between px-8 border-b border-border bg-bg-base/80 backdrop-blur-md">
             <div class="page-title">
                 @if (PageTitle is not null)
                 {
@@ -14,9 +14,7 @@
                 }
             </div>
             <div class="flex items-center gap-5">
-                <button type="button" class="bg-transparent border-none text-text-secondary text-lg cursor-pointer transition-all duration-300 hover:text-text-primary" title="Theme" data-testid="admin-theme-button">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
+                <ThemeToggle TestId="admin-theme-button" />
                 <button type="button" class="bg-transparent border-none text-text-secondary text-lg cursor-pointer relative transition-all duration-300 hover:text-text-primary" title="Notifications" data-testid="admin-notifications-button">
                     <i class="fa-regular fa-bell"></i>
                     <span class="absolute -top-1 -right-1 bg-danger w-2 h-2 rounded-full"></span>

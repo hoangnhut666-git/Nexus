@@ -1,10 +1,10 @@
 @using Nexus.Services.Products.Models
 
-<div class="bg-bg-card border border-white/5 rounded-xl p-6 flex flex-col gap-4">
+<div class="bg-bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
     <div class="flex justify-between items-center">
         <h4 class="text-sm font-bold text-text-primary">Product Options</h4>
         <button type="button"
-                class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs font-semibold rounded-lg hover:border-indigo-500/40 hover:text-text-primary"
+                class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs font-semibold rounded-lg hover:border-indigo-500/40 hover:text-text-primary"
                 @onclick="AddOption"
                 data-testid="btn-add-option">
             <i class="fa-solid fa-plus mr-1"></i> Add Option
@@ -20,10 +20,10 @@
     {
         var option = Options[optionIndex];
         var index = optionIndex;
-        <div class="border border-white/5 rounded-lg p-4 flex flex-col gap-3">
+        <div class="border border-border rounded-lg p-4 flex flex-col gap-3">
             <div class="flex gap-2 items-center">
                 <input type="text"
-                       class="bg-bg-surface border border-white/5 text-text-primary px-3 py-2 rounded-lg text-sm flex-1 outline-none focus:border-indigo-500/40"
+                       class="bg-bg-surface border border-border text-text-primary px-3 py-2 rounded-lg text-sm flex-1 outline-none focus:border-indigo-500/40"
                        placeholder="Option name (e.g. Color)"
                        data-testid="input-option-name"
                        value="@option.Name"
@@ -44,7 +44,7 @@
                 {
                     var value = option.Values[valueIndex];
                     var vIndex = valueIndex;
-                    <div class="flex items-center gap-1 bg-bg-surface border border-white/5 rounded-lg px-2 py-1">
+                    <div class="flex items-center gap-1 bg-bg-surface border border-border rounded-lg px-2 py-1">
                         <input type="text"
                                class="bg-transparent border-none text-text-primary text-sm outline-none w-24"
                                placeholder="Value"
@@ -57,7 +57,7 @@
                     </div>
                 }
                 <button type="button"
-                        class="bg-bg-surface border border-dashed border-white/10 text-text-secondary px-3 py-1 rounded-lg text-xs hover:border-indigo-500/40"
+                        class="bg-bg-surface border border-dashed border-border-strong text-text-secondary px-3 py-1 rounded-lg text-xs hover:border-indigo-500/40"
                         @onclick="() => AddValue(option)"
                         data-testid="btn-add-option-value">
                     + Value

@@ -28,7 +28,7 @@
 
 @if (addresses.Count == 0)
 {
-    <div class="border border-dashed border-white/10 rounded-2xl p-10 text-center">
+    <div class="border border-dashed border-border-strong rounded-2xl p-10 text-center">
         <i class="fa-solid fa-location-dot text-3xl text-text-muted mb-3"></i>
         <p class="text-text-secondary text-sm mb-4">You have no saved addresses yet.</p>
         <a href="Account/Manage/Addresses/Add" class="text-indigo-400 hover:text-indigo-300 font-bold text-sm transition-colors" data-testid="btn-add-first-address">Add your first address</a>
@@ -39,13 +39,13 @@ else
     <div class="flex flex-col gap-4">
         @foreach (var address in addresses)
         {
-            <div class="bg-bg-card border border-white/5 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4" data-testid="manage-address-card" data-name="@address.RecipientName">
+            <div class="bg-bg-card border border-border rounded-2xl p-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4" data-testid="manage-address-card" data-name="@address.RecipientName">
                 <div class="min-w-0">
                     <div class="flex items-center gap-2.5 flex-wrap mb-1.5">
                         <span class="font-bold text-text-primary">@address.RecipientName</span>
                         @if (!string.IsNullOrWhiteSpace(address.Label))
                         {
-                            <span class="text-[10px] uppercase tracking-wider font-bold text-text-secondary bg-white/5 px-2 py-0.5 rounded-full">@address.Label</span>
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-text-secondary bg-overlay px-2 py-0.5 rounded-full">@address.Label</span>
                         }
                         @if (address.IsDefault)
                         {
@@ -58,7 +58,7 @@ else
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <a href="@($"Account/Manage/Addresses/Edit/{address.Id}")"
                        data-testid="manage-address-edit"
-                       class="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-text-primary border border-white/10 hover:border-white/20 px-3 py-2 rounded-lg transition-colors">
+                       class="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-text-primary border border-border-strong hover:border-border-strong px-3 py-2 rounded-lg transition-colors">
                         <i class="fa-solid fa-pen text-[10px]"></i><span>Edit</span>
                     </a>
                     @if (!address.IsDefault)

@@ -33,6 +33,11 @@ public sealed class AdminDashboardPageTests : IClassFixture<TestDatabaseFixture>
         var response = await client.GetAsync("/admin");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var html = await response.Content.ReadAsStringAsync();
+        html.Should().Contain("data-theme-toggle");
+        html.Should().Contain("data-testid=\"admin-theme-button\"");
+        html.Should().Contain("nexus-theme");
     }
 
     [Fact]

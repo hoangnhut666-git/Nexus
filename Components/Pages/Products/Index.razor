@@ -39,12 +39,12 @@
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
             <input type="text"
                    placeholder="Search by name, slug, or SKU..."
-                   class="w-full bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm outline-none focus:border-indigo-500/40 transition"
+                   class="w-full bg-bg-card border border-border py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm outline-none focus:border-indigo-500/40 transition"
                    value="@searchTerm"
                    data-testid="shop-search-input"
                    @oninput="OnSearchInput" />
         </div>
-        <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer min-w-[180px]"
+        <select class="bg-bg-card border border-border text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer min-w-[180px]"
                 value="@categoryFilter"
                 data-testid="shop-category-select"
                 @onchange="OnCategoryFilterChanged">
@@ -62,7 +62,7 @@
     }
     else if (pagedResult.Items.Count == 0)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center text-text-secondary" data-testid="shop-empty">
+        <div class="bg-bg-surface border border-border rounded-2xl p-12 text-center text-text-secondary" data-testid="shop-empty">
             <i class="fa-solid fa-box-open text-3xl mb-4 text-text-muted"></i>
             <p>No products match your filters.</p>
         </div>
@@ -80,7 +80,7 @@
         {
             <div class="flex justify-center items-center gap-4 mt-10 text-sm text-text-secondary">
                 <button type="button"
-                        class="px-4 py-2 rounded-lg border border-white/5 disabled:opacity-40"
+                        class="px-4 py-2 rounded-lg border border-border disabled:opacity-40"
                         disabled="@(query.Page <= 1)"
                         data-testid="shop-page-prev"
                         @onclick="() => ChangePageAsync(query.Page - 1)">
@@ -88,7 +88,7 @@
                 </button>
                 <span>Page @query.Page of @TotalPages</span>
                 <button type="button"
-                        class="px-4 py-2 rounded-lg border border-white/5 disabled:opacity-40"
+                        class="px-4 py-2 rounded-lg border border-border disabled:opacity-40"
                         disabled="@(query.Page >= TotalPages)"
                         data-testid="shop-page-next"
                         @onclick="() => ChangePageAsync(query.Page + 1)">

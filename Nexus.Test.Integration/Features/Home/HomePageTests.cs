@@ -51,4 +51,16 @@ public sealed class HomePageTests : IClassFixture<TestDatabaseFixture>, IAsyncLi
         html.Should().Contain("Hottest Products");
         html.Should().Contain("Join the NEXUS Club");
     }
+
+    [Fact]
+    public async Task GetHomePage_ContainsThemeToggleAndBootScript()
+    {
+        var response = await _client.GetAsync("/");
+        var html = await response.Content.ReadAsStringAsync();
+
+        html.Should().Contain("data-theme-toggle");
+        html.Should().Contain("data-testid=\"theme-toggle\"");
+        html.Should().Contain("nexus-theme");
+        html.Should().Contain("js/theme.js");
+    }
 }

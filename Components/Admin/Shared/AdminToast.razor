@@ -30,7 +30,7 @@
             _ => "border-l-accent"
         };
 
-        return $"toast show bg-bg-card border border-white/5 border-l-4 {border} text-text-primary px-5 py-4 rounded-lg shadow-xl flex items-center gap-3.5 w-max max-w-[400px]";
+        return $"toast show bg-bg-card border border-border border-l-4 {border} text-text-primary px-5 py-4 rounded-lg shadow-xl flex items-center gap-3.5 w-max max-w-[400px]";
     }
 
     private static string GetIconClass(AdminToastMessage toast) => toast.Type switch

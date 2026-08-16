@@ -49,8 +49,8 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 flex flex-col gap-6">
-                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-white/5">
+                    <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-border">
                             <div class="text-lg font-bold">Shipping Address</div>
                             @if (savedAddresses.Count > 0 && !useNewAddress)
                             {
@@ -74,7 +74,7 @@
                             <div class="flex flex-col gap-3">
                                 @foreach (var address in savedAddresses)
                                 {
-                                    <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer @(selectedAddressId == address.Id ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")"
+                                    <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer @(selectedAddressId == address.Id ? "border-indigo-500/40 bg-indigo-500/5" : "border-border")"
                                            @key="address.Id">
                                         <input type="radio" name="saved-address" class="mt-1"
                                                data-testid="checkout-saved-address"
@@ -86,7 +86,7 @@
                                                 <span class="font-semibold">@address.RecipientName</span>
                                                 @if (!string.IsNullOrWhiteSpace(address.Label))
                                                 {
-                                                    <span class="text-[10px] uppercase tracking-wider font-bold text-text-secondary bg-white/5 px-2 py-0.5 rounded-full">@address.Label</span>
+                                                    <span class="text-[10px] uppercase tracking-wider font-bold text-text-secondary bg-overlay px-2 py-0.5 rounded-full">@address.Label</span>
                                                 }
                                                 @if (address.IsDefault)
                                                 {
@@ -161,10 +161,10 @@
                         }
                     </div>
 
-                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                        <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Payment Method</div>
+                    <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                        <div class="text-lg font-bold pb-4 mb-4 border-b border-border">Payment Method</div>
 
-                        <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer @(form.Method == PaymentMethod.Cod ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")">
+                        <label class="flex items-center gap-3 p-4 rounded-xl border cursor-pointer @(form.Method == PaymentMethod.Cod ? "border-indigo-500/40 bg-indigo-500/5" : "border-border")">
                             <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.Cod)"
                                    data-testid="checkout-payment-cod"
                                    @onchange="@(() => form.Method = PaymentMethod.Cod)" />
@@ -175,7 +175,7 @@
                             <i class="fa-solid fa-money-bill-wave text-accent"></i>
                         </label>
 
-                        <label class="flex items-center gap-3 p-4 rounded-xl border mt-3 cursor-pointer @(form.Method == PaymentMethod.PayPal ? "border-indigo-500/40 bg-indigo-500/5" : "border-white/5")">
+                        <label class="flex items-center gap-3 p-4 rounded-xl border mt-3 cursor-pointer @(form.Method == PaymentMethod.PayPal ? "border-indigo-500/40 bg-indigo-500/5" : "border-border")">
                             <input type="radio" name="payment" checked="@(form.Method == PaymentMethod.PayPal)"
                                    data-testid="checkout-payment-paypal"
                                    @onchange="@(() => form.Method = PaymentMethod.PayPal)" />
@@ -189,8 +189,8 @@
                 </div>
 
                 <div>
-                    <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                        <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Order Summary</div>
+                    <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                        <div class="text-lg font-bold pb-4 mb-4 border-b border-border">Order Summary</div>
 
                         <div class="flex flex-col gap-3 mb-4">
                             @foreach (var item in cart.Items)
@@ -205,7 +205,7 @@
                             }
                         </div>
 
-                        <div class="border-t border-white/5 pt-4">
+                        <div class="border-t border-border pt-4">
                             <div class="flex justify-between text-sm text-text-secondary mb-4">
                                 <span>Subtotal (@cart.TotalQuantity items)</span>
                                 <span class="text-text-primary font-medium">@MoneyFormatter.Format(cart.Subtotal)</span>
@@ -222,7 +222,7 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
+                        <div class="flex justify-between items-center border-t border-dashed border-border pt-5 mt-2">
                             <span class="text-base font-semibold">Total</span>
                             <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(cart.Total)</span>
                         </div>
@@ -253,7 +253,7 @@
 </div>
 
 @code {
-    private const string InputClass = "bg-bg-base border border-white/5 rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-indigo-500/40 w-full";
+    private const string InputClass = "bg-bg-base border border-border rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-indigo-500/40 w-full";
 
     private CartDto? cart;
     private string? userId;

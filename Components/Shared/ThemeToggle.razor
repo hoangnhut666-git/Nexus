@@ -1,0 +1,17 @@
+<button type="button"
+        data-theme-toggle
+        data-testid="@TestId"
+        class="@Class"
+        title="Theme"
+        aria-label="Toggle color theme">
+    <i class="fa-solid fa-moon"></i>
+</button>
+
+@code {
+    [Parameter]
+    public string TestId { get; set; } = "theme-toggle";
+
+    [Parameter]
+    public string Class { get; set; } =
+        "bg-transparent border-none text-text-secondary text-lg cursor-pointer transition-all duration-300 hover:text-text-primary p-2 rounded-full hover:bg-overlay";
+}

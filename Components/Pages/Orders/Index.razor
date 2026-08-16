@@ -28,7 +28,7 @@
     }
     else if (orders.Count == 0)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center">
+        <div class="bg-bg-surface border border-border rounded-2xl p-16 text-center">
             <i class="fa-solid fa-box-open text-4xl text-text-muted mb-4"></i>
             <h2 class="text-xl font-bold mb-2">No orders yet</h2>
             <p class="text-text-secondary mb-6">When you place an order, it will show up here.</p>
@@ -39,13 +39,13 @@
     }
     else
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl divide-y divide-white/5">
+        <div class="bg-bg-surface border border-border rounded-2xl divide-y divide-border">
             @foreach (var order in orders)
             {
                 <a href="@($"/orders/{order.OrderNumber}")"
                    data-testid="order-row"
                    data-order-number="@order.OrderNumber"
-                   class="flex items-center justify-between gap-4 p-5 hover:bg-white/5 transition first:rounded-t-2xl last:rounded-b-2xl">
+                   class="flex items-center justify-between gap-4 p-5 hover:bg-overlay transition first:rounded-t-2xl last:rounded-b-2xl">
                     <div class="min-w-0">
                         <div class="font-bold text-text-primary">@order.OrderNumber</div>
                         <div class="text-xs text-text-muted mt-1">
@@ -86,6 +86,6 @@
         OrderStatus.Shipped => "bg-sky-500/15 text-sky-400",
         OrderStatus.Delivered => "bg-emerald-500/15 text-emerald-400",
         OrderStatus.Cancelled => "bg-danger-bg text-danger",
-        _ => "bg-white/10 text-text-secondary"
+        _ => "bg-overlay-hover text-text-secondary"
     };
 }

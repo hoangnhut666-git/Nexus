@@ -17,12 +17,12 @@
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-text-muted"></i>
                     <input type="text"
                            placeholder="Search by name, slug..."
-                           class="bg-bg-card border border-white/5 py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                           class="bg-bg-card border border-border py-2.5 pl-10 pr-4 rounded-lg text-text-primary text-sm w-[300px] transition-all duration-300 placeholder-text-muted focus:outline-none focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)]"
                            value="@searchTerm"
                            data-testid="admin-categories-search"
                            @oninput="OnSearchInput" />
                 </div>
-                <select class="bg-bg-card border border-white/5 text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-white/10 focus:border-indigo-500/40"
+                <select class="bg-bg-card border border-border text-text-secondary py-2.5 px-4 rounded-lg text-sm outline-none cursor-pointer transition-all duration-300 hover:border-border-strong focus:border-indigo-500/40"
                         value="@statusFilter"
                         data-testid="admin-categories-status-filter"
                         @onchange="OnStatusFilterChanged">
@@ -63,13 +63,13 @@
 
 @if (deleteCandidate is not null)
 {
-    <div class="fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4" data-testid="dialog-delete-category">
-        <div class="bg-bg-surface border border-white/5 rounded-xl p-6 max-w-md w-full shadow-2xl">
+    <div class="fixed inset-0 bg-bg-base/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4" data-testid="dialog-delete-category">
+        <div class="bg-bg-surface border border-border rounded-xl p-6 max-w-md w-full shadow-2xl">
             <h3 class="text-lg font-bold mb-2">Delete category?</h3>
             <p class="text-sm text-text-secondary mb-6">Delete category "@deleteCandidate.Name"?</p>
             <div class="flex justify-end gap-3">
                 <button type="button"
-                        class="bg-transparent border border-white/5 text-text-secondary py-2 px-4 text-sm font-semibold rounded-lg hover:bg-white/5"
+                        class="bg-transparent border border-border text-text-secondary py-2 px-4 text-sm font-semibold rounded-lg hover:bg-overlay"
                         data-testid="btn-cancel-delete"
                         @onclick="CancelDelete">
                     Cancel

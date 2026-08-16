@@ -27,7 +27,7 @@
     [Parameter]
     public EventCallback<bool> IsActiveChanged { get; set; }
 
-    private const string BaseCardClass = "status-radio-card border border-white/5 bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-white/10 hover:bg-bg-card-hover";
+    private const string BaseCardClass = "status-radio-card border border-border bg-bg-card py-3 px-2 rounded-lg cursor-pointer text-center transition-all duration-300 flex flex-col items-center gap-1.5 relative hover:border-border-strong hover:bg-bg-card-hover";
 
     private async Task SetActive(bool isActive)
     {

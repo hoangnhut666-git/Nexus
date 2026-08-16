@@ -29,7 +29,7 @@
     }
     else if (cart is null || cart.IsEmpty)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center" data-testid="cart-empty">
+        <div class="bg-bg-surface border border-border rounded-2xl p-16 text-center" data-testid="cart-empty">
             <i class="fa-solid fa-cart-shopping text-4xl text-text-muted mb-4"></i>
             <h2 class="text-xl font-bold mb-2">Your cart is empty</h2>
             <p class="text-text-secondary mb-6">Browse the catalog and add products to get started.</p>
@@ -41,8 +41,8 @@
     else
     {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-bg-surface border border-white/5 rounded-2xl p-6">
-                <div class="flex justify-between items-center pb-4 mb-4 border-b border-white/5">
+            <div class="lg:col-span-2 bg-bg-surface border border-border rounded-2xl p-6">
+                <div class="flex justify-between items-center pb-4 mb-4 border-b border-border">
                     <div class="text-lg font-bold flex items-center gap-2">
                         Items in cart
                         <span class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">@cart.Items.Count</span>
@@ -66,8 +66,8 @@
                 <div class="flex flex-col">
                     @foreach (var item in cart.Items)
                     {
-                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-white/5 last:border-b-0" @key="item.CartItemId" data-testid="cart-line" data-slug="@item.Slug">
-                            <div class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-white/5 flex items-center justify-center overflow-hidden">
+                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-border last:border-b-0" @key="item.CartItemId" data-testid="cart-line" data-slug="@item.Slug">
+                            <div class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-border flex items-center justify-center overflow-hidden">
                                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                 {
                                     <img src="@item.ImageUrl" alt="@item.ProductName" class="w-full h-full object-cover" />
@@ -96,9 +96,9 @@
                                     }
                                 </div>
 
-                                <div class="inline-flex items-center bg-bg-base border border-white/5 rounded-lg overflow-hidden mt-3">
+                                <div class="inline-flex items-center bg-bg-base border border-border rounded-lg overflow-hidden mt-3">
                                     <button type="button"
-                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition disabled:opacity-40"
+                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay transition disabled:opacity-40"
                                             disabled="@isBusy"
                                             data-testid="cart-qty-decrease"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity - 1))">
@@ -106,7 +106,7 @@
                                     </button>
                                     <span class="w-9 text-center text-sm font-semibold" data-testid="cart-qty-value">@item.Quantity</span>
                                     <button type="button"
-                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition disabled:opacity-40"
+                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay transition disabled:opacity-40"
                                             disabled="@(isBusy || item.Quantity >= item.StockQuantity)"
                                             data-testid="cart-qty-increase"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity + 1))">
@@ -132,8 +132,8 @@
             </div>
 
             <div>
-                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                    <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Order Summary</div>
+                <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                    <div class="text-lg font-bold pb-4 mb-4 border-b border-border">Order Summary</div>
 
                     <div class="flex justify-between text-sm text-text-secondary mb-4">
                         <span>Subtotal (@cart.TotalQuantity items)</span>
@@ -152,17 +152,17 @@
 
                     <div class="flex gap-2 my-6">
                         <input type="text"
-                               class="flex-1 bg-bg-base border border-white/5 rounded-lg py-3 px-4 text-sm text-text-primary opacity-60 cursor-not-allowed"
+                               class="flex-1 bg-bg-base border border-border rounded-lg py-3 px-4 text-sm text-text-primary opacity-60 cursor-not-allowed"
                                placeholder="Promo code (coming soon)"
                                disabled="@true" />
                         <button type="button"
-                                class="bg-bg-card border border-white/5 text-text-primary px-4 rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed"
+                                class="bg-bg-card border border-border text-text-primary px-4 rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed"
                                 disabled="@true">
                             Apply
                         </button>
                     </div>
 
-                    <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
+                    <div class="flex justify-between items-center border-t border-dashed border-border pt-5 mt-2">
                         <span class="text-base font-semibold">Total</span>
                         <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(cart.Total)</span>
                     </div>
