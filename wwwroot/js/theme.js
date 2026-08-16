@@ -45,6 +45,10 @@
         syncToggles(theme);
     }
 
+    function restore() {
+        apply(currentTheme());
+    }
+
     document.addEventListener("click", (event) => {
         const button = event.target.closest("[data-theme-toggle]");
         if (!button) {
@@ -56,7 +60,7 @@
         apply(next);
     });
 
-    apply(currentTheme());
+    restore();
 
     window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (event) => {
         if (readCookie()) {
@@ -66,5 +70,22 @@
         apply(event.matches ? "light" : "dark");
     });
 
-    document.addEventListener("enhancedload", () => apply(currentTheme()));
+    document.addEventListener("enhancedload", restore);
+
+    if (window.Blazor && typeof Blazor.addEventListener === "function") {
+        Blazor.addEventListener("enhancedload", restore);
+    } else {
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.Blazor && typeof Blazor.addEventListener === "function") {
+                Blazor.addEventListener("enhancedload", restore);
+            }
+        });
+    }
+
+    new MutationObserver(() => {
+        const expected = currentTheme();
+        if (!document.documentElement.classList.contains(expected)) {
+            apply(expected);
+        }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 })();

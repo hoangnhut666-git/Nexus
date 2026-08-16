@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="@themeClass">
 
 <head>
     <meta charset="utf-8" />
@@ -16,7 +16,7 @@
     <HeadOutlet />
     <script>
         (function () {
-            var match = document.cookie.match(/(?:^|; )nexus-theme=(light|dark)/);
+            var match = document.cookie.match(/(?:^|; )@(ThemeCookie.Name)=(light|dark)/);
             var theme = match ? match[1] : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
             var root = document.documentElement;
             root.classList.remove('light', 'dark');
@@ -36,3 +36,10 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string themeClass => ThemeCookie.CssClassFrom(HttpContext);
+}

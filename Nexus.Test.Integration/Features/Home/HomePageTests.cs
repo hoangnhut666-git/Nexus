@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Nexus.Components;
 
 namespace Nexus.Test.Integration.Features.Home;
 
@@ -62,5 +63,18 @@ public sealed class HomePageTests : IClassFixture<TestDatabaseFixture>, IAsyncLi
         html.Should().Contain("data-testid=\"theme-toggle\"");
         html.Should().Contain("nexus-theme");
         html.Should().Contain("js/theme.js");
+    }
+
+    [Fact]
+    public async Task GetHomePage_WithThemeCookie_RendersHtmlThemeClass()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "/");
+        request.Headers.Add("Cookie", $"{ThemeCookie.Name}={ThemeCookie.Light}");
+
+        var response = await _client.SendAsync(request);
+        var html = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        html.Should().Contain("class=\"light\"");
     }
 }
