@@ -53,4 +53,30 @@ public static class VariantResolutionHelper
                 .Distinct()
                 .Count() == options.Count;
     }
+
+    public static ProductVariantDto? SelectDefaultVariant(IReadOnlyList<ProductVariantDto> variants)
+    {
+        if (variants.Count == 0)
+            return null;
+
+        var ordered = variants.OrderBy(v => v.Id).ToList();
+        return ordered.FirstOrDefault(v => v.StockQuantity > 0) ?? ordered[0];
+    }
+
+    public static Dictionary<int, int> BuildSelectedValues(
+        IReadOnlyList<ProductOptionDto> options,
+        ProductVariantDto variant)
+    {
+        var selected = new Dictionary<int, int>();
+        var valueIds = variant.OptionValueIds.ToHashSet();
+
+        foreach (var option in options)
+        {
+            var match = option.Values.FirstOrDefault(v => valueIds.Contains(v.Id));
+            if (match is not null)
+                selected[option.Id] = match.Id;
+        }
+
+        return selected;
+    }
 }

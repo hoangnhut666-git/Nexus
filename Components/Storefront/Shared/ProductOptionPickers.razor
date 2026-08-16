@@ -19,6 +19,7 @@
                             data-testid="pdp-option"
                             data-name="@option.Name"
                             data-value="@value.Value"
+                            aria-pressed="@IsSelected(option.Id, value.Id).ToString().ToLowerInvariant()"
                             @onclick="() => SelectValue(option.Id, value.Id)">
                         @value.Value
                     </button>
@@ -59,9 +60,12 @@
         return true;
     }
 
+    private bool IsSelected(int optionId, int valueId) =>
+        SelectedValues.TryGetValue(optionId, out var selected) && selected == valueId;
+
     private string GetButtonClass(int optionId, int valueId)
     {
-        var isSelected = SelectedValues.TryGetValue(optionId, out var selected) && selected == valueId;
+        var isSelected = IsSelected(optionId, valueId);
         return isSelected
             ? "bg-bg-surface border-2 border-indigo-500 text-text-primary px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300"
             : "bg-bg-surface border border-border text-text-secondary hover:text-text-primary px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300";

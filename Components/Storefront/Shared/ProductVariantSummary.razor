@@ -5,21 +5,21 @@
     {
         <div>
             <div class="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Price</div>
-            <div class="text-3xl font-extrabold text-text-primary">@MoneyFormatter.Format(ResolvedVariant.Price)</div>
+            <div class="text-3xl font-extrabold text-text-primary" data-testid="pdp-price">@MoneyFormatter.Format(ResolvedVariant.Price)</div>
         </div>
         <div class="text-sm text-text-secondary">
-            SKU: <span class="text-text-primary font-medium">@ResolvedVariant.Sku</span>
+            SKU: <span class="text-text-primary font-medium" data-testid="pdp-sku">@ResolvedVariant.Sku</span>
         </div>
         @if (ResolvedVariant.StockQuantity > 0)
         {
-            <div class="text-sm text-emerald-400 font-medium">
+            <div class="text-sm text-emerald-400 font-medium" data-testid="pdp-stock">
                 <i class="fa-solid fa-circle text-[6px] mr-1"></i>
                 @ResolvedVariant.StockQuantity in stock
             </div>
         }
         else
         {
-            <div class="text-sm text-danger font-medium">
+            <div class="text-sm text-danger font-medium" data-testid="pdp-stock">
                 <i class="fa-solid fa-circle-xmark mr-1"></i>
                 Out of stock
             </div>
@@ -36,18 +36,50 @@
 </div>
 
 <div class="flex flex-col gap-4 mt-2">
-    <button type="button"
-            class="w-full py-3 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(CanAddToCart && !IsAdding ? "bg-overlay border border-border-strong hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary" : "bg-overlay border border-border text-text-muted cursor-not-allowed opacity-60")"
-            disabled="@(!CanAddToCart || IsAdding)"
-            data-testid="pdp-add-to-cart"
-            @onclick="HandleAddToCart">
-        <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-cart-plus") @(CanAddToCart && !IsAdding ? "text-indigo-400" : "")"></i>
-        @(IsAdding ? "Adding..." : CanAddToCart ? "Add to cart" : "Unavailable")
-    </button>
+    <div class="flex gap-4 items-end">
+        <div class="flex flex-col gap-1.5" data-testid="pdp-qty">
+            <label class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Quantity</label>
+            <div class="flex items-center bg-bg-surface border border-border rounded-xl h-[46px] px-2.5">
+                <button type="button"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay active:scale-95 transition-all focus:outline-none font-bold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        disabled="@(!CanDecrease)"
+                        data-testid="pdp-qty-minus"
+                        aria-label="Decrease quantity"
+                        @onclick="DecreaseQuantity">
+                    <i class="fa-solid fa-minus text-xs"></i>
+                </button>
+                <input type="number"
+                       value="@Quantity"
+                       min="1"
+                       max="@MaxQuantity"
+                       readonly
+                       class="bg-transparent border-none text-center w-10 text-sm font-bold text-text-primary focus:outline-none"
+                       data-testid="pdp-qty-input"
+                       aria-label="Quantity" />
+                <button type="button"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay active:scale-95 transition-all focus:outline-none font-bold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        disabled="@(!CanIncrease)"
+                        data-testid="pdp-qty-plus"
+                        aria-label="Increase quantity"
+                        @onclick="IncreaseQuantity">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="button"
+                class="flex-1 h-[46px] px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(CanAddToCart && !IsAdding ? "bg-overlay border border-border-strong hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary" : "bg-overlay border border-border text-text-muted cursor-not-allowed opacity-60")"
+                disabled="@(!CanAddToCart || IsAdding)"
+                data-testid="pdp-add-to-cart"
+                @onclick="HandleAddToCart">
+            <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-cart-plus") @(CanAddToCart && !IsAdding ? "text-indigo-400" : "")"></i>
+            @(IsAdding ? "Adding..." : CanAddToCart ? "Add to cart" : "Unavailable")
+        </button>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(StatusMessage))
     {
-        <div class="text-sm font-medium @(IsError ? "text-danger" : "text-emerald-400")">
+        <div class="text-sm font-medium @(IsError ? "text-danger" : "text-emerald-400")" data-testid="pdp-cart-status">
             <i class="fa-solid @(IsError ? "fa-circle-exclamation" : "fa-circle-check") mr-1"></i>
             @StatusMessage
         </div>
@@ -65,6 +97,12 @@
     public bool IsInvalidCombination { get; set; }
 
     [Parameter]
+    public int Quantity { get; set; } = 1;
+
+    [Parameter]
+    public EventCallback<int> QuantityChanged { get; set; }
+
+    [Parameter]
     public EventCallback OnAddToCart { get; set; }
 
     [Parameter]
@@ -77,6 +115,31 @@
     public bool IsError { get; set; }
 
     private bool CanAddToCart => ResolvedVariant is not null && ResolvedVariant.StockQuantity > 0;
+
+    private int MaxQuantity => Math.Max(1, ResolvedVariant?.StockQuantity ?? 1);
+
+    private bool CanDecrease => Quantity > 1;
+
+    private bool CanIncrease =>
+        ResolvedVariant is not null
+        && ResolvedVariant.StockQuantity > 0
+        && Quantity < ResolvedVariant.StockQuantity;
+
+    private async Task DecreaseQuantity()
+    {
+        if (!CanDecrease)
+            return;
+
+        await QuantityChanged.InvokeAsync(Quantity - 1);
+    }
+
+    private async Task IncreaseQuantity()
+    {
+        if (!CanIncrease)
+            return;
+
+        await QuantityChanged.InvokeAsync(Quantity + 1);
+    }
 
     private async Task HandleAddToCart()
     {
