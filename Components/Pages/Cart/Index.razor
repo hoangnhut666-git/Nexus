@@ -33,7 +33,8 @@
             <i class="fa-solid fa-cart-shopping text-4xl text-text-muted mb-4"></i>
             <h2 class="text-xl font-bold mb-2">Your cart is empty</h2>
             <p class="text-text-secondary mb-6">Browse the catalog and add products to get started.</p>
-            <a href="/products" data-testid="cart-continue-shopping" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+            <a href="/products" data-testid="cart-continue-shopping"
+               class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
                 <i class="fa-solid fa-arrow-left"></i> Continue shopping
             </a>
         </div>
@@ -45,13 +46,11 @@
                 <div class="flex justify-between items-center pb-4 mb-4 border-b border-border">
                     <div class="text-lg font-bold flex items-center gap-2">
                         Items in cart
-                        <span class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">@cart.Items.Count</span>
+                        <span
+                        class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">@cart.Items.Count</span>
                     </div>
-                    <button type="button"
-                            class="text-danger text-sm hover:underline disabled:opacity-50"
-                            disabled="@isBusy"
-                            data-testid="cart-clear-all"
-                            @onclick="ClearCart">
+                    <button type="button" class="text-danger text-sm hover:underline disabled:opacity-50" disabled="@isBusy"
+                            data-testid="cart-clear-all" @onclick="ClearCart">
                         <i class="fa-solid fa-trash-can mr-1"></i> Clear all
                     </button>
                 </div>
@@ -66,8 +65,10 @@
                 <div class="flex flex-col">
                     @foreach (var item in cart.Items)
                     {
-                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-border last:border-b-0" @key="item.CartItemId" data-testid="cart-line" data-slug="@item.Slug">
-                            <div class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-border flex items-center justify-center overflow-hidden">
+                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-border last:border-b-0"
+                             @key="item.CartItemId" data-testid="cart-line" data-slug="@item.Slug">
+                            <div
+                                class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-border flex items-center justify-center overflow-hidden">
                                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                 {
                                     <img src="@item.ImageUrl" alt="@item.ProductName" class="w-full h-full object-cover" />
@@ -79,7 +80,8 @@
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <a href="@($"/products/{item.Slug}")" class="font-bold text-text-primary hover:text-accent block truncate">@item.ProductName</a>
+                                <a href="@($"/products/{item.Slug}")"
+                                   class="font-bold text-text-primary hover:text-accent block truncate">@item.ProductName</a>
                                 <div class="text-xs text-text-muted mt-1 flex flex-wrap gap-x-3 gap-y-1">
                                     @if (!string.IsNullOrWhiteSpace(item.VariantLabel))
                                     {
@@ -96,15 +98,16 @@
                                     }
                                 </div>
 
-                                <div class="inline-flex items-center bg-bg-base border border-border rounded-lg overflow-hidden mt-3">
+                                <div
+                                    class="inline-flex items-center bg-bg-base border border-border rounded-lg overflow-hidden mt-3">
                                     <button type="button"
                                             class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay transition disabled:opacity-40"
-                                            disabled="@isBusy"
-                                            data-testid="cart-qty-decrease"
+                                            disabled="@isBusy" data-testid="cart-qty-decrease"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity - 1))">
                                         <i class="fa-solid fa-minus text-xs"></i>
                                     </button>
-                                    <span class="w-9 text-center text-sm font-semibold" data-testid="cart-qty-value">@item.Quantity</span>
+                                    <span class="w-9 text-center text-sm font-semibold"
+                                          data-testid="cart-qty-value">@item.Quantity</span>
                                     <button type="button"
                                             class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay transition disabled:opacity-40"
                                             disabled="@(isBusy || item.Quantity >= item.StockQuantity)"
@@ -120,9 +123,7 @@
                                 <div class="text-xs text-text-muted">@MoneyFormatter.Format(item.UnitPrice) each</div>
                                 <button type="button"
                                         class="w-8 h-8 rounded-lg bg-danger-bg border border-danger/20 text-danger flex items-center justify-center hover:bg-danger hover:text-white transition disabled:opacity-40"
-                                        disabled="@isBusy"
-                                        data-testid="cart-remove-item"
-                                        @onclick="@(() => RemoveItem(item))">
+                                        disabled="@isBusy" data-testid="cart-remove-item" @onclick="@(() => RemoveItem(item))">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
@@ -153,8 +154,7 @@
                     <div class="flex gap-2 my-6">
                         <input type="text"
                                class="flex-1 bg-bg-base border border-border rounded-lg py-3 px-4 text-sm text-text-primary opacity-60 cursor-not-allowed"
-                               placeholder="Promo code (coming soon)"
-                               disabled="@true" />
+                               placeholder="Promo code (coming soon)" disabled="@true" />
                         <button type="button"
                                 class="bg-bg-card border border-border text-text-primary px-4 rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed"
                                 disabled="@true">
@@ -168,14 +168,40 @@
                     </div>
 
                     <button type="button"
-                            class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
-                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))"
-                            data-testid="cart-checkout-button"
+                            class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold
+                        text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
+                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))" data-testid="cart-checkout-button"
                             @onclick="@(() => Navigation.NavigateTo("/checkout"))">
                         Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
                     </button>
 
-                    <a href="/products" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4" data-testid="cart-continue-shopping">
+                    @* <button type="button"
+                            class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold
+                        text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
+                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))" data-testid="btn-checkout-now"
+                            @onclick="@(() => Navigation.NavigateTo("/checkout"))">
+                        Secure Checkout <i class="fa-solid fa-lock"></i>
+                    </button>
+
+                    <a href="#" class="w-full mt-6 py-4 rounded-xl bg-indigo-600 text-white font-bold
+                        text-sm flex justify-center items-center gap-2 hover:bg-indigo-700 transition"
+                       style="@((isBusy || cart.Items.Any(i => !i.InStock)) ? "pointer-events: none; opacity: 0.6;" : "")"
+                       @onclick="@(() => Navigation.NavigateTo("/checkout"))" @onclick:preventDefault>
+                        Proceed to Payment <i class="fa-solid fa-credit-card"></i>
+                    </a>
+
+                    <button type="button" class="checkout-action-btn w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold
+                        text-sm flex justify-center items-center gap-2 transition disabled:opacity-60"
+                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))" data-testid="checkout-step-1"
+                            @onclick="@(() => Navigation.NavigateTo("/checkout"))">
+                        <span>Hoàn tất đơn hàng</span>
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button> *@
+
+                    <a href="/products" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4"
+                       data-testid="cart-continue-shopping">
                         <i class="fa-solid fa-arrow-left mr-1"></i> Continue shopping
                     </a>
                 </div>
