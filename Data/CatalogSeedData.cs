@@ -7,10 +7,14 @@ namespace Nexus.Data;
 /// <summary>
 /// Seeds the product catalog (categories, products, options and variants) so that the
 /// storefront always has meaningful data, even after switching to a fresh database.
-/// The seeder is idempotent: it only runs when no products exist yet.
+/// Full catalog insert is idempotent (only when no products exist). Product gallery
+/// images are then backfilled from wwwroot/images/catalog/{slug}.png when a product
+/// has no images or only Picsum placeholders.
 /// </summary>
 public static class CatalogSeedData
 {
+    private const string CatalogImageRoot = "/images/catalog";
+
     // Rotating stock levels so seeded variants look realistic instead of uniform.
     private static readonly int[] StockPattern = [42, 25, 60, 15, 30, 48, 8, 55];
 
@@ -20,112 +24,110 @@ public static class CatalogSeedData
         var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>();
         await using var context = await factory.CreateDbContextAsync();
 
-        if (await context.Products.AnyAsync())
+        if (!await context.Products.AnyAsync())
         {
-            return;
-        }
+            var now = DateTime.UtcNow;
 
-        var now = DateTime.UtcNow;
+            var categories = BuildCategories(now);
+            var categoriesBySlug = categories.ToDictionary(c => c.Slug, StringComparer.Ordinal);
+            context.Categories.AddRange(categories);
 
-        var categories = BuildCategories(now);
-        var categoriesBySlug = categories.ToDictionary(c => c.Slug, StringComparer.Ordinal);
-        context.Categories.AddRange(categories);
-
-        var stockIndex = 0;
-        foreach (var spec in BuildProductSpecs())
-        {
-            var category = categoriesBySlug[spec.CategorySlug];
-            var slug = ProductSlugHelper.GenerateSlug(spec.Name);
-
-            var product = new Product
+            var stockIndex = 0;
+            foreach (var spec in BuildProductSpecs())
             {
-                Name = spec.Name,
-                Slug = slug,
-                Description = spec.Description,
-                Category = category,
-                IsActive = true,
-                CreatedAt = now,
-                UpdatedAt = now
-            };
+                var category = categoriesBySlug[spec.CategorySlug];
+                var slug = ProductSlugHelper.GenerateSlug(spec.Name);
 
-            product.Images.Add(new ProductImage
-            {
-                ImageUrl = $"https://picsum.photos/seed/{slug}/800/800",
-                SortOrder = 0,
-                AltText = spec.Name
-            });
-
-            // Build options and keep the created value entities so variants can reference them.
-            var valuesPerOption = new List<List<ProductOptionValue>>();
-            for (var optionIndex = 0; optionIndex < spec.Options.Length; optionIndex++)
-            {
-                var optionSpec = spec.Options[optionIndex];
-                var option = new ProductOption
+                var product = new Product
                 {
-                    Name = optionSpec.Name,
-                    SortOrder = optionIndex
+                    Name = spec.Name,
+                    Slug = slug,
+                    Description = spec.Description,
+                    Category = category,
+                    IsActive = true,
+                    CreatedAt = now,
+                    UpdatedAt = now
                 };
 
-                var createdValues = new List<ProductOptionValue>();
-                for (var valueIndex = 0; valueIndex < optionSpec.Values.Length; valueIndex++)
+                foreach (var image in BuildCatalogImages(slug, spec.Name, spec.ImageFiles))
                 {
-                    var value = new ProductOptionValue
-                    {
-                        Value = optionSpec.Values[valueIndex],
-                        SortOrder = valueIndex
-                    };
-                    option.Values.Add(value);
-                    createdValues.Add(value);
+                    product.Images.Add(image);
                 }
 
-                product.Options.Add(option);
-                valuesPerOption.Add(createdValues);
-            }
-
-            foreach (var combination in CartesianProduct(valuesPerOption))
-            {
-                var labels = combination.Select(v => v.Value).ToList();
-                var sku = ProductSkuHelper.GenerateSku(slug, labels);
-
-                product.Variants.Add(new ProductVariant
+                // Build options and keep the created value entities so variants can reference them.
+                var valuesPerOption = new List<List<ProductOptionValue>>();
+                for (var optionIndex = 0; optionIndex < spec.Options.Length; optionIndex++)
                 {
-                    Sku = sku,
-                    Price = spec.BasePrice,
-                    StockQuantity = StockPattern[stockIndex++ % StockPattern.Length],
-                    IsActive = true,
-                    OptionValues = combination
-                        .Select(v => new VariantOptionValue { ProductOptionValue = v })
-                        .ToList()
-                });
+                    var optionSpec = spec.Options[optionIndex];
+                    var option = new ProductOption
+                    {
+                        Name = optionSpec.Name,
+                        SortOrder = optionIndex
+                    };
+
+                    var createdValues = new List<ProductOptionValue>();
+                    for (var valueIndex = 0; valueIndex < optionSpec.Values.Length; valueIndex++)
+                    {
+                        var value = new ProductOptionValue
+                        {
+                            Value = optionSpec.Values[valueIndex],
+                            SortOrder = valueIndex
+                        };
+                        option.Values.Add(value);
+                        createdValues.Add(value);
+                    }
+
+                    product.Options.Add(option);
+                    valuesPerOption.Add(createdValues);
+                }
+
+                foreach (var combination in CartesianProduct(valuesPerOption))
+                {
+                    var labels = combination.Select(v => v.Value).ToList();
+                    var sku = ProductSkuHelper.GenerateSku(slug, labels);
+
+                    product.Variants.Add(new ProductVariant
+                    {
+                        Sku = sku,
+                        Price = spec.BasePrice,
+                        StockQuantity = StockPattern[stockIndex++ % StockPattern.Length] + 2000,
+                        IsActive = true,
+                        OptionValues = combination
+                            .Select(v => new VariantOptionValue { ProductOptionValue = v })
+                            .ToList()
+                    });
+                }
+
+                context.Products.Add(product);
             }
 
-            context.Products.Add(product);
+            await context.SaveChangesAsync();
         }
 
+        await EnsureLocalProductImagesAsync(context);
         await context.SaveChangesAsync();
     }
 
     private static List<Category> BuildCategories(DateTime now)
     {
-        var definitions = new (string Name, string Description)[]
+        var definitions = new (string Name, string Slug, string Description)[]
         {
-            ("Apparel", "Everyday clothing crafted from comfortable, durable fabrics."),
-            ("Footwear", "Shoes and boots for work, sport and casual wear."),
-            ("Electronics", "Smart gadgets and audio gear for modern living."),
-            ("Accessories", "Finishing touches from wallets to sunglasses."),
-            ("Home & Living", "Practical and stylish essentials for your home.")
+            ("Smartphones", "smartphones", "Premium smartphones with top-tier camera technology and performance."),
+            ("Laptops", "laptops", "Thin, light, premium and powerful laptops for work and entertainment."),
+            ("Headphones", "headphones", "Ultimate audio experience with active noise-canceling wireless earbuds."),
+            ("Wearables", "wearables", "Smartwatches and fitness trackers for comprehensive health monitoring."),
+            ("Accessories", "accessories", "Super-fast chargers, connection cables, and genuine power banks.")
         };
 
         return definitions
             .Select(d =>
             {
-                var slug = ProductSlugHelper.GenerateSlug(d.Name);
                 return new Category
                 {
                     Name = d.Name,
-                    Slug = slug,
+                    Slug = d.Slug,
                     Description = d.Description,
-                    ImageUrl = $"https://picsum.photos/seed/{slug}/600/400",
+                    ImageUrl = $"https://picsum.photos/seed/{d.Slug}/600/400",
                     IsActive = true,
                     CreatedAt = now,
                     UpdatedAt = now
@@ -136,147 +138,168 @@ public static class CatalogSeedData
 
     private static IReadOnlyList<SeedProduct> BuildProductSpecs() =>
     [
-        // Apparel
-        new("apparel", "Classic Cotton T-Shirt",
-            "A breathable everyday tee made from 100% combed cotton with a relaxed fit.",
-            19.90m,
+        // Smartphones
+        new("smartphones", "Huawei P60 Pro",
+            "Top-tier photography smartphone with XMAGE camera, unique pearl texture design, and a 120Hz LTPO curved display.",
+            899.90m,
             [
-                new("Color", ["Black", "White", "Navy"]),
-                new("Size", ["S", "M", "L", "XL"])
-            ]),
-        new("apparel", "Slim Fit Denim Jeans",
-            "Mid-rise stretch denim with a tapered leg for a modern silhouette.",
-            49.90m,
+                new("Color", ["Rococo Pearl", "Black", "Green"]),
+                new("Storage", ["256GB", "512GB"])
+            ],
+            ["huawei-p60-pro.png"]),
+        new("smartphones", "Honor Magic 6 Pro",
+            "Premium flagship featuring Snapdragon 8 Gen 3, next-gen silicon-carbon battery, and a 180MP periscope telephoto camera.",
+            999.90m,
             [
-                new("Color", ["Blue", "Black"]),
-                new("Size", ["30", "32", "34", "36"])
-            ]),
-        new("apparel", "Pullover Hooded Sweatshirt",
-            "Soft fleece-lined hoodie with a kangaroo pocket and adjustable drawstring.",
-            39.90m,
+                new("Color", ["Epi Green", "Black"]),
+                new("Storage", ["256GB", "512GB", "1TB"])
+            ],
+            ["honor-magic-6-pro.png"]),
+        new("smartphones", "Huawei Mate 60 Pro",
+            "Advanced satellite communication, exclusive Kirin processor, and an ultra-durable drop-resistant build.",
+            1099.90m,
             [
-                new("Color", ["Gray", "Black"]),
-                new("Size", ["S", "M", "L", "XL"])
-            ]),
-        new("apparel", "Linen Summer Dress",
-            "Lightweight breathable linen dress perfect for warm-weather days.",
-            54.90m,
-            [
-                new("Color", ["Beige", "Rose"]),
-                new("Size", ["S", "M", "L"])
-            ]),
+                new("Color", ["Silver", "Black", "Cyan"]),
+                new("Storage", ["512GB", "1TB"])
+            ],
+            ["huawei-mate-60-pro.png"]),
 
-        // Footwear
-        new("footwear", "Everyday Running Sneakers",
-            "Cushioned running shoes with a breathable mesh upper and grippy outsole.",
-            79.90m,
+        // Laptops
+        new("laptops", "Huawei MateBook X Pro",
+            "Ultra-light laptop at just 1.26kg, magnesium alloy body, 3.1K Real Color display, and Intel Core i7 processor.",
+            1499.90m,
             [
-                new("Color", ["White", "Black"]),
-                new("Size", ["7", "8", "9", "10", "11"])
-            ]),
-        new("footwear", "Leather Chelsea Boots",
-            "Timeless ankle boots in genuine leather with elastic side panels.",
-            119.90m,
+                new("Color", ["Ink Blue", "Space Gray"]),
+                new("RAM", ["16GB", "32GB"]),
+                new("Storage", ["1TB SSD"])
+            ],
+            ["huawei-matebook-x-pro.png"]),
+        new("laptops", "Honor MagicBook 14",
+            "Outstanding performance with dual cooling systems, all-day 75Wh battery, and a 2.5K eye-comfort display.",
+            849.90m,
             [
-                new("Color", ["Brown", "Black"]),
-                new("Size", ["8", "9", "10", "11"])
-            ]),
-        new("footwear", "Canvas Slip-On Shoes",
-            "Casual low-profile slip-ons with a vulcanized rubber sole.",
-            34.90m,
-            [
-                new("Color", ["Navy", "Red"]),
-                new("Size", ["7", "8", "9", "10"])
-            ]),
-        new("footwear", "Trail Hiking Shoes",
-            "Rugged hiking shoes with a waterproof membrane and aggressive tread.",
-            94.90m,
-            [
-                new("Color", ["Green", "Gray"]),
-                new("Size", ["8", "9", "10", "11"])
-            ]),
+                new("Color", ["Silver", "Space Gray"]),
+                new("RAM", ["16GB"]),
+                new("Storage", ["512GB SSD", "1TB SSD"])
+            ],
+            ["honor-magicbook-14.png"]),
 
-        // Electronics
-        new("electronics", "Wireless Noise-Cancelling Headphones",
-            "Over-ear headphones with active noise cancellation and 30-hour battery life.",
+        // Headphones
+        new("headphones", "Huawei FreeBuds Pro 3",
+            "TWS earbuds with ANC 3.0, supporting high-resolution L2HC and LDAC audio.",
+            199.90m,
+            [
+                new("Color", ["Silver Frost", "Ceramic White", "Green"])
+            ],
+            ["huawei-freebuds-pro-3.png"]),
+        new("headphones", "Honor Earbuds 3 Pro",
+            "Featuring the world's first coaxial dual-driver design, ultra-lightweight build, and a built-in body temperature sensor.",
+            169.90m,
+            [
+                new("Color", ["White", "Gray"])
+            ],
+            ["honor-earbuds-3-pro.png"]),
+        new("headphones", "Huawei FreeClip",
+            "Unique open-ear clip design, providing maximum comfort for all-day wear while keeping you aware of your surroundings.",
+            189.90m,
+            [
+                new("Color", ["Purple", "Black"])
+            ],
+            ["huawei-freeclip.png"]),
+
+        // Wearables
+        new("wearables", "Huawei Watch GT 4",
+            "Trendy octagonal smartwatch with TruSeen 5.5+ heart rate monitoring and up to 14 days of battery life.",
+            249.90m,
+            [
+                new("Size", ["41mm", "46mm"]),
+                new("Color / Strap", ["Black (Rubber)", "Silver (Steel)", "Brown (Leather)"])
+            ],
+            ["huawei-watch-gt-4.png"]),
+        new("wearables", "Honor Watch 4",
+            "Sporty smartwatch with a smooth 1.75-inch AMOLED display and Bluetooth calling support.",
             149.90m,
             [
-                new("Color", ["Black", "Silver"])
-            ]),
-        new("electronics", "Smart Fitness Watch",
-            "Tracks heart rate, sleep and workouts with a bright always-on display.",
-            129.90m,
-            [
-                new("Color", ["Black", "Rose Gold"]),
-                new("Band", ["Silicone", "Leather"])
-            ]),
-        new("electronics", "Portable Bluetooth Speaker",
-            "Compact waterproof speaker with rich bass and 12 hours of playback.",
-            59.90m,
-            [
-                new("Color", ["Charcoal", "Teal"])
-            ]),
-        new("electronics", "Mechanical Keyboard",
-            "Hot-swappable mechanical keyboard with per-key RGB backlighting.",
-            89.90m,
-            [
-                new("Switch", ["Red", "Brown", "Blue"])
-            ]),
+                new("Color", ["Black", "Gold"])
+            ],
+            ["honor-watch-4.png"]),
 
         // Accessories
-        new("accessories", "Leather Bifold Wallet",
-            "Slim full-grain leather wallet with RFID-blocking card slots.",
+        new("accessories", "Huawei 88W SuperCharge",
+            "Compact super-fast charger supporting multiple protocols (PD, PPS), suitable for both laptops and smartphones.",
+            39.90m,
+            [
+                new("Color", ["White"])
+            ],
+            ["huawei-88w-supercharge.png"]),
+        new("accessories", "Honor 10000mAh Power Bank",
+            "Premium aluminum alloy power bank supporting safe 22.5W two-way fast charging.",
             29.90m,
             [
-                new("Color", ["Brown", "Black"])
-            ]),
-        new("accessories", "Aviator Sunglasses",
-            "Classic aviator frames with polarized UV400 lenses.",
-            24.90m,
-            [
-                new("Color", ["Gold", "Silver"])
-            ]),
-        new("accessories", "Canvas Backpack",
-            "Durable water-resistant backpack with a padded laptop compartment.",
-            44.90m,
-            [
-                new("Color", ["Khaki", "Black"])
-            ]),
-        new("accessories", "Wool Blend Scarf",
-            "Soft and warm wool-blend scarf with a fringed finish.",
-            22.90m,
-            [
-                new("Color", ["Charcoal", "Camel", "Burgundy"])
-            ]),
-
-        // Home & Living
-        new("home-living", "Ceramic Coffee Mug",
-            "Dishwasher-safe glazed ceramic mug with a comfortable handle.",
-            12.90m,
-            [
-                new("Color", ["White", "Black", "Blue"]),
-                new("Size", ["11oz", "15oz"])
-            ]),
-        new("home-living", "Scented Soy Candle",
-            "Hand-poured soy wax candle with a 45-hour clean burn.",
-            18.90m,
-            [
-                new("Scent", ["Vanilla", "Lavender", "Sandalwood"])
-            ]),
-        new("home-living", "Cotton Bath Towel Set",
-            "Ultra-absorbent 100% cotton towel set that stays soft wash after wash.",
-            34.90m,
-            [
-                new("Color", ["White", "Gray", "Navy"])
-            ]),
-        new("home-living", "Stainless Steel Water Bottle",
-            "Double-walled insulated bottle that keeps drinks cold for 24 hours.",
-            27.90m,
-            [
-                new("Color", ["Silver", "Black", "Mint"]),
-                new("Size", ["500ml", "750ml"])
-            ]),
+                new("Color", ["Black", "Silver"])
+            ],
+            ["honor-10000mah-power-bank.png"])
     ];
+
+    private static async Task EnsureLocalProductImagesAsync(ApplicationDbContext context)
+    {
+        var specsBySlug = BuildProductSpecs().ToDictionary(
+            spec => ProductSlugHelper.GenerateSlug(spec.Name),
+            spec => spec,
+            StringComparer.Ordinal);
+
+        var products = await context.Products
+            .Include(p => p.Images)
+            .ToListAsync();
+
+        foreach (var product in products)
+        {
+            if (!specsBySlug.TryGetValue(product.Slug, out var spec))
+            {
+                continue;
+            }
+
+            var existing = product.Images.ToList();
+            var needsReplace = existing.Count == 0
+                || existing.All(i => IsPicsumUrl(i.ImageUrl));
+
+            if (!needsReplace)
+            {
+                continue;
+            }
+
+            if (existing.Count > 0)
+            {
+                context.ProductImages.RemoveRange(existing);
+            }
+
+            foreach (var image in BuildCatalogImages(product.Slug, product.Name, spec.ImageFiles))
+            {
+                product.Images.Add(image);
+            }
+        }
+    }
+
+    private static IReadOnlyList<ProductImage> BuildCatalogImages(
+        string slug,
+        string productName,
+        string[] imageFiles)
+    {
+        var files = imageFiles.Length > 0 ? imageFiles : [$"{slug}.png"];
+
+        return files
+            .Select((file, index) => new ProductImage
+            {
+                ImageUrl = $"{CatalogImageRoot}/{file.TrimStart('/')}",
+                SortOrder = index,
+                AltText = productName
+            })
+            .ToList();
+    }
+
+    private static bool IsPicsumUrl(string? url) =>
+        !string.IsNullOrWhiteSpace(url)
+        && url.Contains("picsum.photos", StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<List<ProductOptionValue>> CartesianProduct(
         IReadOnlyList<List<ProductOptionValue>> sets)
@@ -309,7 +332,8 @@ public static class CatalogSeedData
         string Name,
         string Description,
         decimal BasePrice,
-        SeedOption[] Options);
+        SeedOption[] Options,
+        string[] ImageFiles);
 
     private sealed record SeedOption(string Name, string[] Values);
 }

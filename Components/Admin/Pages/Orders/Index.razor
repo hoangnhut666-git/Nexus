@@ -76,6 +76,7 @@
                         {
                             @foreach (var order in pagedResult.Items)
                             {
+                                var createdLocal = order.CreatedAt.ToLocalTime();
                                 <tr class="hover:bg-overlay cursor-pointer" data-testid="admin-order-row" data-order-number="@order.OrderNumber" @onclick="() => OpenDetail(order.OrderNumber)">
                                     <td class="px-4 py-4 border-b border-border text-sm">
                                         <span class="font-semibold text-accent">@order.OrderNumber</span>
@@ -84,7 +85,10 @@
                                         <div class="text-text-primary font-medium">@(string.IsNullOrWhiteSpace(order.CustomerName) ? "—" : order.CustomerName)</div>
                                         <div class="text-text-muted text-xs">@order.CustomerEmail</div>
                                     </td>
-                                    <td class="px-4 py-4 border-b border-border text-sm text-text-secondary">@order.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</td>
+                                    <td class="px-4 py-4 border-b border-border text-sm">
+                                        <div class="text-text-secondary">@createdLocal.ToString("MMM d, yyyy")</div>
+                                        <div class="text-text-muted text-xs">@createdLocal.ToString("HH:mm:ss")</div>
+                                    </td>
                                     <td class="px-4 py-4 border-b border-border text-sm text-text-secondary">@order.ItemCount</td>
                                     <td class="px-4 py-4 border-b border-border text-sm font-bold text-text-primary">@MoneyFormatter.Format(order.Total)</td>
                                     <td class="px-4 py-4 border-b border-border text-sm text-text-secondary">@PaymentLabel(order.PaymentMethod) · @order.PaymentStatus</td>

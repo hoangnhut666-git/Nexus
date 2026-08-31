@@ -32,6 +32,8 @@ namespace Nexus.Data
 
         public DbSet<UserAddress> UserAddresses => Set<UserAddress>();
 
+        public DbSet<DemoAppSetting> DemoAppSettings => Set<DemoAppSetting>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -253,6 +255,13 @@ namespace Nexus.Data
                     .WithMany()
                     .HasForeignKey(a => a.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<DemoAppSetting>(entity =>
+            {
+                entity.HasKey(s => s.Key);
+                entity.Property(s => s.Key).HasMaxLength(100).IsRequired();
+                entity.Property(s => s.Value).HasMaxLength(100).IsRequired();
             });
         }
     }
