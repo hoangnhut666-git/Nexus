@@ -14,11 +14,11 @@ public sealed class ProductListItemDto
 
     public string CategoryName { get; init; } = string.Empty;
 
-    public string Sku { get; init; } = string.Empty;
-
     public decimal Price { get; init; }
 
     public int TotalStock { get; init; }
 
     public bool IsActive { get; init; }
+
+    public DateTime UpdatedAt { get; init; }
 }

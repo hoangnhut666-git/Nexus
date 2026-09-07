@@ -68,8 +68,8 @@ Lower tier = more robust. Shared by JS (`classifyLocatorType` / `getDefaultTier`
 | `shop-page` / `shop-search-input` / `shop-category-select` | Catalog |
 | `product-card` + `data-slug` | Product card |
 | `product-card-add-to-cart` / `product-card-choose-options` | Card CTAs |
-| `pdp-page` / `pdp-add-to-cart` / `pdp-option` + `data-name` | Product detail |
-| `cart-page` / `cart-line` + `data-slug` / `cart-qty-increase` / `cart-qty-decrease` / `cart-remove-item` / `cart-checkout-button` | Cart |
+| `pdp-page` / `pdp-add-to-cart` / `pdp-option` + `data-name` | Product detail (`pdp-add-to-cart` applies only when `DemoAppSettings.AddToCartCtaVariant` is `Baseline`; the active variant is stored in the DB and is global for all browsers sharing that database — other values are intentional locator-break drills, not production conventions) |
+| `cart-page` / `cart-line` + `data-slug` / `cart-qty-increase` / `cart-qty-decrease` / `cart-remove-item` / `cart-checkout-button` | Cart (`cart-checkout-button` applies only when `DemoAppSettings.CheckoutCtaVariant` is `Baseline`; the active variant is stored in the DB and is global for all browsers sharing that database — other values are intentional locator-break drills, not production conventions) |
 | `checkout-page` / `checkout-place-order-button` / `checkout-recipient-input` | Checkout |
 | `orders-page` / `order-row` + `data-order-number` | Customer orders |
 | `error-page` / `not-found-page` | Error pages |
@@ -80,7 +80,7 @@ Lower tier = more robust. Shared by JS (`classifyLocatorType` / `getDefaultTier`
 |--------|--------|
 | `admin-dashboard` | Dashboard |
 | `admin-products-page` / `btn-add-product` | Product list |
-| `product-drawer` / `btn-submit-product` / `input-product-name` | Product drawer |
+| `product-drawer` / `btn-submit-product` / `input-product-name` | Product drawer (`btn-submit-product` applies only when `DemoAppSettings.AddProductCtaVariant` is `Baseline`; the active variant is stored in the DB and is global for all browsers sharing that database — other values are intentional locator-break drills, not production conventions) |
 | `admin-product-detail` / `btn-save-product-info` | Product detail |
 | `admin-categories-page` / `btn-add-category` | Category list |
 | `category-drawer` / `btn-submit-category` | Category drawer |
