@@ -43,7 +43,7 @@ public sealed class ProductService(
         var totalCount = await products.CountAsync(cancellationToken);
 
         var items = await products
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.UpdatedAt)
             .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -59,15 +59,12 @@ public sealed class ProductService(
                     .FirstOrDefault(),
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name,
-                Sku = p.Variants
-                    .OrderBy(v => v.Id)
-                    .Select(v => v.Sku)
-                    .FirstOrDefault() ?? string.Empty,
                 Price = p.Variants.Any()
                     ? p.Variants.Min(v => v.Price)
                     : 0,
                 TotalStock = p.Variants.Sum(v => v.StockQuantity),
-                IsActive = p.IsActive
+                IsActive = p.IsActive,
+                UpdatedAt = p.UpdatedAt
             })
             .ToListAsync(cancellationToken);
 

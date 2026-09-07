@@ -6,7 +6,6 @@
 @using Nexus.Components.Storefront.Shared
 @using Nexus.Services.Cart
 @using Nexus.Services.Cart.Models
-@using Nexus.Services.Demo
 @using Nexus.Services.Products
 @using Nexus.Services.Products.Models
 
@@ -15,7 +14,6 @@
 @inject CartState CartState
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
-@inject IDemoAddToCartCtaService DemoAddToCartCtaService
 
 <PageTitle>@(product?.Name ?? "Product") — NEXUS</PageTitle>
 
@@ -35,22 +33,6 @@ else if (product is null)
 }
 else
 {
-    <div class="max-w-7xl mx-auto px-6 pt-4">
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
-            <span class="text-sm font-bold text-yellow-800">
-                <i class="fa-solid fa-wrench mr-2"></i> Demo Control: Đổi mã nguồn nút Add to cart
-            </span>
-            <select @bind="ActiveAddToCartCta" @bind:after="OnAddToCartCtaChanged"
-                    class="bg-white border border-yellow-300 text-sm rounded px-3 py-1 outline-none focus:border-yellow-500">
-                <option value="@AddToCartCtaVariant.Baseline">Bản gốc (Baseline)</option>
-                <option value="@AddToCartCtaVariant.AttrAndCopy">Cấp 1: Đổi Text & TestID</option>
-                <option value="@AddToCartCtaVariant.AnchorSemantics">Cấp 2: Đổi thẻ Button thành Anchor</option>
-                <option value="@AddToCartCtaVariant.VietnameseSvg">Cấp 3: Giao diện tiếng Việt + SVG</option>
-                <option value="@AddToCartCtaVariant.BossDecoy">Cấp 4: Cấu trúc phức tạp + Nút chim mồi</option>
-            </select>
-        </div>
-    </div>
-
     <div class="max-w-7xl mx-auto px-6 py-10" data-testid="pdp-page" data-slug="@product.Slug">
         <a href="/products" class="text-text-secondary hover:text-text-primary text-sm mb-6 inline-block" data-testid="pdp-back-to-shop">
             <i class="fa-solid fa-arrow-left mr-2"></i> Back to shop
@@ -93,8 +75,7 @@ else
                                        OnAddToCart="@AddToCart"
                                        IsAdding="@isAdding"
                                        StatusMessage="@cartMessage"
-                                       IsError="@cartError"
-                                       ActiveVariant="@ActiveAddToCartCta" />
+                                       IsError="@cartError" />
             </div>
         </div>
     </div>
@@ -103,8 +84,6 @@ else
 @code {
     [Parameter]
     public string Slug { get; set; } = string.Empty;
-
-    private AddToCartCtaVariant ActiveAddToCartCta { get; set; } = AddToCartCtaVariant.Baseline;
 
     private ProductDetailDto? product;
     private ProductVariantDto? resolvedVariant;
@@ -116,16 +95,6 @@ else
     private string? cartMessage;
     private bool cartError;
     private int quantity = 1;
-
-    protected override async Task OnInitializedAsync()
-    {
-        ActiveAddToCartCta = await DemoAddToCartCtaService.GetAsync();
-    }
-
-    private async Task OnAddToCartCtaChanged()
-    {
-        await DemoAddToCartCtaService.SetAsync(ActiveAddToCartCta);
-    }
 
     protected override async Task OnParametersSetAsync()
     {

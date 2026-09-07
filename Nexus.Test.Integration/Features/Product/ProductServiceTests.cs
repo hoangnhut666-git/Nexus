@@ -265,7 +265,8 @@ public sealed class ProductServiceTests : IClassFixture<TestDatabaseFixture>, IA
         });
 
         result.Items.Should().HaveCount(1);
-        result.Items[0].Sku.Should().Be("NX-SPECIAL-999");
+        result.Items[0].Name.Should().Be("Product A");
+        result.Items[0].UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
     }
 
     [Fact]
