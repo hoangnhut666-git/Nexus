@@ -2,12 +2,14 @@
 @rendermode InteractiveServer
 
 <CascadingValue Value="@PageTitle" Name="AdminPageTitle">
+    <div data-testid="admin-dashboard">
     <DashboardKpiRow />
     <div class="grid grid-cols-1 xl:grid-cols-[2fr_1fr] gap-6 mb-6">
         <DashboardRevenueChart />
         <DashboardTopProducts />
     </div>
     <DashboardRecentOrders ActionHref="/admin/orders" />
+    </div>
 </CascadingValue>
 
 @code {

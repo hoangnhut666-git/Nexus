@@ -11,6 +11,7 @@
                 <button type="button"
                         class="absolute top-2 right-2 bg-red-600/85 text-white w-6 h-6 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 text-[10px] hover:bg-red-600 hover:scale-110 z-[6]"
                         title="Remove image"
+                        data-testid="btn-remove-product-image"
                         @onclick="RemovePreview"
                         @onclick:stopPropagation="true"
                         @onclick:preventDefault="true">
@@ -21,12 +22,13 @@
         }
     </label>
 
-    <InputFile id="@fileInputId" class="hidden" OnChange="@HandleFileSelected" accept="image/*" />
+    <InputFile id="@fileInputId" class="hidden" OnChange="@HandleFileSelected" accept="image/*" data-testid="input-product-image-file" />
 
     <div class="flex flex-col gap-2 mt-1">
         <InputText @bind-Value="ImageUrl"
                    class="@InputClass"
                    placeholder="Or paste image URL here..."
+                   data-testid="input-product-image-url"
                    @oninput="HandleUrlInput" />
     </div>
 </div>
@@ -48,10 +50,10 @@
     public EventCallback<InputFileChangeEventArgs> OnFileSelected { get; set; }
 
     [Parameter]
-    public string InputClass { get; set; } = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
+    public string InputClass { get; set; } = "bg-bg-card border border-border text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 focus:shadow-[0_0_10px_rgba(99,102,241,0.15)] placeholder-text-muted w-full";
 
     private readonly string fileInputId = $"file-input-{Guid.NewGuid():N}";
-    private const string uploadAreaClass = "image-upload-area border-2 border-dashed border-white/5 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-white/[0.01] relative overflow-hidden min-h-[120px] flex flex-col justify-center items-center gap-2 hover:border-accent hover:bg-accent/10 group";
+    private const string uploadAreaClass = "image-upload-area border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-overlay relative overflow-hidden min-h-[120px] flex flex-col justify-center items-center gap-2 hover:border-accent hover:bg-accent/10 group";
 
     private async Task HandleFileSelected(InputFileChangeEventArgs args)
     {

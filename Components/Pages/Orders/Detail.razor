@@ -16,18 +16,18 @@
 
 <PageTitle>@(order is null ? "Order" : $"Order {order.OrderNumber}") — NEXUS</PageTitle>
 
-<div class="max-w-5xl mx-auto px-6 py-10">
+<div class="max-w-5xl mx-auto px-6 py-10" data-testid="order-detail-page">
     @if (isLoading)
     {
         <div class="text-text-muted py-16">Loading order...</div>
     }
     else if (order is null)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center">
+        <div class="bg-bg-surface border border-border rounded-2xl p-16 text-center">
             <i class="fa-solid fa-box-open text-4xl text-text-muted mb-4"></i>
             <h1 class="text-2xl font-bold mb-2">Order not found</h1>
             <p class="text-text-secondary mb-6">This order may not exist or does not belong to your account.</p>
-            <a href="/orders" class="text-accent font-semibold hover:underline">
+            <a href="/orders" class="text-accent font-semibold hover:underline" data-testid="order-detail-back">
                 <i class="fa-solid fa-arrow-left mr-2"></i> Back to your orders
             </a>
         </div>
@@ -44,8 +44,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 flex flex-col gap-6">
-                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-white/5">
+                <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-border">
                         <span class="text-lg font-bold">Items</span>
                         <span class="text-xs font-bold px-3 py-1 rounded-full @StatusClass(order.Status)">@order.Status</span>
                     </div>
@@ -53,7 +53,7 @@
                     <div class="flex flex-col">
                         @foreach (var item in order.Items)
                         {
-                            <div class="flex items-center justify-between py-3 border-b border-dashed border-white/5 last:border-b-0">
+                            <div class="flex items-center justify-between py-3 border-b border-dashed border-border last:border-b-0">
                                 <div class="min-w-0 mr-3">
                                     <div class="font-semibold text-text-primary truncate">@item.ProductName</div>
                                     <div class="text-xs text-text-muted mt-0.5 flex flex-wrap gap-x-3">
@@ -71,8 +71,8 @@
                     </div>
                 </div>
 
-                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                    <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Shipping Address</div>
+                <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                    <div class="text-lg font-bold pb-4 mb-4 border-b border-border">Shipping Address</div>
                     <div class="text-sm text-text-secondary space-y-1">
                         <div class="text-text-primary font-semibold">@order.ShipFullName</div>
                         <div>@order.ShipPhone</div>
@@ -86,8 +86,8 @@
             </div>
 
             <div>
-                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                    <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Summary</div>
+                <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                    <div class="text-lg font-bold pb-4 mb-4 border-b border-border">Summary</div>
 
                     <div class="flex justify-between text-sm text-text-secondary mb-4">
                         <span>Payment</span>
@@ -97,7 +97,7 @@
                         <span>Payment status</span>
                         <span class="text-text-primary font-medium">@order.PaymentStatus</span>
                     </div>
-                    <div class="flex justify-between text-sm text-text-secondary mb-4 border-t border-white/5 pt-4">
+                    <div class="flex justify-between text-sm text-text-secondary mb-4 border-t border-border pt-4">
                         <span>Subtotal</span>
                         <span class="text-text-primary font-medium">@MoneyFormatter.Format(order.Subtotal)</span>
                     </div>
@@ -110,12 +110,12 @@
                         <span class="text-text-primary font-medium">@MoneyFormatter.Format(order.TaxAmount)</span>
                     </div>
 
-                    <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
+                    <div class="flex justify-between items-center border-t border-dashed border-border pt-5 mt-2">
                         <span class="text-base font-semibold">Total</span>
                         <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(order.Total)</span>
                     </div>
 
-                    <a href="/orders" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-6">
+                    <a href="/orders" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-6" data-testid="order-detail-back">
                         <i class="fa-solid fa-arrow-left mr-1"></i> Back to your orders
                     </a>
                 </div>
@@ -160,6 +160,6 @@
         OrderStatus.Shipped => "bg-sky-500/15 text-sky-400",
         OrderStatus.Delivered => "bg-emerald-500/15 text-emerald-400",
         OrderStatus.Cancelled => "bg-danger-bg text-danger",
-        _ => "bg-white/10 text-text-secondary"
+        _ => "bg-overlay-hover text-text-secondary"
     };
 }

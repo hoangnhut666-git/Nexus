@@ -17,10 +17,10 @@
 
 <PageTitle>Confirming payment — NEXUS</PageTitle>
 
-<div class="max-w-2xl mx-auto px-6 py-16">
+<div class="max-w-2xl mx-auto px-6 py-16" data-testid="paypal-return-page">
     @if (isProcessing)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-12 text-center">
+        <div class="bg-bg-surface border border-border rounded-2xl p-12 text-center">
             <i class="fa-solid fa-spinner fa-spin text-3xl text-accent mb-4"></i>
             <h1 class="text-xl font-bold mb-2">Confirming your payment...</h1>
             <p class="text-text-secondary text-sm">Please wait while we finalize your order.</p>
@@ -32,7 +32,7 @@
             <i class="fa-solid fa-circle-exclamation text-3xl text-danger mb-4"></i>
             <h1 class="text-xl font-bold mb-2">We couldn't confirm your payment</h1>
             <p class="text-text-secondary text-sm mb-6">@errorMessage</p>
-            <a href="/cart" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+            <a href="/cart" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition" data-testid="paypal-return-back-to-cart">
                 <i class="fa-solid fa-arrow-left"></i> Back to cart
             </a>
         </div>

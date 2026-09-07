@@ -76,6 +76,79 @@ public sealed class ProductCatalogPageTests : IClassFixture<TestDatabaseFixture>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var html = await response.Content.ReadAsStringAsync();
         html.Should().Contain("Catalog Page Product");
+        html.Should().Contain("data-testid=\"pdp-qty-input\"");
+        html.Should().Contain("data-testid=\"pdp-add-to-cart\"");
+        html.Should().Contain("data-testid=\"pdp-price\"");
+        html.Should().NotContain("Select ");
+    }
+
+    [Fact]
+    public async Task GetProductDetailPage_WithOptions_PreselectsDefaultVariant()
+    {
+        var category = await _dbHelper.InsertCategoryAsync(
+            TestDataBuilders.ValidCategoryWithSlug("Options Page", "options-page"));
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IProductService>();
+
+        var product = await service.CreateAsync(new CreateProductRequest
+        {
+            Name = "Catalog Options Product",
+            Slug = "catalog-options-product",
+            CategoryId = category.Id,
+            Price = 0,
+            StockQuantity = 0,
+            IsActive = true,
+            VariantIsActive = true
+        });
+
+        await service.SaveOptionsAsync(product.Data!.Id, new SaveProductOptionsRequest
+        {
+            Options =
+            [
+                new ProductOptionInput
+                {
+                    Name = "Color",
+                    SortOrder = 0,
+                    Values =
+                    [
+                        new ProductOptionValueInput { Value = "Red", SortOrder = 0 },
+                        new ProductOptionValueInput { Value = "Blue", SortOrder = 1 }
+                    ]
+                },
+                new ProductOptionInput
+                {
+                    Name = "Size",
+                    SortOrder = 1,
+                    Values =
+                    [
+                        new ProductOptionValueInput { Value = "S", SortOrder = 0 },
+                        new ProductOptionValueInput { Value = "M", SortOrder = 1 }
+                    ]
+                }
+            ]
+        });
+
+        var generated = await service.GenerateVariantsAsync(product.Data.Id, new GenerateVariantsRequest
+        {
+            DefaultPrice = 199_000m,
+            DefaultStock = 8,
+            DefaultIsActive = true
+        });
+
+        generated.Success.Should().BeTrue();
+
+        var response = await _client.GetAsync("/products/catalog-options-product");
+        var html = await response.Content.ReadAsStringAsync();
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        html.Should().Contain("Catalog Options Product");
+        html.Should().Contain("data-testid=\"pdp-option\"");
+        html.Should().Contain("aria-pressed=\"true\"");
+        html.Should().Contain("data-testid=\"pdp-price\"");
+        html.Should().Contain("data-testid=\"pdp-qty-input\"");
+        html.Should().NotContain("Select Color");
+        html.Should().NotContain("Select Size");
     }
 
     [Fact]

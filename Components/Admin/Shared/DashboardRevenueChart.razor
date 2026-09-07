@@ -1,4 +1,4 @@
-<div class="bg-bg-surface border border-white/5 rounded-xl p-6">
+<div class="bg-bg-surface border border-border rounded-xl p-6">
     <div class="flex justify-between items-center mb-5">
         <div class="text-base font-bold text-text-primary">@Title</div>
         @if (!string.IsNullOrWhiteSpace(ActionLabel))
@@ -12,7 +12,7 @@
         @foreach (var bar in Bars)
         {
             <div class="flex-1 flex flex-col items-center gap-2">
-                <div class="w-full bg-white/5 rounded-t h-[200px] flex items-end">
+                <div class="w-full bg-overlay rounded-t h-[200px] flex items-end">
                     <div class="w-full bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t transition-all duration-1000"
                          style="height: @($"{bar.HeightPercent}%")"></div>
                 </div>

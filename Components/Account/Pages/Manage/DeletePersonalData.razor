@@ -11,6 +11,7 @@
 
 <PageTitle>Delete Personal Data</PageTitle>
 
+<div data-testid="manage-delete-personal-data-page">
 <StatusMessage Message="@message" />
 
 <h3>Delete Personal Data</h3>
@@ -22,19 +23,20 @@
 </div>
 
 <div>
-    <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post" data-testid="manage-delete-personal-data-form">
         <DataAnnotationsValidator />
         <ValidationSummary class="text-danger" role="alert" />
         @if (requirePassword)
         {
             <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." />
+                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." data-testid="manage-delete-password-input" />
                 <label for="Input.Password" class="form-label">Password</label>
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
         }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
+        <button class="w-100 btn btn-lg btn-danger" type="submit" data-testid="manage-delete-personal-data-submit">Delete data and close my account</button>
     </EditForm>
+</div>
 </div>
 
 @code {

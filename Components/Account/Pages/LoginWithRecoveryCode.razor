@@ -12,6 +12,7 @@
 
 <PageTitle>Recovery code verification</PageTitle>
 
+<div data-testid="login-recovery-page">
 <h1>Recovery code verification</h1>
 <hr />
 <StatusMessage Message="@message" />
@@ -21,17 +22,18 @@
 </p>
 <div class="row">
     <div class="col-md-4">
-        <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+        <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post" data-testid="login-recovery-form">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
+                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" data-testid="login-recovery-code-input" />
                 <label for="Input.RecoveryCode" class="form-label">Recovery Code</label>
                 <ValidationMessage For="() => Input.RecoveryCode" class="text-danger" />
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+            <button type="submit" class="w-100 btn btn-lg btn-primary" data-testid="login-recovery-submit-button">Log in</button>
         </EditForm>
     </div>
+</div>
 </div>
 
 @code {

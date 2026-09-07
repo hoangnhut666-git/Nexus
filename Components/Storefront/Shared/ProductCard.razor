@@ -1,7 +1,7 @@
 @using Nexus.Services.Products.Models
 
-<div class="bg-bg-surface border border-white/5 rounded-2xl overflow-hidden hover:border-white/15 hover:-translate-y-1 hover:shadow-2xl transition group">
-    <div class="relative bg-[#14131a] aspect-square flex items-center justify-center overflow-hidden">
+<div class="bg-bg-surface border border-border rounded-2xl overflow-hidden hover:border-border-strong hover:-translate-y-1 hover:shadow-2xl transition group" data-testid="product-card" data-slug="@Product.Slug">
+    <div class="relative bg-bg-card aspect-square flex items-center justify-center overflow-hidden">
         @if (!string.IsNullOrWhiteSpace(Product.ThumbnailUrl))
         {
             <img src="@Product.ThumbnailUrl" alt="@Product.Name" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
@@ -16,7 +16,7 @@
                 Out of stock
             </span>
         }
-        <button type="button" class="absolute top-3 right-3 z-10 bg-bg-base/60 backdrop-blur-8 border border-white/5 text-text-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition">
+        <button type="button" class="absolute top-3 right-3 z-10 bg-bg-base/60 backdrop-blur-8 border border-border text-text-secondary w-9 h-9 rounded-full flex items-center justify-center hover:bg-white hover:text-red-500 transition">
             <i class="fa-regular fa-heart"></i>
         </button>
         @if (Product.InStock)
@@ -25,6 +25,7 @@
                 @if (Product.HasOptions)
                 {
                     <a href="@ProductUrl"
+                       data-testid="product-card-choose-options"
                        class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg">
                         <i class="fa-solid fa-sliders"></i> Choose options
                     </a>
@@ -34,6 +35,7 @@
                     <button type="button"
                             class="bg-white text-black w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition shadow-lg disabled:opacity-60"
                             disabled="@isAdding"
+                            data-testid="product-card-add-to-cart"
                             @onclick="HandleQuickAdd">
                         <i class="fa-solid @(isAdding ? "fa-spinner fa-spin" : "fa-cart-plus")"></i> @(isAdding ? "Adding..." : "Add to cart")
                     </button>
@@ -44,7 +46,7 @@
     <div class="p-5">
         <div class="text-text-muted text-xs uppercase tracking-wide">@Product.CategoryName</div>
         <h3 class="font-semibold text-base truncate">
-            <a href="@ProductUrl" class="hover:text-accent">@Product.Name</a>
+            <a href="@ProductUrl" class="hover:text-accent" data-testid="product-card-name">@Product.Name</a>
         </h3>
         <div class="flex justify-between items-center mt-2">
             <div>

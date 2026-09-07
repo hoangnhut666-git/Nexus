@@ -15,6 +15,7 @@
 }
 else
 {
+<div data-testid="manage-generate-recovery-codes-page">
     <h3>Generate two-factor authentication (2FA) recovery codes</h3>
     <div class="alert alert-warning" role="alert">
         <p>
@@ -32,9 +33,10 @@ else
     <div>
         <form @formname="generate-recovery-codes" @onsubmit="OnSubmitAsync" method="post">
             <AntiforgeryToken />
-            <button class="btn btn-danger" type="submit">Generate Recovery Codes</button>
+            <button class="btn btn-danger" type="submit" data-testid="manage-generate-recovery-codes-submit">Generate Recovery Codes</button>
         </form>
     </div>
+</div>
 }
 
 @code {

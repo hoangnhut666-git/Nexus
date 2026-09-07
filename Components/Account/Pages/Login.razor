@@ -15,82 +15,89 @@
 
 <PageTitle>NEXUS // Login</PageTitle>
 
-<div class="w-full max-w-[420px] flex flex-col gap-8 my-auto">
+<div class="w-full max-w-[420px] flex flex-col gap-8 my-auto" data-testid="login-page">
     <div class="lg:hidden flex justify-center mb-2">
-        <span class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
-            <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+        <span
+            class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-text-primary to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+            <i
+            class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
         </span>
     </div>
 
     <div class="text-center lg:text-left">
-        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent mb-2">Welcome Back!</h2>
-        <p class="text-text-secondary text-sm">Please login to start your session.</p>
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-text-primary to-slate-300 bg-clip-text text-transparent mb-2"
+            data-testid="login-title">Welcome Back!</h2>
+        <p class="text-text-secondary text-sm" data-testid="login-subtitle">Please login to start your session.</p>
     </div>
 
-    <StatusMessage Message="@errorMessage" />
+    <div data-testid="login-status-message">
+        <StatusMessage Message="@errorMessage" />
+    </div>
 
-    <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login" class="flex flex-col gap-5">
+    <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login" class="flex flex-col gap-5"
+              data-testid="login-form">
         <DataAnnotationsValidator />
 
         <div class="flex flex-col gap-2">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Username or Email *</label>
-            <div class="relative flex items-center group">
-                <i class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
-                <InputText @bind-Value="Input.Email"
-                           id="Input.Email"
-                           class="@GetInputClass(() => Input.Email)"
-                           autocomplete="username webauthn"
-                           aria-required="true"
-                           placeholder="admin@nexus.io" />
+            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Email">Username
+                or Email *</label>
+                <div class="relative flex items-center group">
+                    <i
+                    class="fa-regular fa-envelope absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                    <InputText @bind-Value="Input.Email" id="Input.Email" class="@GetInputClass(() => Input.Email)"
+                               autocomplete="username webauthn" aria-required="true" placeholder="admin@nexus.io"
+                               data-testid="login-email-input" />
+                </div>
+                <ValidationMessage For="() => Input.Email" class="text-danger text-xs" data-testid="login-email-error" />
             </div>
-            <ValidationMessage For="() => Input.Email" class="text-danger text-xs" />
-        </div>
 
-        <div class="flex flex-col gap-2">
-            <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider" for="Input.Password">Password *</label>
-            <div class="relative flex items-center group">
-                <i class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
-                <InputText type="@passwordInputType"
-                           @bind-Value="Input.Password"
-                           id="Input.Password"
-                           class="@($"{GetInputClass(() => Input.Password)} pr-12")"
-                           autocomplete="current-password"
-                           aria-required="true"
-                           placeholder="••••••••" />
-                <button type="button"
-                        @onclick="TogglePasswordVisibility"
-                        class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
-                        title="Show password">
-                    <i class="@passwordToggleIconClass"></i>
-                </button>
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider"
+                       for="Input.Password">Password *</label>
+                <div class="relative flex items-center group">
+                    <i
+                    class="fa-solid fa-lock absolute left-4 text-text-muted transition-colors duration-300 group-focus-within:text-indigo-400"></i>
+                    <InputText type="@passwordInputType" @bind-Value="Input.Password" id="Input.Password"
+                               class="@($"{GetInputClass(() => Input.Password)} pr-12")" autocomplete="current-password"
+                               aria-required="true" placeholder="••••••••" data-testid="login-password-input" />
+                    <button type="button" @onclick="TogglePasswordVisibility"
+                            class="absolute right-4 text-text-muted hover:text-text-primary transition-colors duration-300 focus:outline-none"
+                            title="Show password" data-testid="login-password-toggle">
+                        <i class="@passwordToggleIconClass"></i>
+                    </button>
+                </div>
+                <ValidationMessage For="() => Input.Password" class="text-danger text-xs"
+                                   data-testid="login-password-error" />
             </div>
-            <ValidationMessage For="() => Input.Password" class="text-danger text-xs" />
+
+            <div class="flex items-center justify-between mt-1">
+                <label class="flex items-center gap-2.5 text-xs text-text-secondary cursor-pointer select-none">
+                    <InputCheckbox @bind-Value="Input.RememberMe" class="custom-checkbox" data-testid="login-remember-me" />
+                    Remember me
+                </label>
+                <a href="Account/ForgotPassword"
+                   class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300"
+                   data-testid="login-forgot-password-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" disabled="@isSubmitting"
+                    class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                    data-testid="login-submit-button">
+                <span>@(isSubmitting ? "Authenticating..." : "Sign In to System")</span>
+                <i
+                class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
+            </button>
+        </EditForm>
+
+        <div class="text-center text-xs text-text-muted mt-4" data-testid="login-register-prompt">
+            Don't have an account?
+            <a href="@registerUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors"
+               data-testid="login-register-link">Register now</a>
         </div>
-
-        <div class="flex items-center justify-between mt-1">
-            <label class="flex items-center gap-2.5 text-xs text-text-secondary cursor-pointer select-none">
-                <InputCheckbox @bind-Value="Input.RememberMe" class="custom-checkbox" />
-                Remember me
-            </label>
-            <a href="Account/ForgotPassword" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300">Forgot password?</a>
-        </div>
-
-        <button type="submit"
-                disabled="@isSubmitting"
-                class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
-            <span>@(isSubmitting ? "Authenticating..." : "Sign In to System")</span>
-            <i class="@(isSubmitting ? "fa-solid fa-spinner animate-spin text-xs" : "fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1")"></i>
-        </button>
-    </EditForm>
-
-    <div class="text-center text-xs text-text-muted mt-4">
-        Don't have an account?
-        <a href="@registerUrl" class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Register now</a>
     </div>
-</div>
 
 @code {
-    private const string InputBaseClass = "w-full bg-bg-card border border-white/5 text-text-primary pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
+    private const string InputBaseClass = "w-full bg-bg-card border border-border text-text-primary pl-11 pr-4 py-3.5 rounded-xl text-sm outline-none transition-all duration-300 placeholder-text-muted focus:border-indigo-500/40 focus:shadow-[0_0_15px_rgba(99,102,241,0.12)]";
 
     private string? errorMessage;
     private EditContext editContext = default!;
@@ -182,7 +189,8 @@
                 return;
             }
 
-            result = await SignInManager.PasswordSignInAsync(signedInUser, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            result = await SignInManager.PasswordSignInAsync(signedInUser, Input.Password, Input.RememberMe, lockoutOnFailure:
+false);
         }
 
         if (result.Succeeded)

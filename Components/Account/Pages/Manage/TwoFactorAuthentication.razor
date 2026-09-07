@@ -10,6 +10,7 @@
 
 <PageTitle>Two-factor authentication (2FA)</PageTitle>
 
+<div data-testid="manage-2fa-page">
 <StatusMessage />
 <h3>Two-factor authentication (2FA)</h3>
 @if (canTrack)
@@ -42,23 +43,23 @@
         {
             <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
                 <AntiforgeryToken />
-                <button type="submit" class="btn btn-primary">Forget this browser</button>
+                <button type="submit" class="btn btn-primary" data-testid="manage-2fa-forget-browser">Forget this browser</button>
             </form>
         }
 
-        <a href="Account/Manage/Disable2fa" class="btn btn-primary">Disable 2FA</a>
-        <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary">Reset recovery codes</a>
+        <a href="Account/Manage/Disable2fa" class="btn btn-primary" data-testid="manage-2fa-disable">Disable 2FA</a>
+        <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary" data-testid="manage-2fa-reset-codes">Reset recovery codes</a>
     }
 
     <h4>Authenticator app</h4>
     @if (!hasAuthenticator)
     {
-        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Add authenticator app</a>
+        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary" data-testid="manage-2fa-add-authenticator">Add authenticator app</a>
     }
     else
     {
-        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Set up authenticator app</a>
-        <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary">Reset authenticator app</a>
+        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary" data-testid="manage-2fa-setup-authenticator">Set up authenticator app</a>
+        <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary" data-testid="manage-2fa-reset-authenticator">Reset authenticator app</a>
     }
 }
 else
@@ -68,6 +69,7 @@ else
         <p>You must accept the policy before you can enable two factor authentication.</p>
     </div>
 }
+</div>
 
 @code {
     private bool canTrack;

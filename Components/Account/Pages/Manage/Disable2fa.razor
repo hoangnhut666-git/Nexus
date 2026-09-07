@@ -9,6 +9,7 @@
 
 <PageTitle>Disable two-factor authentication (2FA)</PageTitle>
 
+<div data-testid="manage-disable-2fa-page">
 <StatusMessage />
 <h3>Disable two-factor authentication (2FA)</h3>
 
@@ -25,8 +26,9 @@
 <div>
     <form @formname="disable-2fa" @onsubmit="OnSubmitAsync" method="post">
         <AntiforgeryToken />
-        <button class="btn btn-danger" type="submit">Disable 2FA</button>
+        <button class="btn btn-danger" type="submit" data-testid="manage-disable-2fa-submit">Disable 2FA</button>
     </form>
+</div>
 </div>
 
 @code {

@@ -325,6 +325,25 @@ namespace Nexus.Data.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("Nexus.Data.Entities.DemoAppSetting", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("DemoAppSettings");
+                });
+
             modelBuilder.Entity("Nexus.Data.Entities.Order", b =>
                 {
                     b.Property<int>("Id")

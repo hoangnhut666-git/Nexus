@@ -1,25 +1,26 @@
+@using Nexus.Services.Demo
 @using Nexus.Services.Products.Models
 
-<div class="bg-bg-surface border border-white/5 rounded-2xl p-5 flex flex-col gap-3">
+<div class="bg-bg-surface border border-border rounded-2xl p-5 flex flex-col gap-3">
     @if (ResolvedVariant is not null)
     {
         <div>
             <div class="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-1">Price</div>
-            <div class="text-3xl font-extrabold text-text-primary">@MoneyFormatter.Format(ResolvedVariant.Price)</div>
+            <div class="text-3xl font-extrabold text-text-primary" data-testid="pdp-price">@MoneyFormatter.Format(ResolvedVariant.Price)</div>
         </div>
         <div class="text-sm text-text-secondary">
-            SKU: <span class="text-text-primary font-medium">@ResolvedVariant.Sku</span>
+            SKU: <span class="text-text-primary font-medium" data-testid="pdp-sku">@ResolvedVariant.Sku</span>
         </div>
         @if (ResolvedVariant.StockQuantity > 0)
         {
-            <div class="text-sm text-emerald-400 font-medium">
+            <div class="text-sm text-emerald-400 font-medium" data-testid="pdp-stock">
                 <i class="fa-solid fa-circle text-[6px] mr-1"></i>
                 @ResolvedVariant.StockQuantity in stock
             </div>
         }
         else
         {
-            <div class="text-sm text-danger font-medium">
+            <div class="text-sm text-danger font-medium" data-testid="pdp-stock">
                 <i class="fa-solid fa-circle-xmark mr-1"></i>
                 Out of stock
             </div>
@@ -36,17 +37,134 @@
 </div>
 
 <div class="flex flex-col gap-4 mt-2">
-    <button type="button"
-            class="w-full py-3 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(CanAddToCart && !IsAdding ? "bg-white/5 border border-white/10 hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary" : "bg-white/5 border border-white/5 text-text-muted cursor-not-allowed opacity-60")"
-            disabled="@(!CanAddToCart || IsAdding)"
-            @onclick="HandleAddToCart">
-        <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-cart-plus") @(CanAddToCart && !IsAdding ? "text-indigo-400" : "")"></i>
-        @(IsAdding ? "Adding..." : CanAddToCart ? "Add to cart" : "Unavailable")
-    </button>
+    <div class="flex gap-4 items-end">
+        <div class="flex flex-col gap-1.5" data-testid="pdp-qty">
+            <label class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Quantity</label>
+            <div class="flex items-center bg-bg-surface border border-border rounded-xl h-[46px] px-2.5">
+                <button type="button"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay active:scale-95 transition-all focus:outline-none font-bold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        disabled="@(!CanDecrease)"
+                        data-testid="pdp-qty-minus"
+                        aria-label="Decrease quantity"
+                        @onclick="DecreaseQuantity">
+                    <i class="fa-solid fa-minus text-xs"></i>
+                </button>
+                <input type="number"
+                       value="@Quantity"
+                       min="1"
+                       max="@MaxQuantity"
+                       readonly
+                       class="bg-transparent border-none text-center w-10 text-sm font-bold text-text-primary focus:outline-none"
+                       data-testid="pdp-qty-input"
+                       aria-label="Quantity" />
+                <button type="button"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay active:scale-95 transition-all focus:outline-none font-bold disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                        disabled="@(!CanIncrease)"
+                        data-testid="pdp-qty-plus"
+                        aria-label="Increase quantity"
+                        @onclick="IncreaseQuantity">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        @switch (ActiveVariant)
+        {
+            case AddToCartCtaVariant.Baseline:
+                <button type="button"
+                        class="flex-1 h-[46px] px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(IsInteractive ? EnabledButtonClass : DisabledButtonClass)"
+                        disabled="@(!IsInteractive)"
+                        data-testid="pdp-add-to-cart"
+                        @onclick="HandleAddToCart">
+                    <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-cart-plus") @(IsInteractive ? "text-indigo-400" : "")"></i>
+                    @ButtonLabel("Add to cart")
+                </button>
+                break;
+
+            case AddToCartCtaVariant.AttrAndCopy:
+                <button type="button"
+                        class="flex-1 h-[46px] px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(IsInteractive ? EnabledButtonClass : DisabledButtonClass)"
+                        disabled="@(!IsInteractive)"
+                        data-testid="btn-add-cart-now"
+                        @onclick="HandleAddToCart">
+                    <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-bag-shopping") @(IsInteractive ? "text-indigo-400" : "")"></i>
+                    @ButtonLabel("Add to bag")
+                </button>
+                break;
+
+            case AddToCartCtaVariant.AnchorSemantics:
+                <a href="#"
+                   role="button"
+                   class="flex-1 h-[46px] px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(IsInteractive ? EnabledButtonClass : "bg-overlay border border-border text-text-muted opacity-60 pointer-events-none")"
+                   @onclick="HandleAddToCart"
+                   @onclick:preventDefault>
+                    <i class="fa-solid @(IsAdding ? "fa-spinner fa-spin" : "fa-plus") @(IsInteractive ? "text-indigo-400" : "")"></i>
+                    @ButtonLabel("Add item")
+                </a>
+                break;
+
+            case AddToCartCtaVariant.VietnameseSvg:
+                <button type="button"
+                        class="flex-1 h-[46px] px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(IsInteractive ? "bg-gradient-to-r from-indigo-500 to-cyan-500 text-white hover:opacity-90" : "bg-overlay border border-border text-text-muted cursor-not-allowed opacity-60")"
+                        disabled="@(!IsInteractive)"
+                        data-testid="add-cart-step-1"
+                        @onclick="HandleAddToCart">
+                    @if (IsAdding)
+                    {
+                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span>Đang thêm...</span>
+                    }
+                    else if (CanAddToCart)
+                    {
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>Thêm vào giỏ</span>
+                    }
+                    else
+                    {
+                        <span>Không khả dụng</span>
+                    }
+                </button>
+                break;
+
+            case AddToCartCtaVariant.BossDecoy:
+                <div class="flex-1 flex flex-col gap-2">
+                    <button type="button"
+                            class="w-full h-9 px-4 rounded-lg border border-border bg-overlay text-text-muted text-xs font-semibold cursor-not-allowed opacity-60"
+                            disabled>
+                        Cart options
+                    </button>
+                    <div role="button"
+                         tabindex="@(IsInteractive ? 0 : -1)"
+                         class="w-full h-[46px] px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 @(IsInteractive ? $"{EnabledButtonClass} cursor-pointer" : "bg-overlay border border-border text-text-muted opacity-60 pointer-events-none")"
+                         @onclick="HandleAddToCart"
+                         @onkeydown="OnBossKeyDown">
+                        @if (IsAdding)
+                        {
+                            <span>Adding...</span>
+                        }
+                        else if (CanAddToCart)
+                        {
+                            <span>Add</span><span> to cart</span>
+                        }
+                        else
+                        {
+                            <span>Unavailable</span>
+                        }
+                    </div>
+                </div>
+                break;
+        }
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(StatusMessage))
     {
-        <div class="text-sm font-medium @(IsError ? "text-danger" : "text-emerald-400")">
+        <div class="text-sm font-medium @(IsError ? "text-danger" : "text-emerald-400")" data-testid="pdp-cart-status">
             <i class="fa-solid @(IsError ? "fa-circle-exclamation" : "fa-circle-check") mr-1"></i>
             @StatusMessage
         </div>
@@ -54,6 +172,12 @@
 </div>
 
 @code {
+    private const string EnabledButtonClass =
+        "bg-overlay border border-border-strong hover:border-indigo-500/30 hover:bg-indigo-500/10 text-text-primary";
+
+    private const string DisabledButtonClass =
+        "bg-overlay border border-border text-text-muted cursor-not-allowed opacity-60";
+
     [Parameter]
     public ProductVariantDto? ResolvedVariant { get; set; }
 
@@ -62,6 +186,12 @@
 
     [Parameter]
     public bool IsInvalidCombination { get; set; }
+
+    [Parameter]
+    public int Quantity { get; set; } = 1;
+
+    [Parameter]
+    public EventCallback<int> QuantityChanged { get; set; }
 
     [Parameter]
     public EventCallback OnAddToCart { get; set; }
@@ -75,11 +205,50 @@
     [Parameter]
     public bool IsError { get; set; }
 
+    [Parameter]
+    public AddToCartCtaVariant ActiveVariant { get; set; } = AddToCartCtaVariant.Baseline;
+
     private bool CanAddToCart => ResolvedVariant is not null && ResolvedVariant.StockQuantity > 0;
+
+    private bool IsInteractive => CanAddToCart && !IsAdding;
+
+    private int MaxQuantity => Math.Max(1, ResolvedVariant?.StockQuantity ?? 1);
+
+    private bool CanDecrease => Quantity > 1;
+
+    private bool CanIncrease =>
+        ResolvedVariant is not null
+        && ResolvedVariant.StockQuantity > 0
+        && Quantity < ResolvedVariant.StockQuantity;
+
+    private string ButtonLabel(string readyLabel) =>
+        IsAdding ? "Adding..." : CanAddToCart ? readyLabel : "Unavailable";
+
+    private async Task DecreaseQuantity()
+    {
+        if (!CanDecrease)
+            return;
+
+        await QuantityChanged.InvokeAsync(Quantity - 1);
+    }
+
+    private async Task IncreaseQuantity()
+    {
+        if (!CanIncrease)
+            return;
+
+        await QuantityChanged.InvokeAsync(Quantity + 1);
+    }
 
     private async Task HandleAddToCart()
     {
         if (CanAddToCart && !IsAdding)
             await OnAddToCart.InvokeAsync();
+    }
+
+    private async Task OnBossKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+            await HandleAddToCart();
     }
 }

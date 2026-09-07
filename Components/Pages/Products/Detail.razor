@@ -26,15 +26,15 @@ else if (product is null)
     <div class="max-w-7xl mx-auto px-6 py-16 text-center">
         <h1 class="text-2xl font-bold mb-2">Product not found</h1>
         <p class="text-text-secondary mb-6">This product may be unavailable or no longer exists.</p>
-        <a href="/products" class="text-accent font-semibold hover:underline">
+        <a href="/products" class="text-accent font-semibold hover:underline" data-testid="pdp-back-to-shop">
             <i class="fa-solid fa-arrow-left mr-2"></i> Back to shop
         </a>
     </div>
 }
 else
 {
-    <div class="max-w-7xl mx-auto px-6 py-10">
-        <a href="/products" class="text-text-secondary hover:text-text-primary text-sm mb-6 inline-block">
+    <div class="max-w-7xl mx-auto px-6 py-10" data-testid="pdp-page" data-slug="@product.Slug">
+        <a href="/products" class="text-text-secondary hover:text-text-primary text-sm mb-6 inline-block" data-testid="pdp-back-to-shop">
             <i class="fa-solid fa-arrow-left mr-2"></i> Back to shop
         </a>
 
@@ -49,10 +49,11 @@ else
 
             <div class="lg:col-span-6 flex flex-col gap-6">
                 <div class="space-y-2">
-                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 py-1 px-3 rounded-full">
+                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/10 py-1 px-3 rounded-full"
+                          data-testid="pdp-category">
                         @product.CategoryName
                     </span>
-                    <h1 class="text-3xl font-extrabold text-text-primary tracking-tight pt-1">@product.Name</h1>
+                    <h1 class="text-3xl font-extrabold text-text-primary tracking-tight pt-1" data-testid="pdp-title">@product.Name</h1>
                     @if (!string.IsNullOrWhiteSpace(product.Description))
                     {
                         <p class="text-sm text-text-secondary leading-relaxed pt-2">@product.Description</p>
@@ -69,6 +70,8 @@ else
                 <ProductVariantSummary ResolvedVariant="@resolvedVariant"
                                        PromptMessage="@promptMessage"
                                        IsInvalidCombination="@isInvalidCombination"
+                                       Quantity="@quantity"
+                                       QuantityChanged="@OnQuantityChanged"
                                        OnAddToCart="@AddToCart"
                                        IsAdding="@isAdding"
                                        StatusMessage="@cartMessage"
@@ -91,6 +94,7 @@ else
     private bool isAdding;
     private string? cartMessage;
     private bool cartError;
+    private int quantity = 1;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -100,9 +104,14 @@ else
         resolvedVariant = null;
         promptMessage = null;
         isInvalidCombination = false;
+        quantity = 1;
 
         if (product is not null)
+        {
+            ApplyDefaultSelection();
             ResolveSelection();
+            ClampQuantity();
+        }
 
         isLoading = false;
     }
@@ -113,6 +122,14 @@ else
         cartMessage = null;
         cartError = false;
         ResolveSelection();
+        ClampQuantity();
+        return Task.CompletedTask;
+    }
+
+    private Task OnQuantityChanged(int value)
+    {
+        quantity = value;
+        ClampQuantity();
         return Task.CompletedTask;
     }
 
@@ -135,7 +152,7 @@ else
         cartMessage = null;
         cartError = false;
 
-        var result = await CartService.AddItemAsync(userId, new AddToCartRequest(resolvedVariant.Id, 1));
+        var result = await CartService.AddItemAsync(userId, new AddToCartRequest(resolvedVariant.Id, quantity));
 
         if (result.Success && result.Data is not null)
         {
@@ -163,7 +180,7 @@ else
 
         if (product.Options.Count == 0)
         {
-            resolvedVariant = product.Variants.Count == 1 ? product.Variants[0] : null;
+            resolvedVariant = VariantResolutionHelper.SelectDefaultVariant(product.Variants);
             return;
         }
 
@@ -193,5 +210,33 @@ else
             optionValueIds,
             product.Options.Count);
         isInvalidCombination = resolvedVariant is null;
+    }
+
+    private void ApplyDefaultSelection()
+    {
+        if (product is null || product.Options.Count == 0)
+            return;
+
+        var defaultVariant = VariantResolutionHelper.SelectDefaultVariant(product.Variants);
+        if (defaultVariant is null)
+            return;
+
+        selectedValues = VariantResolutionHelper.BuildSelectedValues(product.Options, defaultVariant);
+    }
+
+    private void ClampQuantity()
+    {
+        if (quantity < 1)
+            quantity = 1;
+
+        var stock = resolvedVariant?.StockQuantity ?? 0;
+        if (stock <= 0)
+        {
+            quantity = 1;
+            return;
+        }
+
+        if (quantity > stock)
+            quantity = stock;
     }
 }

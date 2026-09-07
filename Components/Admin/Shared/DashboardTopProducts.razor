@@ -1,4 +1,4 @@
-<div class="bg-bg-surface border border-white/5 rounded-xl p-6">
+<div class="bg-bg-surface border border-border rounded-xl p-6">
     <div class="flex justify-between items-center mb-5">
         <div class="text-base font-bold text-text-primary">@Title</div>
     </div>
@@ -6,7 +6,7 @@
         @foreach (var product in Products)
         {
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-lg bg-bg-card border border-white/5 flex items-center justify-center text-xl @product.IconColorClass">
+                <div class="w-12 h-12 rounded-lg bg-bg-card border border-border flex items-center justify-center text-xl @product.IconColorClass">
                     <i class="@product.Icon"></i>
                 </div>
                 <div class="flex-1">
@@ -15,7 +15,7 @@
                         <span>Sold: @product.UnitsSold</span>
                         <span>@product.Revenue</span>
                     </div>
-                    <div class="w-full h-1.5 bg-white/5 rounded overflow-hidden">
+                    <div class="w-full h-1.5 bg-overlay rounded overflow-hidden">
                         <div class="h-full rounded @product.BarColorClass" style="width: @($"{product.ProgressPercent}%")"></div>
                     </div>
                 </div>

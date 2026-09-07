@@ -7,6 +7,7 @@
 @using Nexus.Data
 @using Nexus.Services.Cart
 @using Nexus.Services.Cart.Models
+@using Nexus.Services.Demo
 
 @attribute [Authorize(Roles = IdentitySeedData.CustomerRole)]
 
@@ -14,13 +15,31 @@
 @inject CartState CartState
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject IDemoCheckoutCtaService DemoCheckoutCtaService
 
 <PageTitle>Your Cart — NEXUS</PageTitle>
 
-<div class="max-w-7xl mx-auto px-6 py-10">
+<div class="max-w-7xl mx-auto px-6 pt-4">
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
+        <span class="text-sm font-bold text-yellow-800">
+            <i class="fa-solid fa-wrench mr-2"></i> Demo Control: Đổi mã nguồn nút Checkout
+        </span>
+        <select @bind="ActiveCheckoutCta" @bind:after="OnCheckoutCtaChanged"
+                class="bg-white border border-yellow-300 text-sm rounded px-3 py-1 outline-none focus:border-yellow-500">
+            <option value="@CheckoutCtaVariant.Baseline">Bản gốc (Baseline - Chuẩn)</option>
+            <option value="@CheckoutCtaVariant.AttrAndCopy">Cấp 1: Đổi Tag, Text & Xóa ID</option>
+            <option value="@CheckoutCtaVariant.AnchorSemantics">Cấp 2: Đổi thành Div Role=Button</option>
+            <option value="@CheckoutCtaVariant.VietnameseSvg">Cấp 3: Giao diện tiếng Việt + Thẻ lồng sâu</option>
+            <option value="@CheckoutCtaVariant.BossDecoy">Cấp 4: Nút chim mồi nguy hiểm</option>
+        </select>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-6 py-10" data-testid="cart-page">
     <div class="mb-8">
         <h1 class="text-3xl font-bold tracking-tight mb-2">Your Cart</h1>
-        <p class="text-text-secondary text-sm">Review your items before checkout</p>
+        <!-- Đã dọn dẹp từ "checkout" khỏi câu mô tả để tránh nhiễu AI -->
+        <p class="text-text-secondary text-sm">Review your selected items</p>
     </div>
 
     @if (isLoading)
@@ -29,11 +48,12 @@
     }
     else if (cart is null || cart.IsEmpty)
     {
-        <div class="bg-bg-surface border border-white/5 rounded-2xl p-16 text-center">
+        <div class="bg-bg-surface border border-border rounded-2xl p-16 text-center" data-testid="cart-empty">
             <i class="fa-solid fa-cart-shopping text-4xl text-text-muted mb-4"></i>
             <h2 class="text-xl font-bold mb-2">Your cart is empty</h2>
             <p class="text-text-secondary mb-6">Browse the catalog and add products to get started.</p>
-            <a href="/products" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
+            <a href="/products" data-testid="cart-continue-shopping"
+               class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold text-sm py-3 px-6 rounded-xl hover:-translate-y-0.5 transition">
                 <i class="fa-solid fa-arrow-left"></i> Continue shopping
             </a>
         </div>
@@ -41,17 +61,17 @@
     else
     {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 bg-bg-surface border border-white/5 rounded-2xl p-6">
-                <div class="flex justify-between items-center pb-4 mb-4 border-b border-white/5">
+            <div class="lg:col-span-2 bg-bg-surface border border-border rounded-2xl p-6">
+                <div class="flex justify-between items-center pb-4 mb-4 border-b border-border">
                     <div class="text-lg font-bold flex items-center gap-2">
-                        Items in cart
-                        <span class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">@cart.Items.Count</span>
+                        Products selected
+                        <span
+                        class="bg-accent text-white text-xs font-bold px-2 py-0.5 rounded-full">@cart.Items.Count</span>
                     </div>
-                    <button type="button"
-                            class="text-danger text-sm hover:underline disabled:opacity-50"
-                            disabled="@isBusy"
-                            @onclick="ClearCart">
-                        <i class="fa-solid fa-trash-can mr-1"></i> Clear all
+                    <!-- Sửa nhãn "Clear all" thành "Remove all" để cách ly ngữ nghĩa -->
+                    <button type="button" class="text-danger text-sm hover:underline disabled:opacity-50" disabled="@isBusy"
+                            data-testid="cart-clear-all" @onclick="ClearCart">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Remove all
                     </button>
                 </div>
 
@@ -65,8 +85,11 @@
                 <div class="flex flex-col">
                     @foreach (var item in cart.Items)
                     {
-                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-white/5 last:border-b-0" @key="item.CartItemId">
-                            <div class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-white/5 flex items-center justify-center overflow-hidden">
+                        <!-- Danh sách sản phẩm giữ nguyên như cũ -->
+                        <div class="flex items-center gap-5 py-5 border-b border-dashed border-border last:border-b-0"
+                             @key="item.CartItemId" data-testid="cart-line" data-slug="@item.Slug">
+                            <div
+                                class="w-20 h-20 shrink-0 rounded-lg bg-bg-card border border-border flex items-center justify-center overflow-hidden">
                                 @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                                 {
                                     <img src="@item.ImageUrl" alt="@item.ProductName" class="w-full h-full object-cover" />
@@ -78,34 +101,30 @@
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <a href="@($"/products/{item.Slug}")" class="font-bold text-text-primary hover:text-accent block truncate">@item.ProductName</a>
+                                <a href="@($"/products/{item.Slug}")"
+                                   class="font-bold text-text-primary hover:text-accent block truncate">@item.ProductName</a>
                                 <div class="text-xs text-text-muted mt-1 flex flex-wrap gap-x-3 gap-y-1">
                                     @if (!string.IsNullOrWhiteSpace(item.VariantLabel))
                                     {
                                         <span>@item.VariantLabel</span>
                                     }
                                     <span>SKU: @item.Sku</span>
-                                    @if (item.InStock)
-                                    {
-                                        <span class="text-emerald-400">In stock</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger">Out of stock</span>
-                                    }
                                 </div>
 
-                                <div class="inline-flex items-center bg-bg-base border border-white/5 rounded-lg overflow-hidden mt-3">
+                                <div
+                                    class="inline-flex items-center bg-bg-base border border-border rounded-lg overflow-hidden mt-3">
                                     <button type="button"
-                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition disabled:opacity-40"
-                                            disabled="@isBusy"
+                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay transition disabled:opacity-40"
+                                            disabled="@isBusy" data-testid="cart-qty-decrease"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity - 1))">
                                         <i class="fa-solid fa-minus text-xs"></i>
                                     </button>
-                                    <span class="w-9 text-center text-sm font-semibold">@item.Quantity</span>
+                                    <span class="w-9 text-center text-sm font-semibold"
+                                          data-testid="cart-qty-value">@item.Quantity</span>
                                     <button type="button"
-                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition disabled:opacity-40"
+                                            class="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-overlay transition disabled:opacity-40"
                                             disabled="@(isBusy || item.Quantity >= item.StockQuantity)"
+                                            data-testid="cart-qty-increase"
                                             @onclick="@(() => ChangeQuantity(item, item.Quantity + 1))">
                                         <i class="fa-solid fa-plus text-xs"></i>
                                     </button>
@@ -117,8 +136,7 @@
                                 <div class="text-xs text-text-muted">@MoneyFormatter.Format(item.UnitPrice) each</div>
                                 <button type="button"
                                         class="w-8 h-8 rounded-lg bg-danger-bg border border-danger/20 text-danger flex items-center justify-center hover:bg-danger hover:text-white transition disabled:opacity-40"
-                                        disabled="@isBusy"
-                                        @onclick="@(() => RemoveItem(item))">
+                                        disabled="@isBusy" data-testid="cart-remove-item" @onclick="@(() => RemoveItem(item))">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
                             </div>
@@ -128,8 +146,9 @@
             </div>
 
             <div>
-                <div class="bg-bg-surface border border-white/5 rounded-2xl p-6">
-                    <div class="text-lg font-bold pb-4 mb-4 border-b border-white/5">Order Summary</div>
+                <div class="bg-bg-surface border border-border rounded-2xl p-6">
+                    <!-- Sửa thành Bill Details để cô lập từ khóa Order/Summary -->
+                    <div class="text-lg font-bold pb-4 mb-4 border-b border-border">Bill Details</div>
 
                     <div class="flex justify-between text-sm text-text-secondary mb-4">
                         <span>Subtotal (@cart.TotalQuantity items)</span>
@@ -141,37 +160,105 @@
                             @(cart.ShippingFee == 0 ? "Free" : MoneyFormatter.Format(cart.ShippingFee))
                         </span>
                     </div>
-                    <div class="flex justify-between text-sm text-text-secondary mb-4">
-                        <span>VAT (8%)</span>
-                        <span class="text-text-primary font-medium">@MoneyFormatter.Format(cart.TaxAmount)</span>
-                    </div>
 
                     <div class="flex gap-2 my-6">
                         <input type="text"
-                               class="flex-1 bg-bg-base border border-white/5 rounded-lg py-3 px-4 text-sm text-text-primary opacity-60 cursor-not-allowed"
-                               placeholder="Promo code (coming soon)"
-                               disabled="@true" />
+                               class="flex-1 bg-bg-base border border-border rounded-lg py-3 px-4 text-sm text-text-primary opacity-60 cursor-not-allowed"
+                               placeholder="Voucher code" disabled="@true" />
                         <button type="button"
-                                class="bg-bg-card border border-white/5 text-text-primary px-4 rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed"
+                                class="bg-bg-card border border-border text-text-primary px-4 rounded-lg text-sm font-semibold opacity-60 cursor-not-allowed"
                                 disabled="@true">
-                            Apply
+                            Submit Code
                         </button>
                     </div>
 
-                    <div class="flex justify-between items-center border-t border-dashed border-white/5 pt-5 mt-2">
-                        <span class="text-base font-semibold">Total</span>
+                    <div class="flex justify-between items-center border-t border-dashed border-border pt-5 mt-2 mb-6">
+                        <span class="text-base font-semibold">Total Amount</span>
                         <span class="text-2xl font-extrabold text-accent">@MoneyFormatter.Format(cart.Total)</span>
                     </div>
 
-                    <button type="button"
-                            class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
-                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))"
-                            @onclick="@(() => Navigation.NavigateTo("/checkout"))">
-                        Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
-                    </button>
+                    @switch (ActiveCheckoutCta)
+                    {
+                        case CheckoutCtaVariant.Baseline:
+                            <!-- BẢN GỐC CHUẨN: Không bọc thêm gì để cấu trúc rõ ràng nhất -->
+                            <button type="button" id="btn-checkout-baseline" data-testid="cart-checkout-button"
+                                    aria-label="Begin checkout process"
+                                    class="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm flex justify-center items-center gap-2 hover:-translate-y-0.5 transition disabled:opacity-60"
+                                    disabled="@(isBusy || cart.Items.Any(i => !i.InStock))"
+                                    @onclick="@(() => Navigation.NavigateTo("/checkout"))">
+                                <span>Proceed to Checkout</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            break;
+
+                        case CheckoutCtaVariant.AttrAndCopy:
+                            <!-- CẤP 1: Bẻ gãy a:nth-of-type(1) bằng cách chèn 1 thẻ <a> ẩn lên trước -->
+                            <div class="checkout-action-wrapper">
+                                <a href="javascript:void(0)" class="hidden" aria-hidden="true">Hidden Decoy</a>
+                                <!-- Kẻ cướp vị trí thứ 1 -->
+                                <a href="javascript:void(0)" data-testid="step-next-action" role="button"
+                                   class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold text-sm flex justify-center items-center gap-2 transition"
+                                   @onclick="@(() => { if (!IsCheckoutDisabled) Navigation.NavigateTo("/checkout"); })">
+                                    Xác nhận thanh toán
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                        </path>
+                                    </svg>
+                                </a>
+                            </div>
+                            break;
+
+                        case CheckoutCtaVariant.AnchorSemantics:
+                            <!-- CẤP 2: Bẻ gãy độ sâu (DOM depth) bằng thẻ <section> -->
+                            <section class="checkout-semantic-wrap mt-2">
+                                <div role="button" tabindex="0" data-qa="secure-pay-btn" aria-label="Go to payment"
+                                     class="w-full py-4 rounded-xl bg-emerald-500 text-white font-bold text-sm flex justify-center items-center gap-2 transition cursor-pointer"
+                                     @onclick="@(() => { if (!IsCheckoutDisabled) Navigation.NavigateTo("/checkout"); })"
+                                     @onkeydown="OnCheckoutCtaKeyDown">
+                                    <span>Pay Securely Now</span>
+                                </div>
+                            </section>
+                            break;
+
+                        case CheckoutCtaVariant.VietnameseSvg:
+                            <!-- CẤP 3: Bẻ gãy bằng thẻ <article> -->
+                            <article class="w-full">
+                                <button type="submit" data-testid="action-@Guid.NewGuid().ToString("N").Substring(0, 8)"
+                                        class="w-full py-4 rounded-xl bg-orange-500 text-white font-bold text-sm flex justify-center items-center gap-2 transition"
+                                        disabled="@(isBusy || cart.Items.Any(i => !i.InStock))"
+                                        @onclick="@(() => Navigation.NavigateTo("/checkout"))">
+                                    <div class="flex items-center">
+                                        <span class="sr-only">Click here to</span>
+                                        <span>Hoàn tất</span>
+                                        <span class="mx-1">&amp;</span>
+                                        <span>Đặt hàng</span>
+                                    </div>
+                                </button>
+                            </article>
+                            break;
+
+                        case CheckoutCtaVariant.BossDecoy:
+                            <!-- CẤP 4: Giữ nguyên form vì cấu trúc này đã đủ phá vỡ mọi locator -->
+                            <div class="flex flex-col gap-3">
+                                <button type="button" data-testid="fake-checkout-btn"
+                                        class="w-full py-4 rounded-xl bg-gray-200 text-text-primary font-bold text-sm flex justify-center items-center gap-2 transition"
+                                        @onclick="@(() => Console.WriteLine("Decoy clicked!"))">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Cập nhật giỏ hàng
+                                </button>
+
+                                <form @onsubmit="@(() => { if (!IsCheckoutDisabled) Navigation.NavigateTo("/checkout"); })">
+                                    <button type="submit" data-cy="final-step"
+                                            class="w-full py-4 rounded-xl bg-violet-600 text-white font-extrabold flex justify-center items-center gap-2 hover:bg-violet-700 transition"
+                                            disabled="@(isBusy || cart.Items.Any(i => !i.InStock))">
+                                        Tiến hành mua
+                                    </button>
+                                </form>
+                            </div>
+                            break;
+                    }
 
                     <a href="/products" class="block text-center text-text-secondary hover:text-text-primary text-sm mt-4">
-                        <i class="fa-solid fa-arrow-left mr-1"></i> Continue shopping
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Back to catalog
                     </a>
                 </div>
             </div>
@@ -180,16 +267,41 @@
 </div>
 
 @code {
+    private CheckoutCtaVariant ActiveCheckoutCta { get; set; } = CheckoutCtaVariant.Baseline;
+
     private CartDto? cart;
     private string? userId;
     private bool isLoading = true;
     private bool isBusy;
     private string? errorMessage;
 
+    private bool IsCheckoutDisabled => isBusy || (cart?.Items.Any(i => !i.InStock) ?? true);
+
+    private void GoToCheckout()
+    {
+        if (IsCheckoutDisabled)
+            return;
+
+        Navigation.NavigateTo("/checkout");
+    }
+
+    private void OnCheckoutCtaKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+            GoToCheckout();
+    }
+
+    private async Task OnCheckoutCtaChanged()
+    {
+        await DemoCheckoutCtaService.SetAsync(ActiveCheckoutCta);
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        ActiveCheckoutCta = await DemoCheckoutCtaService.GetAsync();
 
         if (!string.IsNullOrWhiteSpace(userId))
         {

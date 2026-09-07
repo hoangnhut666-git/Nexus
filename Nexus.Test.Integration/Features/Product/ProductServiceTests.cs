@@ -265,7 +265,8 @@ public sealed class ProductServiceTests : IClassFixture<TestDatabaseFixture>, IA
         });
 
         result.Items.Should().HaveCount(1);
-        result.Items[0].Sku.Should().Be("NX-SPECIAL-999");
+        result.Items[0].Name.Should().Be("Product A");
+        result.Items[0].UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
     }
 
     [Fact]
@@ -347,6 +348,47 @@ public sealed class ProductServiceTests : IClassFixture<TestDatabaseFixture>, IA
         active.Items.Should().Contain(p => p.Slug == "visible-product");
         active.Items.Should().NotContain(p => p.Slug == "hidden-product");
         hiddenOnly.Items.Should().Contain(p => p.Slug == "hidden-product");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_ReturnsSecondPage()
+    {
+        var category = await _dbHelper.InsertCategoryAsync(
+            TestDataBuilders.ValidCategoryWithSlug("Pag Cat", "pag-cat"));
+
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var service = scope.ServiceProvider.GetRequiredService<IProductService>();
+
+        for (var i = 1; i <= 8; i++)
+        {
+            await service.CreateAsync(new CreateProductRequest
+            {
+                Name = $"Product {i:D2}",
+                Slug = $"product-{i:D2}",
+                CategoryId = category.Id,
+                Sku = $"NX-P{i:D2}",
+                Price = 100_000m,
+                StockQuantity = 1,
+                IsActive = true
+            });
+        }
+
+        var page1 = await service.GetPagedAsync(new ProductQuery
+        {
+            Page = 1,
+            PageSize = 6,
+            Status = ProductStatusFilter.All
+        });
+        var page2 = await service.GetPagedAsync(new ProductQuery
+        {
+            Page = 2,
+            PageSize = 6,
+            Status = ProductStatusFilter.All
+        });
+
+        page1.Items.Should().HaveCount(6);
+        page2.Items.Should().HaveCount(2);
+        page2.TotalCount.Should().Be(8);
     }
 
     [Fact]

@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.WebUtilities
 @using Nexus.Components.Admin.Shared
 @using Nexus.Services.Categories
 @using Nexus.Services.Categories.Models
@@ -22,39 +23,39 @@
     }
     else if (product is not null)
     {
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-6" data-testid="admin-product-detail">
             <div class="flex items-center gap-4">
-                <a href="/admin/products" class="text-text-secondary hover:text-text-primary text-sm">
-                    <i class="fa-solid fa-arrow-left mr-2"></i> Back to products
+                <a href="/admin/products" class="text-text-secondary hover:text-text-primary text-sm" data-testid="admin-product-back">
+                    <i aria-hidden="true" class="fa-solid fa-arrow-left mr-2"></i> Back to products
                 </a>
                 <h2 class="text-lg font-bold text-text-primary">@product.Name</h2>
             </div>
 
-            <div class="flex gap-2 border-b border-white/5">
-                <button type="button" class="@GetTabClass("info")" @onclick='() => activeTab = "info"'>Info</button>
-                <button type="button" class="@GetTabClass("variants")" @onclick='() => activeTab = "variants"'>Variants</button>
+            <div class="flex gap-2 border-b border-border">
+                <button type="button" class="@GetTabClass("info")" data-testid="admin-product-tab-info" @onclick='() => activeTab = "info"'>Info</button>
+                <button type="button" class="@GetTabClass("variants")" data-testid="admin-product-tab-variants" @onclick='() => activeTab = "variants"'>Variants</button>
             </div>
 
             @if (activeTab == "info")
             {
-                <EditForm Model="@infoModel" OnValidSubmit="@SaveInfoAsync" class="flex flex-col gap-6 max-w-2xl">
+                <EditForm Model="@infoModel" OnValidSubmit="@SaveInfoAsync" class="flex flex-col gap-6 max-w-2xl" data-testid="admin-product-info-form">
                     <DataAnnotationsValidator />
                     <div class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Name *</label>
-                        <InputText @bind-Value="infoModel.Name" class="@InputBaseClass" />
+                        <InputText @bind-Value="infoModel.Name" class="@InputBaseClass" data-testid="input-product-detail-name" />
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Slug *</label>
                         <div class="flex gap-2">
-                            <InputText @bind-Value="infoModel.Slug" class="@($"{InputBaseClass} flex-1")" />
-                            <button type="button" class="bg-bg-card border border-white/5 text-text-secondary px-4 rounded-lg text-xs font-semibold" @onclick="GenerateSlug">
+                            <InputText @bind-Value="infoModel.Slug" class="@($"{InputBaseClass} flex-1")" data-testid="input-product-detail-slug" />
+                            <button type="button" class="bg-bg-card border border-border text-text-secondary px-4 rounded-lg text-xs font-semibold" data-testid="btn-generate-product-detail-slug" @onclick="GenerateSlug">
                                 <i class="fa-solid fa-bolt mr-1"></i> Generate
                             </button>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Category *</label>
-                        <select class="@InputBaseClass" value="@infoModel.CategoryId" @onchange="OnCategoryChanged">
+                        <select class="@InputBaseClass" value="@infoModel.CategoryId" @onchange="OnCategoryChanged" data-testid="input-product-detail-category">
                             <option value="0">Select category</option>
                             @foreach (var category in categoryOptions)
                             {
@@ -69,9 +70,9 @@
                                         InputClass="@InputBaseClass" />
                     <div class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Description</label>
-                        <InputTextArea @bind-Value="infoModel.Description" class="@($"{InputBaseClass} min-h-[90px]")" />
+                        <InputTextArea @bind-Value="infoModel.Description" class="@($"{InputBaseClass} min-h-[90px]")" data-testid="textarea-product-detail-description" />
                     </div>
-                    <button type="submit" class="self-start bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg" disabled="@isSavingInfo">
+                    <button type="submit" class="self-start bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-5 text-sm font-semibold rounded-lg" disabled="@isSavingInfo" data-testid="btn-save-product-info">
                         @(isSavingInfo ? "Saving..." : "Save Info")
                     </button>
                 </EditForm>
@@ -80,7 +81,7 @@
             {
                 <ProductOptionsEditor Options="@optionModels" OnSave="@SaveOptionsAsync" />
 
-                <div class="bg-bg-card border border-white/5 rounded-xl p-6 flex flex-col gap-4">
+                <div class="bg-bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
                     <h4 class="text-sm font-bold text-text-primary">Generate Variants</h4>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="flex flex-col gap-1">
@@ -99,6 +100,7 @@
                             <button type="button"
                                     class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2.5 px-4 text-sm font-semibold rounded-lg"
                                     disabled="@isGenerating"
+                                    data-testid="btn-generate-variants"
                                     @onclick="GenerateVariantsAsync">
                                 @(isGenerating ? "Generating..." : "Generate All Combinations")
                             </button>
@@ -108,14 +110,14 @@
 
                 @if (selectedVariantIds.Count > 0)
                 {
-                    <div class="bg-bg-card border border-white/5 rounded-xl p-4 flex flex-wrap gap-3 items-end">
+                    <div class="bg-bg-card border border-border rounded-xl p-4 flex flex-wrap gap-3 items-end">
                         <span class="text-sm text-text-secondary">@selectedVariantIds.Count selected</span>
                         <input type="number" class="@($"{InputBaseClass} w-32")" placeholder="Price" value="@bulkPrice" @onchange="(e) => bulkPrice = ParseDecimal(e.Value)" />
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkSetPriceAsync">Set Price</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkSetPriceAsync">Set Price</button>
                         <input type="number" class="@($"{InputBaseClass} w-24")" placeholder="Stock +/-" value="@bulkStockDelta" @onchange="(e) => bulkStockDelta = ParseInt(e.Value)" />
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkAdjustStockAsync">Adjust Stock</button>
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(true)">Activate</button>
-                        <button type="button" class="bg-bg-surface border border-white/5 text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(false)">Deactivate</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="BulkAdjustStockAsync">Adjust Stock</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(true)">Activate</button>
+                        <button type="button" class="bg-bg-surface border border-border text-text-secondary py-2 px-3 text-xs rounded-lg" @onclick="() => BulkSetActiveAsync(false)">Deactivate</button>
                     </div>
                 }
 
@@ -141,8 +143,8 @@
 
 @if (variantEditorOpen)
 {
-    <div class="fixed inset-0 bg-[#040306]/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4">
-        <div class="bg-bg-surface border border-white/5 rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4">
+    <div class="fixed inset-0 bg-bg-base/70 backdrop-blur-md z-[1100] flex items-center justify-center p-4">
+        <div class="bg-bg-surface border border-border rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col gap-4">
             <h3 class="text-lg font-bold">@(editingVariantId.HasValue ? "Edit Variant" : "Add Variant")</h3>
             @if (!string.IsNullOrWhiteSpace(variantEditorLabel))
             {
@@ -150,16 +152,16 @@
             }
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] uppercase text-text-muted font-semibold">SKU *</label>
-                <input type="text" class="@InputBaseClass" value="@variantSku" @onchange="(e) => variantSku = e.Value?.ToString() ?? string.Empty" />
+                <input type="text" class="@InputBaseClass" value="@variantSku" data-testid="input-variant-sku" @onchange="(e) => variantSku = e.Value?.ToString() ?? string.Empty" />
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-2">
                     <label class="text-[10px] uppercase text-text-muted font-semibold">Price</label>
-                    <input type="number" class="@InputBaseClass" min="0" value="@variantPrice" @onchange="(e) => variantPrice = ParseDecimal(e.Value)" />
+                    <input type="number" class="@InputBaseClass" min="0" value="@variantPrice" data-testid="input-variant-price" @onchange="(e) => variantPrice = ParseDecimal(e.Value)" />
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="text-[10px] uppercase text-text-muted font-semibold">Stock</label>
-                    <input type="number" class="@InputBaseClass" min="0" value="@variantStock" @onchange="(e) => variantStock = ParseInt(e.Value)" />
+                    <input type="number" class="@InputBaseClass" min="0" value="@variantStock" data-testid="input-variant-stock" @onchange="(e) => variantStock = ParseInt(e.Value)" />
                 </div>
             </div>
             <label class="flex items-center gap-2 text-sm text-text-secondary">
@@ -169,10 +171,10 @@
             <div class="flex justify-end gap-3">
                 @if (editingVariantId.HasValue)
                 {
-                    <button type="button" class="text-rose-400 text-sm font-semibold mr-auto" @onclick="DeleteEditingVariantAsync">Delete</button>
+                    <button type="button" class="text-rose-400 text-sm font-semibold mr-auto" data-testid="btn-delete-variant" @onclick="DeleteEditingVariantAsync">Delete</button>
                 }
-                <button type="button" class="bg-transparent border border-white/5 text-text-secondary py-2 px-4 text-sm rounded-lg" @onclick="CloseVariantEditor">Cancel</button>
-                <button type="button" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 text-sm font-semibold rounded-lg" @onclick="SaveVariantAsync">Save</button>
+                <button type="button" class="bg-transparent border border-border text-text-secondary py-2 px-4 text-sm rounded-lg" data-testid="btn-cancel-variant" @onclick="CloseVariantEditor">Cancel</button>
+                <button type="button" class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 text-sm font-semibold rounded-lg" data-testid="btn-save-variant" @onclick="SaveVariantAsync">Save</button>
             </div>
         </div>
     </div>
@@ -215,7 +217,7 @@
     private List<int> pendingOptionValueIds = [];
 
     private readonly List<AdminToastMessage> toasts = [];
-    private const string InputBaseClass = "bg-bg-card border border-white/5 text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 placeholder-text-muted w-full";
+    private const string InputBaseClass = "bg-bg-card border border-border text-text-primary px-4 py-3 rounded-lg text-sm outline-none transition-all duration-300 focus:border-indigo-500/40 placeholder-text-muted w-full";
 
     protected override async Task OnParametersSetAsync()
     {
@@ -223,6 +225,24 @@
         await LoadCategoriesAsync();
         await LoadProductAsync();
         isLoading = false;
+        TryShowCreatedToast();
+    }
+
+    private void TryShowCreatedToast()
+    {
+        var query = QueryHelpers.ParseQuery(Navigation.ToAbsoluteUri(Navigation.Uri).Query);
+        if (!query.TryGetValue("created", out var created) || created != "1")
+            return;
+
+        Navigation.NavigateTo($"/admin/products/{ProductId}", replace: true);
+        _ = ShowCreatedToastAfterDelayAsync();
+    }
+
+    private async Task ShowCreatedToastAfterDelayAsync()
+    {
+        await Task.Delay(3000);
+        ShowToast("Success", "New product added.", AdminToastType.Success);
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task LoadCategoriesAsync()

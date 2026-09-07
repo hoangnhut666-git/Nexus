@@ -10,6 +10,7 @@ using Nexus.Data;
 using Nexus.Services.Addresses;
 using Nexus.Services.Cart;
 using Nexus.Services.Categories;
+using Nexus.Services.Demo;
 using Nexus.Services.Orders;
 using Nexus.Services.Payments;
 using Nexus.Services.Products;
@@ -83,6 +84,9 @@ builder.Services.AddScoped<CartState>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddSingleton<IVietnamAddressUnitService, VietnamAddressUnitService>();
+builder.Services.AddScoped<IDemoCheckoutCtaService, DemoCheckoutCtaService>();
+builder.Services.AddScoped<IDemoAddToCartCtaService, DemoAddToCartCtaService>();
+builder.Services.AddScoped<IDemoAddProductCtaService, DemoAddProductCtaService>();
 
 builder.Services.Configure<PayPalOptions>(builder.Configuration.GetSection(PayPalOptions.SectionName));
 builder.Services.AddScoped<IPaymentGateway, CodPaymentGateway>();
