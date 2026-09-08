@@ -1,0 +1,47 @@
+name: Deploy Nexus to VPS
+
+on:
+  push:
+    branches:
+      - main # Nếu nhánh chính của bạn tên là 'master', hãy đổi 'main' thành 'master'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 10
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build project
+      run: dotnet build --no-restore -c Release
+
+    - name: Publish project
+      run: dotnet publish -c Release -o ./publish
+
+    - name: Copy files to VPS
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST_IP }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "publish/*"
+        target: "/var/www/nexus"
+        strip_components: 1
+
+    - name: Restart Nexus Service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST_IP }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          sudo systemctl restart nexus.service
