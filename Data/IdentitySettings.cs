@@ -4,7 +4,7 @@ public class IdentitySettings
 {
     public const string SectionName = "IdentitySettings";
 
-    public bool RequireConfirmedAccount { get; set; } = true;
+    public bool RequireConfirmedAccount { get; set; } = false;
 
     public string AdminEmail { get; set; } = "admin@nexus.io";
 

@@ -1,4 +1,5 @@
 ﻿@page "/Account/RegisterConfirmation"
+@layout AuthLayout
 
 @using System.Text
 @using Microsoft.AspNetCore.Identity
@@ -10,24 +11,76 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register confirmation</PageTitle>
+<PageTitle>NEXUS // Register Confirmation</PageTitle>
 
-<div data-testid="register-confirmation-page">
-<h1>Register confirmation</h1>
+<div class="w-full max-w-[420px] flex flex-col gap-6 my-auto" data-testid="register-confirmation-page">
+    <div class="lg:hidden flex justify-center mb-2">
+        <span class="text-[24px] font-extrabold tracking-[1.5px] bg-gradient-to-r from-text-primary to-slate-400 bg-clip-text text-transparent flex items-center gap-2.5">
+            <i class="fa-solid fa-cube bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent"></i>NEXUS.
+        </span>
+    </div>
 
-<StatusMessage Message="@statusMessage" />
+    <div class="text-center lg:text-left">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 mx-auto lg:mx-0">
+            <i class="fa-regular fa-envelope text-xl"></i>
+        </div>
+        <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-text-primary to-slate-300 bg-clip-text text-transparent mb-1.5"
+            data-testid="register-confirmation-title">
+            Confirm Your Email
+        </h2>
+        <p class="text-text-secondary text-sm">
+            @if (emailConfirmationLink is not null)
+            {
+                <text>Your account was created. Confirm your email to continue.</text>
+            }
+            else
+            {
+                <text>We sent a confirmation link to your inbox.</text>
+            }
+        </p>
+    </div>
 
-@if (emailConfirmationLink is not null)
-{
-    <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink" data-testid="register-confirm-email-link">Click here to confirm your account</a>
-    </p>
-}
-else
-{
-    <p role="alert">Please check your email to confirm your account.</p>
-}
+    <StatusMessage Message="@statusMessage" />
+
+    @if (emailConfirmationLink is not null)
+    {
+        <div class="bg-bg-card border border-border rounded-2xl p-5 flex flex-col gap-4">
+            <p class="text-xs text-text-secondary leading-relaxed">
+                This app does not currently have a real email sender registered. See
+                <a href="https://aka.ms/aspaccountconf"
+                   class="text-indigo-400 hover:text-indigo-300 font-semibold underline transition-colors"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    these docs
+                </a>
+                for how to configure one. Until then, use the button below to confirm your account.
+            </p>
+            <a href="@emailConfirmationLink"
+               data-testid="register-confirm-email-link"
+               class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-3 px-6 rounded-xl font-bold text-sm shadow-[0_4px_20px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2.5 group">
+                <span>Confirm your account</span>
+                <i class="fa-solid fa-arrow-right text-xs transition-transform duration-300 group-hover:translate-x-1"></i>
+            </a>
+        </div>
+    }
+    else if (string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="bg-bg-card border border-border rounded-2xl p-5" role="alert">
+            <p class="text-sm text-text-primary font-semibold mb-1.5">Check your inbox</p>
+            <p class="text-xs text-text-secondary leading-relaxed">
+                Please check your email to confirm your account. If you don't see the message, look in spam or junk.
+            </p>
+        </div>
+    }
+
+    <div class="text-center text-xs text-text-muted mt-2">
+        Already confirmed?
+        <a href="Account/Login"
+           class="text-indigo-400 hover:text-indigo-300 font-bold transition-colors"
+           data-testid="register-confirmation-login-link">
+            Sign in now
+        </a>
+    </div>
 </div>
 
 @code {
